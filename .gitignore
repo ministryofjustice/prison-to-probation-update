@@ -1,0 +1,6 @@
+target
+.idea
+ecr.repo
+.gradle
+build
+out

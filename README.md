@@ -1,2 +1,6 @@
 # prison-to-probation-update
-Updates Probation systems with changes to an offender's record in Prison
+
+Self-contained fat-jar micro-service to listen for  events from Prison systems (NOMIS) to update offender sentence information in Probation systems (Delius)
+
+### Building and running
+

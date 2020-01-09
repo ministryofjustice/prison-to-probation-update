@@ -1,0 +1,14 @@
+graceful:
+  shutdown.enabled: false
+
+sqs:
+  endpoint.url: http://localhost:4576
+
+oauth:
+  endpoint.url: http://localhost:9090/auth
+
+elite2:
+  endpoint.url: http://localhost:8083
+
+community:
+  endpoint.url: http://localhost:8096/delius

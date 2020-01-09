@@ -1,0 +1,68 @@
+info.app:
+  name: HMPPS Prison To Probation Update
+  version: 1.0
+
+spring:
+  application:
+    name: prison-to-probation-update
+
+  jackson:
+    date-format: "yyyy-MM-dd HH:mm:ss"
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+
+server:
+  port: 8082
+  servlet:
+    context-path: /
+  forward-headers-strategy: native
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol_header: x-forwarded-proto
+
+logging:
+  level:
+    org.springframework: INFO
+    org.springframework.security: INFO
+    uk.gov.justice.digital: DEBUG
+
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: 'info, health'
+  endpoint:
+    health:
+      cache:
+        time-to-live: 2000ms
+      show-components: always
+      show-details: always
+    info:
+      cache:
+        time-to-live: 2000ms
+
+oauth:
+  token.url: ${oauth.endpoint.url}/oauth/token
+
+prisontoprobation:
+  client:
+    client-id: ${oauth.client.id}
+    client-secret: ${oauth.client.secret}
+    access-token-uri: ${oauth.token.url}
+    authentication-scheme: header
+    client-authentication-scheme: header
+
+graceful:
+  shutdown.enabled: true
+
+azure:
+  application-insights.web.enable-W3C: true
+
+jwt:
+  public.key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0NCk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBc09QQXRzUUFEZGJSdS9FSDZMUDUNCkJNMS9tRjQwVkRCbjEyaEpTWFBQZDVXWUswSExZMjBWTTdBeHhSOW1uWUNGNlNvMVd0N2ZHTnFVeC9XeWVtQnANCklKTnJzLzdEendnM3V3aVF1Tmg0ektSK0VHeFdiTHdpM3l3N2xYUFV6eFV5QzV4dDg4ZS83dk8rbHoxb0NuaXoNCmpoNG14TkFtczZaWUY3cWZuaEpFOVd2V1B3TExrb2prWnUxSmR1c0xhVm93TjdHVEdOcE1FOGR6ZUprYW0wZ3ANCjRveEhRR2hNTjg3SzZqcVgzY0V3TzZEdmhlbWc4d2hzOTZuelFsOG4yTEZ2QUsydXA5UHJyOUdpMkxGZ1R0N0sNCnFYQTA2a0M0S2d3MklSMWVGZ3pjQmxUT0V3bXpqcmU2NUhvTmFKQnI5dU5aelY1c0lMUE1jenpoUWovZk1oejMNCi9RSURBUUFCDQotLS0tLUVORCBQVUJMSUMgS0VZLS0tLS0=
+
+sqs:
+  provider: aws
+  queue.name: prison_to_probation_queue
+  endpoint.region: eu-west-2
