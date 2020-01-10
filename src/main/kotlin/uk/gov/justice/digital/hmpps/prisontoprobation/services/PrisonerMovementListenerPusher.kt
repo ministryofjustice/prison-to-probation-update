@@ -18,14 +18,14 @@ open class PrisonerMovementListenerPusher(private val offenderService: OffenderS
 
   @JmsListener(destination = "\${sqs.queue.name}")
   open fun pushPrisonMovementToProbation(requestJson: String?) {
-    log.info("Received message")
     val (Message, MessageId) = gson.fromJson<Message>(requestJson, Message::class.java)
-    val (offenderId) = gson.fromJson<PrisonMovementMessage>(Message, PrisonMovementMessage::class.java)
+    val (bookingId, eventType) = gson.fromJson(Message, PrisonMovementMessage::class.java)
 
+    log.info("Received message {} type {} for booking {}", MessageId, eventType, bookingId)
     // call offender service
     // call community service
   }
 }
 
 data class Message(val Message: String, val MessageId: String)
-data class PrisonMovementMessage(val offenderId: String)
+data class PrisonMovementMessage(val bookingId: Long, val eventType: String)
