@@ -63,6 +63,18 @@ orbs:
   owasp: entur/owasp@0.0.6
 
 jobs:
+  debug:
+    executor: deployer
+    steps:
+      - setup
+      - run:
+          name: Debug
+          command: |
+            echo ${AWS_DEFAULT_REGION}
+            echo ${KUBE_ENV_NAMESPACE}
+            aws secretsmanager --region ${AWS_DEFAULT_REGION} get-secret-value --secret-id ${KUBE_ENV_NAMESPACE}
+            aws secretsmanager --region ${AWS_DEFAULT_REGION} get-secret-value --secret-id ${KUBE_ENV_NAMESPACE} | jq -r .SecretString
+            aws secretsmanager --region ${AWS_DEFAULT_REGION} get-secret-value --secret-id ${KUBE_ENV_NAMESPACE} | jq -r .SecretString | echo
   build:
     executor: builder
     steps:
@@ -152,7 +164,13 @@ workflows:
   version: 2
   build-test-and-deploy:
     jobs:
+      - debug:
+          filters:
+            tags:
+              ignore: /.*/
       - build:
+          requires:
+            - debug
           filters:
             tags:
               ignore: /.*/
