@@ -3,6 +3,7 @@ graceful:
 
 sqs:
   endpoint.url: http://localhost:4576
+  provider: localstack
 
 oauth:
   endpoint.url: http://localhost:9090/auth
