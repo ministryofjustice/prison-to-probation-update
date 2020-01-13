@@ -22,6 +22,7 @@ open class PrisonerMovementListenerPusher(private val offenderService: OffenderS
     val (bookingId, eventType) = gson.fromJson(Message, PrisonMovementMessage::class.java)
 
     log.info("Received message {} type {} for booking {}", MessageId, eventType, bookingId)
+    log.debug(requestJson)
     // call offender service
     // call community service
   }
