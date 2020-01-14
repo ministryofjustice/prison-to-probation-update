@@ -1,6 +1,9 @@
 graceful:
   shutdown.enabled: false
 
+sqs:
+  provider: test-localstack
+
 prisontoprobation:
   client:
     client-id: prisontoprobation-api-client
@@ -14,7 +17,6 @@ oauth:
   endpoint.url: http://localhost:8090/auth
 
 community:
-  enabled: true
   endpoint.url: http://localhost:8096
 
 management.endpoint:
