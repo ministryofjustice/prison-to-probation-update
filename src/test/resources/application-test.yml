@@ -2,7 +2,8 @@ graceful:
   shutdown.enabled: false
 
 sqs:
-  provider: test-localstack
+  provider: embedded-localstack
+  endpoint.url: http://localhost:4576
 
 prisontoprobation:
   client:

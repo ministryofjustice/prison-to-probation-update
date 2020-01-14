@@ -58,13 +58,12 @@ executors:
         environment:
           - SERVICES=sqs
           - DEBUG=${DEBUG- }
-          - DATA_DIR=${DATA_DIR- }
-          - PORT_WEB_UI=${PORT_WEB_UI- }
-          - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
-          - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+          - DATA_DIR=/tmp/localstack/data
           - DOCKER_HOST=unix:///var/run/docker.sock
+          - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
           - AWS_EXECUTION_ENV=True
           - DEFAULT_REGION=eu-west-2
+          - TMPDIR=/private
     working_directory: ~/app
 
 orbs:
@@ -83,7 +82,9 @@ jobs:
             - gradle-{{ checksum "build.gradle" }}
             - gradle-
       - run:
-          command: REMOTE_LOCALSTACK=true ./gradlew build
+          environment:
+            SQS_PROVIDER: localstack
+          command: ./gradlew build
       - run:
           name: Record the Application Version
           command: |
