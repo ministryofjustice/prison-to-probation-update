@@ -1,0 +1,29 @@
+{
+  "Type": "Notification",
+  "MessageId": "b18d62f0-3059-5c2c-af05-346667bd4a28",
+  "TopicArn": "arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7",
+  "Message": "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":1200835,\"movementSeq\":1,\"nomisEventType\":\"M1_RESULT\"}",
+  "Timestamp": "2020-01-13T11:33:56.874Z",
+  "SignatureVersion": "1",
+  "Signature": "Qo6lSZTKmjjNKUGewr5WK022bnhcB1756qHjcy91lUyZXW8yHPCUYzy9nZubLg9evh8bdZ9RZiGx6Ast2wcL0FUyP2rMHO7cKCF4tVXq0QeYyRfMaDNNP/N8Zqg16oTlfu51ZOarygqQRNctAiL/Pz4qFc7x1HAf1InoJWD7Sy1IqC2TdpEHVGNtJggdMpLcVUkOKz0uciBT6QunGsYLjVlHT72TZImjff9iVRFKrODzcSZJk6do8ZX6smDZoOZEX8jfq7XcCt9chLcvXXdeF8p+8WTeZJATc2ZB3mK0j5WZgtdwXRh2MLHUku4mBmA8K4twf3vak8EXbw+oC02wIg==",
+  "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+  "UnsubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7:92545cfe-de5d-43e1-8339-c366bf0172aa",
+  "MessageAttributes": {
+    "eventType": {
+      "Type": "String",
+      "Value": "EXTERNAL_MOVEMENT_RECORD-INSERTED"
+    },
+    "id": {
+      "Type": "String",
+      "Value": "d6801418-4208-3c8e-6b24-4c3e7e05f534"
+    },
+    "contentType": {
+      "Type": "String",
+      "Value": "text/plain;charset=UTF-8"
+    },
+    "timestamp": {
+      "Type": "Number.java.lang.Long",
+      "Value": "1578915236869"
+    }
+  }
+}
