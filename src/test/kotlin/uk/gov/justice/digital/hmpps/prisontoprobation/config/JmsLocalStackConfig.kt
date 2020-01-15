@@ -18,6 +18,7 @@ open class JmsLocalStackConfig(private val localStackContainer: LocalStackContai
   open fun awsLocalTestClient(): AmazonSQS {
     return AmazonSQSClientBuilder.standard()
             .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+            .withCredentials(localStackContainer.defaultCredentialsProvider)
             .build()
   }
 }
