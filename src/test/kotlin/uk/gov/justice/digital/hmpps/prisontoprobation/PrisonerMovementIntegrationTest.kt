@@ -13,27 +13,27 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
+@ActiveProfiles("test,test-queue")
 @RunWith(SpringJUnit4ClassRunner::class)
 class PrisonerMovementIntegrationTest {
 
     @Autowired
-    private val sqsClient: AmazonSQS? = null
+    private lateinit var sqsClient: AmazonSQS
 
     @Autowired
-    private val queueUrl: String? = null
+    private lateinit var queueUrl: String
 
     @Test
     fun `will consume a prison movement message`() {
         val message = this::class.java.getResource("/messages/externalMovement.json").readText()
 
-        sqsClient!!.sendMessage(queueUrl, message)
+        sqsClient.sendMessage(queueUrl, message)
 
-        await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { count -> count == 0 }
+        await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     }
 
     private fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
-        val queueAttributes = sqsClient!!.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
+        val queueAttributes = sqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
         return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
     }
 

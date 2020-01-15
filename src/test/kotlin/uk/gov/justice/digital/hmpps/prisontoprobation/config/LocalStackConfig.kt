@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.testcontainers.containers.localstack.LocalStackContainer
 
 @Configuration
 @ConditionalOnProperty(name = ["sqs.provider"], havingValue = "embedded-localstack")
+@Profile("test-queue")
 open class LocalStackConfig {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
