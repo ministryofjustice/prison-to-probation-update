@@ -16,3 +16,6 @@ open class CommunityService(@Qualifier("communityApiRestTemplate") private val r
   }
 }
 
+data class Offender (
+  val offenderNo: String
+)

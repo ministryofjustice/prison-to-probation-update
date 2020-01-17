@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/bookings/1200835/movement/1"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    {
+      "offenderNo": "A5089DY",
+      "createDateTime": "2020-01-13T11:33:23.666789",
+      "fromAgency": "ABRYCT",
+      "fromAgencyDescription": "Aberystwyth County Court",
+      "toAgency": "MDI",
+      "toAgencyDescription": "Moorland (HMP & YOI)",
+      "fromCity": "",
+      "toCity": "",
+      "movementType": "ADM",
+      "movementTypeDescription": "Admission",
+      "directionCode": "IN",
+      "movementTime": "11:27:39",
+      "movementReason": "Indeterminate Sentence for Public Prot",
+      "commentText": null
+    }
+  }
+}
