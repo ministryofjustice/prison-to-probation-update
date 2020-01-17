@@ -1,13 +1,20 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
+import com.amazonaws.services.sqs.AmazonSQS
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.springframework.boot.test.mock.mockito.MockBean
 
 
 class HealthCheckIntegrationTest : IntegrationTest() {
+  @Suppress("unused")
+  @MockBean
+  private lateinit var amazonSQS: AmazonSQS
+
+
   @Test
   fun `Health page reports ok`() {
     subPing(200)

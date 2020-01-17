@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
 import com.amazonaws.services.sqs.AmazonSQS
+import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Conditional
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
@@ -16,7 +16,9 @@ open class TestQueueConfig(
     @Bean
     open fun queueUrl(): String {
         sqsClient.createQueue(queueName)
-        return sqsClient.getQueueUrl(queueName).queueUrl
+        val queueUrl = sqsClient.getQueueUrl(queueName).queueUrl
+        sqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+        return queueUrl
     }
 
 }

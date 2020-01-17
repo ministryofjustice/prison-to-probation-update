@@ -9,8 +9,7 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class PrisonerMovementListenerPusher(private val offenderService: OffenderService,
-                                  private val communityService: CommunityService) {
+open class PrisonerMovementListenerPusher(private val prisonMovementService: PrisonMovementService) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val gson: Gson = GsonBuilder().create()
@@ -20,9 +19,13 @@ open class PrisonerMovementListenerPusher(private val offenderService: OffenderS
   open fun pushPrisonMovementToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = gson.fromJson<Message>(requestJson, Message::class.java)
-    val (bookingId, movementSeq) = gson.fromJson(message, ExternalPrisonerMovementMessage::class.java)
+    val eventType = messageAttributes.eventType.Value
+    log.info("Received message $messageId type ${eventType}")
 
-    log.info("Received message $messageId type ${messageAttributes.eventType.Value} for booking $bookingId with sequence $movementSeq")
+    when (eventType) {
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(gson.fromJson(message, ExternalPrisonerMovementMessage::class.java))
+      else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
+    }
   }
 }
 
