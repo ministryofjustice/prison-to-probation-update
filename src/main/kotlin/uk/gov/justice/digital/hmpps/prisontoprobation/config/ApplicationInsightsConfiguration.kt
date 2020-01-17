@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.*
 import org.springframework.core.type.AnnotatedTypeMetadata
 
@@ -10,11 +12,15 @@ import org.springframework.core.type.AnnotatedTypeMetadata
  */
 @Configuration
 open class ApplicationInsightsConfiguration {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(this::class.java)
+    }
 
 
     @Bean
     @Conditional(AppInsightKeyAbsentCondition::class)
     open fun telemetryClient(): TelemetryClient {
+        log.info("Creating TelemetryClient since no appinsights.instrumentationkey found")
         return TelemetryClient()
     }
 
@@ -22,7 +28,9 @@ open class ApplicationInsightsConfiguration {
 
         override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
             val telemetryKey: String? = context.environment.getProperty("appinsights.instrumentationkey")
-            return telemetryKey.isNullOrBlank()
+            val noAppInsightsKey = telemetryKey.isNullOrBlank()
+            log.info("app insights key has blank status $noAppInsightsKey, length was ${telemetryKey?.length}")
+            return noAppInsightsKey
         }
     }
 }
