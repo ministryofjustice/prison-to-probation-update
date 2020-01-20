@@ -35,12 +35,12 @@ data class Prisoner(
         val lastName: String,
         val dateOfBirth: String,
         val currentlyInPrison: String,
-        val latestBookingId: Long,
-        val latestLocationId: String,
-        val latestLocation: String,
-        val convictedStatus: String,
-        val imprisonmentStatus: String,
-        val receptionDate: String
+        val latestBookingId: Long?,
+        val latestLocationId: String?,
+        val latestLocation: String?,
+        val convictedStatus: String?,
+        val imprisonmentStatus: String?,
+        val receptionDate: String?
         )
 
 data class Movement(
