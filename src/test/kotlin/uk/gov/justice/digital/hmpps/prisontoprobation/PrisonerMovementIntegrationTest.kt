@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
 
 
-@ActiveProfiles("test,test-queue")
+@ActiveProfiles(profiles = ["test", "test-queue"])
 class PrisonerMovementIntegrationTest : IntegrationTest() {
 
     @Autowired
