@@ -11,13 +11,18 @@ import java.time.LocalDateTime
 
 class PrisonMovementServiceTest {
     private val offenderService: OffenderService = mock()
+    private val communityService: CommunityService = mock()
     private val telemetryClient: TelemetryClient = mock()
 
     private lateinit var service: PrisonMovementService
 
     @Before
     fun before() {
-        service = PrisonMovementService(offenderService, telemetryClient)
+        service = PrisonMovementService(offenderService, communityService, telemetryClient)
+        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
+        whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
+        whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody())
     }
 
     @Test
@@ -42,6 +47,16 @@ class PrisonMovementServiceTest {
     }
 
     @Test
+    fun `will retrieve the associated booking when a prison admission`() {
+        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(offenderService).getBooking(12345L)
+    }
+
+
+    @Test
     fun `will retrieve the prisoner when a prison admission`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D"))
         whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
@@ -62,6 +77,21 @@ class PrisonMovementServiceTest {
             assertThat(it["movementType"]).isEqualTo("TRN")
             assertThat(it["fromAgency"]).isEqualTo("LEI")
             assertThat(it["toAgency"]).isEqualTo("MDI")
+        }, isNull())
+    }
+
+    @Test
+    fun `will log we are ignoring event when booking is not active`() {
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createInactiveBooking())
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["movementType"]).isEqualTo("ADM")
+            assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+            assertThat(it["toAgency"]).isEqualTo("MDI")
+            assertThat(it["reason"]).isEqualTo("Not an active booking")
         }, isNull())
     }
 
@@ -93,6 +123,48 @@ class PrisonMovementServiceTest {
         }, isNull())
     }
 
+    @Test
+    fun `will request probation updates custody`() {
+        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D", "MDI"))
+        whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(communityService).updateProbationCustody(eq("AB123D"), eq("38353A"), check {assertThat(it.nomsPrisonInstitutionCode).isEqualTo("MDI")} )
+    }
+
+    @Test
+    fun `will log probation updated custody successfully when all ok`() {
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
+        whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
+
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["offenderNo"]).isEqualTo("AB123D")
+            assertThat(it["bookingNumber"]).isEqualTo("38353A")
+            assertThat(it["toAgencyDescription"]).isEqualTo("Moorland")
+        }, isNull())
+    }
+
+    @Test
+    fun `will log probation did not update custody successfully when record not found`() {
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
+        whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
+
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferProbationRecordNotFound"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["bookingNumber"]).isEqualTo("38353A")
+            assertThat(it["offenderNo"]).isEqualTo("AB123D")
+        }, isNull())
+    }
+
     private fun createPrisoner() = Prisoner(
             offenderNo = "AB123D",
             pncNumber = "",
@@ -109,11 +181,11 @@ class PrisonMovementServiceTest {
             imprisonmentStatus = "",
             receptionDate = "")
 
-    private fun createPrisonAdmissionMovement(offenderNo: String) = Movement (
+    private fun createPrisonAdmissionMovement(offenderNo: String = "AB123D", toAgency: String = "MDI") = Movement (
             offenderNo = offenderNo,
             createDateTime = LocalDateTime.now(),
             fromAgency = "ABRYCT",
-            toAgency = "MDI",
+            toAgency = toAgency,
             movementType = "ADM",
             directionCode = "OUT"
     )
@@ -125,6 +197,20 @@ class PrisonMovementServiceTest {
             toAgency = "MDI",
             movementType = "TRN",
             directionCode = "OUT"
+    )
+
+    private fun createCurrentBooking(bookingNo: String = "38353A") = Booking(
+            bookingNo = bookingNo,
+            activeFlag = true
+    )
+
+    private fun createInactiveBooking() = Booking(
+            bookingNo = "38353A",
+            activeFlag = false
+    )
+
+    private fun createUpdatedCustody(description: String = "Moorland") = Custody(
+            institution = Institution(description)
     )
 }
 

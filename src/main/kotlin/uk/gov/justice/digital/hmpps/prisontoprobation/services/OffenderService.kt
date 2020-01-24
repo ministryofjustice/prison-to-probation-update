@@ -5,8 +5,10 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.time.LocalDateTime
 
 @Service
@@ -20,9 +22,20 @@ open class OffenderService(@Qualifier("elite2ApiRestTemplate") val restTemplate:
         return response.body!![0]
     }
 
-    open fun getMovement(bookingId: Long, movementSeq: Long): Movement {
-        val response = restTemplate.getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, bookingId, movementSeq)
+    open fun getBooking(bookingId: Long): Booking {
+        val response = restTemplate.getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, bookingId)
         return response.body!!
+    }
+
+    open fun getMovement(bookingId: Long, movementSeq: Long): Movement? {
+        return try {
+            val response = restTemplate.getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, bookingId, movementSeq)
+            response.body!!
+        } catch (e : HttpClientErrorException) {
+            if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+            // 404 is "valid" since it means movement is for an inactive booking
+            null
+        }
     }
 }
 
@@ -46,8 +59,13 @@ data class Prisoner(
 data class Movement(
         val offenderNo: String,
         val createDateTime: LocalDateTime,
-        val fromAgency: String?,
-        val toAgency: String?,
+        val fromAgency: String,
+        val toAgency: String,
         val movementType: String,
         val directionCode: String
+)
+
+data class Booking(
+        val bookingNo: String,
+        val activeFlag: Boolean
 )
