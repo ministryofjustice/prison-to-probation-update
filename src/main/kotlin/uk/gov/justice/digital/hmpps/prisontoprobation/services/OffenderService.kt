@@ -28,13 +28,13 @@ open class OffenderService(@Qualifier("elite2ApiRestTemplate") val restTemplate:
     }
 
     open fun getMovement(bookingId: Long, movementSeq: Long): Movement? {
-        try {
+        return try {
             val response = restTemplate.getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, bookingId, movementSeq)
-            return response.body!!
+            response.body!!
         } catch (e : HttpClientErrorException) {
             if (e.statusCode != HttpStatus.NOT_FOUND) throw e
             // 404 is "valid" since it means movement is for an inactive booking
-            return null
+            null
         }
     }
 }

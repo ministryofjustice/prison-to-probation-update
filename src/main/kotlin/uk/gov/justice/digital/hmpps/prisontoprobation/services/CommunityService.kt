@@ -12,23 +12,23 @@ import org.springframework.web.client.RestTemplate
 
 @Service
 open class CommunityService(@Qualifier("communityApiRestTemplate") private val restTemplate: RestTemplate) {
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
-  }
-
-  open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
-    try {
-      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
-      return response.body!!
-    } catch (e : HttpClientErrorException) {
-      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-      log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
-      return null
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(this::class.java)
     }
-  }
+
+    open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
+      return try {
+          val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
+        response.body!!
+      } catch (e: HttpClientErrorException) {
+          if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+          log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
+        null
+      }
+    }
 }
 
-data class UpdateCustody (
+data class UpdateCustody(
         val nomsPrisonInstitutionCode: String
 )
 
@@ -36,6 +36,6 @@ data class Institution(
         val description: String?
 )
 
-data class Custody (
+data class Custody(
         val institution: Institution
 )
