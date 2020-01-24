@@ -17,14 +17,14 @@ open class CommunityService(@Qualifier("communityApiRestTemplate") private val r
     }
 
     open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
-      return try {
-          val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
-        response.body!!
-      } catch (e: HttpClientErrorException) {
-          if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-          log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
-        null
-      }
+        return try {
+            val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
+            response.body!!
+        } catch (e: HttpClientErrorException) {
+            if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+            log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
+            null
+        }
     }
 }
 
