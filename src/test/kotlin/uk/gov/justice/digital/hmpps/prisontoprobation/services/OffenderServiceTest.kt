@@ -4,14 +4,17 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.client.OAuth2RestTemplate
+import org.springframework.web.client.HttpClientErrorException
 import java.time.LocalDateTime
 
 class OffenderServiceTest {
@@ -51,6 +54,34 @@ class OffenderServiceTest {
         verify(restTemplate).getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, 1234L, 1L)
     }
 
+    @Test
+    fun `test get movement will be null if not found`() {
+        whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
+
+        val movement = service.getMovement(1234L, 1L)
+
+        assertThat(movement).isNull()
+    }
+
+    @Test
+    fun `test get movement will throw exception for other types of http responses`() {
+        whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
+
+        assertThatThrownBy {  service.getMovement(1234L, 1L) } .isInstanceOf(HttpClientErrorException::class.java)
+    }
+
+    @Test
+    fun `test get booking calls rest template`() {
+        val expectedBooking = createBooking()
+        whenever(restTemplate.getForEntity<Booking>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedBooking))
+
+        val booking = service.getBooking(1234L)
+
+        assertThat(booking).isEqualTo(expectedBooking)
+
+        verify(restTemplate).getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, 1234L)
+    }
+
     private fun createPrisoner() = Prisoner(
             offenderNo = "AB123D",
             pncNumber = "",
@@ -74,5 +105,10 @@ class OffenderServiceTest {
             toAgency = "MDI",
             movementType = "TRN",
             directionCode = "OUT"
+    )
+
+    private fun createBooking() = Booking(
+            bookingNo = "38353A",
+            activeFlag = true
     )
 }
