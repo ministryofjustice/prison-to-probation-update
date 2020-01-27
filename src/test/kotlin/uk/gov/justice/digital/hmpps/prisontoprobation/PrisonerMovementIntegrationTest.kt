@@ -45,7 +45,6 @@ class PrisonerMovementIntegrationTest : IntegrationTest() {
         await untilCallTo { eliteRequestCountFor("/api/prisoners?offenderNo=A5089DY") } matches { it == 1 }
         await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
 
-        verify(telemetryClient).trackEvent(eq("P2PTransferIn"), any(), isNull())
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), any(), isNull())
     }
 

@@ -3,95 +3,74 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-open class PrisonMovementService(private val offenderService: OffenderService, private val communityService: CommunityService, private val telemetryClient: TelemetryClient) {
-    companion object {
-        val log: Logger = LoggerFactory.getLogger(this::class.java)
-    }
+open class PrisonMovementService(
+    private val offenderService: OffenderService,
+    private val communityService: CommunityService,
+    private val telemetryClient: TelemetryClient,
+    @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
-    open fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
-        val (bookingId, movementSeq) = prisonerMovementMessage
+  open fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
+    val (bookingId, movementSeq) = prisonerMovementMessage
+    val basicAttributes =  mapOf(
+        "bookingId" to bookingId.toString(),
+        "movementSeq" to movementSeq.toString())
 
-        log.info("External movement for booking $bookingId with sequence $movementSeq")
-        telemetryClient.trackEvent("P2PExternalMovement",
-                mapOf(
-                        "bookingId" to bookingId.toString(),
-                        "movementSeq" to movementSeq.toString()),
-                null)
+    log.info("External movement for booking $bookingId with sequence $movementSeq")
+    telemetryClient.trackEvent("P2PExternalMovement", basicAttributes, null)
 
-        val movement = offenderService.getMovement(bookingId, movementSeq)
-        if (movement != null) {
-            if (isMovementTransferIntoPrison(movement)) {
-                val booking = offenderService.getBooking(bookingId)
-
-                if (booking.activeFlag) {
-                    val prisoner = offenderService.getOffender(movement.offenderNo)
-                    telemetryClient.trackEvent("P2PTransferIn",
-                            mapOf(
-                                    "bookingId" to bookingId.toString(),
-                                    "bookingNumber" to booking.bookingNo,
-                                    "fromAgency" to movement.fromAgency,
-                                    "toAgency" to movement.toAgency,
-                                    "offenderNo" to prisoner.offenderNo,
-                                    "firstName" to prisoner.firstName,
-                                    "lastName" to prisoner.lastName,
-                                    "latestLocation" to prisoner.latestLocation,
-                                    "convictedStatus" to prisoner.convictedStatus
-                            ),
-                            null)
-                    val updatedCustody = communityService.updateProbationCustody(
-                            prisoner.offenderNo,
-                            booking.bookingNo,
-                            UpdateCustody(movement.toAgency))
-                    if (updatedCustody != null) {
-                        telemetryClient.trackEvent("P2PTransferProbationUpdated",
-                                mapOf(
-                                        "bookingId" to bookingId.toString(),
-                                        "bookingNumber" to booking.bookingNo,
-                                        "toAgencyDescription" to updatedCustody.institution.description,
-                                        "offenderNo" to prisoner.offenderNo
-                                ),
-                                null)
-                    } else {
-                        telemetryClient.trackEvent("P2PTransferProbationRecordNotFound",
-                                mapOf(
-                                        "bookingId" to bookingId.toString(),
-                                        "bookingNumber" to booking.bookingNo,
-                                        "offenderNo" to prisoner.offenderNo
-                                ),
-                                null)
-                    }
-                } else {
-                    telemetryClient.trackEvent("P2PTransferIgnored",
-                            mapOf(
-                                    "bookingId" to bookingId.toString(),
-                                    "movementType" to movement.movementType,
-                                    "fromAgency" to movement.fromAgency,
-                                    "toAgency" to movement.toAgency,
-                                    "reason" to "Not an active booking"),
-                            null)
-                }
-            } else {
-                telemetryClient.trackEvent("P2PTransferIgnored",
-                        mapOf(
-                                "bookingId" to bookingId.toString(),
-                                "movementType" to movement.movementType,
-                                "fromAgency" to movement.fromAgency,
-                                "toAgency" to movement.toAgency,
-                                "reason" to "Not an admission"),
-                        null)
+    val movement = offenderService.getMovement(bookingId, movementSeq)
+    val (name, attributes) = movement?.let {
+      val movementAttributes = movementAttributes(bookingId, movement)
+      movement.takeIf { isMovementTransferIntoPrison(movement) }?.let {
+        movement.takeIf { isMovementToInterestedPrison(movement.toAgency) }?.let{
+          offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { booking ->
+            offenderService.getOffender(movement.offenderNo).let { prisoner ->
+              val updateAttributes = updateAttributes(movementAttributes, prisoner)
+              communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(movement.toAgency))?.let {
+                TelemetryEvent("P2PTransferProbationUpdated", updateAttributes + ("toAgencyDescription" to it.institution.description))
+              } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateAttributes)
             }
-        } else {
-            log.info("No movement found for booking $bookingId with sequence $movementSeq. Assuming booking is no longer active")
-        }
+          } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an active booking"))
+        } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an interested prison"))
+      } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an active booking"))
+    } ?: TelemetryEvent("P2PTransferIgnored", basicAttributes + ("reason" to "Not movement found"))
 
-    }
+    telemetryClient.trackEvent(name, attributes, null)
 
-    private fun isMovementTransferIntoPrison(movement: Movement): Boolean {
-        return movement.movementType == "ADM"
-    }
+  }
 
+
+  private fun movementAttributes(bookingId: Long, movement: Movement) =
+      mapOf("bookingId" to bookingId.toString(),
+          "movementType" to movement.movementType,
+          "fromAgency" to movement.fromAgency,
+          "toAgency" to movement.toAgency)
+
+  private fun updateAttributes(movementAttributes: Map<String, String>, prisoner: Prisoner) =
+      movementAttributes + mapOf(
+          "offenderNo" to prisoner.offenderNo,
+          "firstName" to prisoner.firstName,
+          "lastName" to prisoner.lastName,
+          "latestLocation" to prisoner.latestLocation,
+          "convictedStatus" to prisoner.convictedStatus
+      )
+
+  private fun isMovementTransferIntoPrison(movement: Movement) =
+      movement.movementType == "ADM"
+
+  private fun isMovementToInterestedPrison(toAgency: String) =
+      allowAnyPrison() || allowedPrisons.contains(toAgency)
+
+  private fun allowAnyPrison() = allowedPrisons.isEmpty()
+
+  data class TelemetryEvent(val name: String, val attributes: Map<String, String?>)
 }
 
