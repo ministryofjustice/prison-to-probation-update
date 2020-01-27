@@ -25,6 +25,7 @@ env:
   OAUTH_ENDPOINT_URL: "https://gateway.t3.nomis-api.hmpps.dsd.io/auth"
   ELITE2_ENDPOINT_URL: "https://gateway.t3.nomis-api.hmpps.dsd.io/elite2api"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.test.delius.probation.hmpps.dsd.io"
+  PRISONTOPROBATION_ONLY_PRISONS: "MDI,WWI"
 
 whitelist:
   office: "217.33.148.210/32"

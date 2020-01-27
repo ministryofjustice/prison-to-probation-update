@@ -25,6 +25,7 @@ env:
   OAUTH_ENDPOINT_URL: "https://gateway.prod.nomis-api.service.hmpps.dsd.io/auth"
   ELITE2_ENDPOINT_URL: "https://gateway.nomis-api.service.justice.gov.uk/elite2api"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.probation.service.justice.gov.uk"
+  PRISONTOPROBATION_ONLY_PRISONS: "MDI"
 
 whitelist:
   office: "217.33.148.210/32"

@@ -18,7 +18,7 @@ class PrisonMovementServiceTest {
 
     @Before
     fun before() {
-        service = PrisonMovementService(offenderService, communityService, telemetryClient)
+        service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf("MDI", "WII"))
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
         whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
         whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
@@ -96,31 +96,40 @@ class PrisonMovementServiceTest {
     }
 
     @Test
+    fun `will log we are ignoring event when booking in interested prison list`() {
+        service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf("HUI", "WII"))
+
+        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D", "MDI"))
+        whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["movementType"]).isEqualTo("ADM")
+            assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+            assertThat(it["toAgency"]).isEqualTo("MDI")
+            assertThat(it["reason"]).isEqualTo("Not an interested prison")
+        }, isNull())
+    }
+
+    @Test
+    fun `will allow any prison when interested prison list is empty`() {
+        service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf())
+        whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), any(), isNull())
+    }
+
+    @Test
     fun `will not retrieve prison details when not an admission`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTransferMovement())
 
         service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(offenderService, never()).getOffender(anyString())
-    }
-
-    @Test
-    fun `will log prisoner information when a prison admission`() {
-        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D"))
-        whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
-
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
-
-        verify(telemetryClient).trackEvent(eq("P2PTransferIn"), check {
-            assertThat(it["bookingId"]).isEqualTo("12345")
-            assertThat(it["offenderNo"]).isEqualTo("AB123D")
-            assertThat(it["firstName"]).isEqualTo("Bobby")
-            assertThat(it["lastName"]).isEqualTo("Jones")
-            assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
-            assertThat(it["convictedStatus"]).isEqualTo("Convicted")
-            assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
-            assertThat(it["toAgency"]).isEqualTo("MDI")
-        }, isNull())
     }
 
     @Test
@@ -145,9 +154,15 @@ class PrisonMovementServiceTest {
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
             assertThat(it["offenderNo"]).isEqualTo("AB123D")
-            assertThat(it["bookingNumber"]).isEqualTo("38353A")
+            assertThat(it["firstName"]).isEqualTo("Bobby")
+            assertThat(it["lastName"]).isEqualTo("Jones")
+            assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
+            assertThat(it["convictedStatus"]).isEqualTo("Convicted")
+            assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+            assertThat(it["toAgency"]).isEqualTo("MDI")
             assertThat(it["toAgencyDescription"]).isEqualTo("Moorland")
         }, isNull())
+
     }
 
     @Test
@@ -160,9 +175,15 @@ class PrisonMovementServiceTest {
 
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationRecordNotFound"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
-            assertThat(it["bookingNumber"]).isEqualTo("38353A")
             assertThat(it["offenderNo"]).isEqualTo("AB123D")
+            assertThat(it["firstName"]).isEqualTo("Bobby")
+            assertThat(it["lastName"]).isEqualTo("Jones")
+            assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
+            assertThat(it["convictedStatus"]).isEqualTo("Convicted")
+            assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+            assertThat(it["toAgency"]).isEqualTo("MDI")
         }, isNull())
+
     }
 
     private fun createPrisoner() = Prisoner(

@@ -46,6 +46,7 @@ oauth:
   token.url: ${oauth.endpoint.url}/oauth/token
 
 prisontoprobation:
+  only.prisons: ''
   client:
     client-id: ${oauth.client.id}
     client-secret: ${oauth.client.secret}
