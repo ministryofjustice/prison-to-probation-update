@@ -77,6 +77,7 @@ class PrisonMovementServiceTest {
             assertThat(it["movementType"]).isEqualTo("TRN")
             assertThat(it["fromAgency"]).isEqualTo("LEI")
             assertThat(it["toAgency"]).isEqualTo("MDI")
+            assertThat(it["reason"]).isEqualTo("Not a transfer")
         }, isNull())
     }
 

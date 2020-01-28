@@ -25,6 +25,9 @@ env:
   - name: COMMUNITY_ENDPOINT_URL
     value: "{{ .Values.env.COMMUNITY_ENDPOINT_URL }}"
 
+  - name: PRISONTOPROBATION_ONLY_PRISONS
+    value: "{{ .Values.env.PRISONTOPROBATION_ONLY_PRISONS }}"
+
   - name: APPLICATION_INSIGHTS_IKEY
     valueFrom:
       secretKeyRef:
