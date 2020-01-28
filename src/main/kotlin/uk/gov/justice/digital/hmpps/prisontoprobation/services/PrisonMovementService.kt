@@ -40,7 +40,7 @@ open class PrisonMovementService(
             }
           } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an active booking"))
         } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an interested prison"))
-      } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not an active booking"))
+      } ?: TelemetryEvent("P2PTransferIgnored", movementAttributes + ("reason" to "Not a transfer"))
     } ?: TelemetryEvent("P2PTransferIgnored", basicAttributes + ("reason" to "Not movement found"))
 
     telemetryClient.trackEvent(name, attributes, null)
