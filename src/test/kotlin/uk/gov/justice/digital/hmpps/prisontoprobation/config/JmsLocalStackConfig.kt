@@ -11,14 +11,17 @@ import org.testcontainers.containers.localstack.LocalStackContainer
 
 @Configuration
 @ConditionalOnProperty(name = ["sqs.provider"], havingValue = "embedded-localstack")
-@Profile("test-queue")
 open class JmsLocalStackConfig(private val localStackContainer: LocalStackContainer) {
 
   @Bean
-  open fun awsLocalTestClient(): AmazonSQS {
-    return AmazonSQSClientBuilder.standard()
-            .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
-            .withCredentials(localStackContainer.defaultCredentialsProvider)
-            .build()
-  }
+  open fun awsSqsClient(): AmazonSQS = AmazonSQSClientBuilder.standard()
+      .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+      .withCredentials(localStackContainer.defaultCredentialsProvider)
+      .build()
+
+  @Bean
+  open fun awsSqsDlqClient(): AmazonSQS = AmazonSQSClientBuilder.standard()
+      .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+      .withCredentials(localStackContainer.defaultCredentialsProvider)
+      .build()
 }

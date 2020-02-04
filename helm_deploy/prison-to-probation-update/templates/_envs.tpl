@@ -64,4 +64,21 @@ env:
         name: ptpu-sqs-instance-output
         key: sqs_ptpu_name
 
+  - name: SQS_AWS_DLQ_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: ptpu-sqs-dl-instance-output
+        key: access_key_id
+
+  - name: SQS_AWS_DLQ_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: ptpu-sqs-dl-instance-output
+        key: secret_access_key
+
+  - name: SQS_DLQ_NAME
+    valueFrom:
+      secretKeyRef:
+        name: ptpu-sqs-dl-instance-output
+        key: sqs_ptpu_name
 {{- end -}}

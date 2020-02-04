@@ -66,4 +66,5 @@ jwt:
 sqs:
   provider: aws
   queue.name: prison_to_probation_queue
+  dlq.name: prison_to_probation_dlq
   endpoint.region: eu-west-2
