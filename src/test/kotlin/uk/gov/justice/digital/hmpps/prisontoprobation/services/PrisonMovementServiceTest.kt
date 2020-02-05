@@ -82,6 +82,21 @@ class PrisonMovementServiceTest {
     }
 
     @Test
+    fun `will log we are ignoring event when no from or to agency`() {
+        whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTemporaryAbsenceMovement())
+
+        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+        verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["movementType"]).isEqualTo("TAP")
+            assertThat(it["fromAgency"]).isEqualTo("not present")
+            assertThat(it["toAgency"]).isEqualTo("not present")
+            assertThat(it["reason"]).isEqualTo("Not a transfer")
+        }, isNull())
+    }
+
+    @Test
     fun `will log we are ignoring event when booking is not active`() {
         whenever(offenderService.getBooking(anyLong())).thenReturn(createInactiveBooking())
 
@@ -218,6 +233,15 @@ class PrisonMovementServiceTest {
             fromAgency = "LEI",
             toAgency = "MDI",
             movementType = "TRN",
+            directionCode = "OUT"
+    )
+
+    private fun createTemporaryAbsenceMovement() = Movement(
+            offenderNo = "AB123D",
+            createDateTime = LocalDateTime.now(),
+            fromAgency = null,
+            toAgency = null,
+            movementType = "TAP",
             directionCode = "OUT"
     )
 

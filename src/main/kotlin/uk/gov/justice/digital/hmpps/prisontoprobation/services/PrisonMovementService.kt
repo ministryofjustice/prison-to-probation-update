@@ -34,7 +34,7 @@ open class PrisonMovementService(
           offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { booking ->
             offenderService.getOffender(movement.offenderNo).let { prisoner ->
               val updateAttributes = updateAttributes(movementAttributes, prisoner)
-              communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(movement.toAgency))?.let {
+              communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(movement.toAgency!!))?.let {
                 TelemetryEvent("P2PTransferProbationUpdated", updateAttributes + ("toAgencyDescription" to it.institution.description))
               } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateAttributes)
             }
@@ -51,8 +51,8 @@ open class PrisonMovementService(
   private fun movementAttributes(bookingId: Long, movement: Movement) =
       mapOf("bookingId" to bookingId.toString(),
           "movementType" to movement.movementType,
-          "fromAgency" to movement.fromAgency,
-          "toAgency" to movement.toAgency)
+          "fromAgency" to (movement.fromAgency ?: "not present"),
+          "toAgency" to (movement.toAgency ?: "not present"))
 
   private fun updateAttributes(movementAttributes: Map<String, String>, prisoner: Prisoner) =
       movementAttributes + mapOf(
@@ -64,9 +64,9 @@ open class PrisonMovementService(
       )
 
   private fun isMovementTransferIntoPrison(movement: Movement) =
-      movement.movementType == "ADM"
+      movement.movementType == "ADM" && !movement.toAgency.isNullOrBlank()
 
-  private fun isMovementToInterestedPrison(toAgency: String) =
+  private fun isMovementToInterestedPrison(toAgency: String?) =
       allowAnyPrison() || allowedPrisons.contains(toAgency)
 
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
