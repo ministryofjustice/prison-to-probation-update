@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
-import org.junit.Before
-import org.junit.ClassRule
-import org.junit.runner.RunWith
+import com.amazonaws.services.sqs.AmazonSQS
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -13,16 +16,12 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.CommunityMockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.Elite2MockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockServer
 
-@RunWith(SpringJUnit4ClassRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@ContextConfiguration
 abstract class IntegrationTest {
   @Suppress("unused")
   @Autowired
@@ -31,18 +30,30 @@ abstract class IntegrationTest {
   @Value("\${token}")
   private val token: String? = null
 
+  @SpyBean
+  @Qualifier("awsSqsClient")
+  internal lateinit var awsSqsClient: AmazonSQS
+
   companion object {
-    @get:ClassRule
-    @JvmStatic
-    val oauthMockServer = OAuthMockServer()
+    internal val elite2MockServer = Elite2MockServer()
+    internal val oauthMockServer = OAuthMockServer()
+    internal val communityMockServer = CommunityMockServer()
 
-    @get:ClassRule
+    @BeforeAll
     @JvmStatic
-    val elite2MockServer = Elite2MockServer()
+    fun startMocks() {
+      elite2MockServer.start()
+      oauthMockServer.start()
+      communityMockServer.start()
+    }
 
-    @get:ClassRule
+    @AfterAll
     @JvmStatic
-    val communityMockServer = CommunityMockServer()
+    fun stopMocks() {
+      elite2MockServer.stop()
+      oauthMockServer.stop()
+      communityMockServer.stop()
+    }
   }
 
   init {
@@ -51,7 +62,7 @@ abstract class IntegrationTest {
     System.setProperty("http.keepAlive", "false")
   }
 
-  @Before
+  @BeforeEach
   fun resetStubs() {
     oauthMockServer.resetAll()
     elite2MockServer.resetAll()
