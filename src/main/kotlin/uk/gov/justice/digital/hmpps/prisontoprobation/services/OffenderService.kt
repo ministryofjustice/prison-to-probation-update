@@ -59,8 +59,8 @@ data class Prisoner(
 data class Movement(
         val offenderNo: String,
         val createDateTime: LocalDateTime,
-        val fromAgency: String,
-        val toAgency: String,
+        val fromAgency: String?,
+        val toAgency: String?,
         val movementType: String,
         val directionCode: String
 )
