@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 open class PrisonerMovementListenerPusher(
     private val prisonMovementService: PrisonMovementService,
     private val bookingChangeService: BookingChangeService,
-    private val sentenceChangeService: SentenceChangeService
+    private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -28,10 +28,11 @@ open class PrisonerMovementListenerPusher(
 
     when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
-      "COURT_SENTENCE-CHANGED" -> sentenceChangeService.checkSentenceChangeAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "OFFENDER_BOOKING-INSERTED" -> bookingChangeService.checkBookingCreationAndUpdateProbation(fromJson(message))
       "OFFENDER_BOOKING-REASSIGNED" -> bookingChangeService.checkBookingReassignedAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
+      "SENTENCE-IMPOSED" -> log.info("SENTENCE-IMPOSED currently ignored, we know nothing about how it is structured: $message")
       else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
     }
   }
@@ -48,5 +49,5 @@ data class ExternalPrisonerMovementMessage(val bookingId: Long, val movementSeq:
 data class OffenderBookingInsertedMessage(val bookingId: Long, val offenderId: Long)
 data class OffenderBookingReassignedMessage(val bookingId: Long, val offenderId: Long, val previousOffenderId: Long)
 data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
-data class CourtSentenceChangesMessage(val bookingId: Long)
+data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
 
