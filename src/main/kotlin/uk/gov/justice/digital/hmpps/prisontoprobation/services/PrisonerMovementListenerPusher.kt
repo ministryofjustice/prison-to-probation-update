@@ -9,7 +9,11 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class PrisonerMovementListenerPusher(private val prisonMovementService: PrisonMovementService) {
+open class PrisonerMovementListenerPusher(
+    private val prisonMovementService: PrisonMovementService,
+    private val bookingChangeService: BookingChangeService,
+    private val sentenceChangeService: SentenceChangeService
+) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val gson: Gson = GsonBuilder().create()
@@ -18,18 +22,22 @@ open class PrisonerMovementListenerPusher(private val prisonMovementService: Pri
   @JmsListener(destination = "\${sqs.queue.name}")
   open fun pushPrisonMovementToProbation(requestJson: String?) {
     log.debug(requestJson)
-    val (message, messageId, messageAttributes) = gson.fromJson<Message>(requestJson, Message::class.java)
+    val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
     val eventType = messageAttributes.eventType.Value
-    log.info("Received message $messageId type ${eventType}")
+    log.info("Received message $messageId type $eventType")
 
     when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(gson.fromJson(message, ExternalPrisonerMovementMessage::class.java))
-      "COURT_SENTENCE-CHANGED" -> log.info("COURT_SENTENCE-CHANGED ${gson.fromJson(message, CourtSentenceChangesMessage::class.java)}")
-      "OFFENDER_BOOKING-INSERTED" -> log.info("OFFENDER_BOOKING-INSERTED ${gson.fromJson(message, OffenderBookingInsertedMessage::class.java)}")
-      "OFFENDER_BOOKING-REASSIGNED" -> log.info("OFFENDER_BOOKING-REASSIGNED ${gson.fromJson(message, OffenderBookingReassignedMessage::class.java)}")
-      "BOOKING_NUMBER-CHANGED" -> log.info("BOOKING_NUMBER-CHANGED ${gson.fromJson(message, BookingNumberChangedMessage::class.java)}")
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
+      "COURT_SENTENCE-CHANGED" -> sentenceChangeService.checkSentenceChangeAndUpdateProbation(fromJson(message))
+      "OFFENDER_BOOKING-INSERTED" -> bookingChangeService.checkBookingCreationAndUpdateProbation(fromJson(message))
+      "OFFENDER_BOOKING-REASSIGNED" -> bookingChangeService.checkBookingReassignedAndUpdateProbation(fromJson(message))
+      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
       else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
     }
+  }
+
+  private inline fun <reified T> fromJson(message: String): T {
+    return gson.fromJson(message, T::class.java)
   }
 }
 
