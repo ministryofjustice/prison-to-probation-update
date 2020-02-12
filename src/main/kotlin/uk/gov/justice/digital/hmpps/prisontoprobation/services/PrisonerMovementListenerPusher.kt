@@ -28,11 +28,11 @@ open class PrisonerMovementListenerPusher(
 
     when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
-      "IMPRISONMENT_STATUS" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "OFFENDER_BOOKING-INSERTED" -> bookingChangeService.checkBookingCreationAndUpdateProbation(fromJson(message))
       "OFFENDER_BOOKING-REASSIGNED" -> bookingChangeService.checkBookingReassignedAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE-IMPOSED" -> log.info("SENTENCE-IMPOSED currently ignored, we know nothing about how it is structured: $message")
+      "SENTENCE-IMPOSED" -> imprisonmentStatusChangeService.checkSentenceImposedAndUpdateProbation(fromJson(message))
       else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
     }
   }
@@ -50,4 +50,11 @@ data class OffenderBookingInsertedMessage(val bookingId: Long, val offenderId: L
 data class OffenderBookingReassignedMessage(val bookingId: Long, val offenderId: Long, val previousOffenderId: Long)
 data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
-
+data class SentenceImposedMessage(val offenderIdDisplay: String) {
+  // this message looks odd since it hasn't been transformed by custody-api
+  // if we decide to use it, it will be refactored and we will use consistent
+  // naming - for now add a offenderNo property to minimise changes to this raw
+  // NOMIS message
+  val offenderNo: String
+    get() = offenderIdDisplay
+}

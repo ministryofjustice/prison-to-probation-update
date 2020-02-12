@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class ImprisonmentStatusChangeService(private val telemetryClient: TelemetryClient
+open class ImprisonmentStatusChangeService(
+    private val telemetryClient: TelemetryClient
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -22,6 +23,16 @@ open class ImprisonmentStatusChangeService(private val telemetryClient: Telemetr
 
     log.info("Imprisonment status for booking $bookingId has changed")
     telemetryClient.trackEvent("P2PImprisonmentStatusChanged", trackingAttributes, null)
+  }
+
+  open fun checkSentenceImposedAndUpdateProbation(message: SentenceImposedMessage) {
+    val (offenderNo) = message
+
+    val trackingAttributes = mapOf(
+        "offenderNo" to offenderNo)
+
+    log.info("Sentence imposed for offender $offenderNo")
+    telemetryClient.trackEvent("P2PSentenceImposed", trackingAttributes, null)
   }
 
 }
