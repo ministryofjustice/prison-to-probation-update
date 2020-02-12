@@ -8,13 +8,13 @@ import org.junit.Test
 class PrisonerMovementListenerPusherTest {
   private val prisonMovementService: PrisonMovementService = mock()
   private val bookingChangeService: BookingChangeService = mock()
-  private val sentenceChangeService: SentenceChangeService = mock()
+  private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService = mock()
 
   private lateinit var listener: PrisonerMovementListenerPusher
 
   @Before
   fun before() {
-    listener = PrisonerMovementListenerPusher(prisonMovementService, bookingChangeService, sentenceChangeService)
+    listener = PrisonerMovementListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService)
   }
 
   @Test
