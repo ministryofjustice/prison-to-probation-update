@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BookingChangeServiceTest {
     private val telemetryClient: TelemetryClient = mock()

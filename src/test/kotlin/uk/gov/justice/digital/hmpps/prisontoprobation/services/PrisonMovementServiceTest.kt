@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import java.time.LocalDateTime
@@ -16,7 +16,7 @@ class PrisonMovementServiceTest {
 
     private lateinit var service: PrisonMovementService
 
-    @Before
+    @BeforeEach
     fun before() {
         service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf("MDI", "WII"))
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
@@ -247,12 +247,14 @@ class PrisonMovementServiceTest {
 
     private fun createCurrentBooking(bookingNo: String = "38353A") = Booking(
             bookingNo = bookingNo,
-            activeFlag = true
+            activeFlag = true,
+            offenderNo = "AB123D"
     )
 
     private fun createInactiveBooking() = Booking(
             bookingNo = "38353A",
-            activeFlag = false
+            activeFlag = false,
+            offenderNo = "AB123D"
     )
 
     private fun createUpdatedCustody(description: String = "Moorland") = Custody(
