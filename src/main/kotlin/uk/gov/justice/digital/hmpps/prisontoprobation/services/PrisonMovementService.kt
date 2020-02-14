@@ -5,8 +5,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonMovementService.Companion.Result.Ignore
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonMovementService.Companion.Result.Success
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 
 @Service
 open class PrisonMovementService(
@@ -17,13 +17,6 @@ open class PrisonMovementService(
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
-
-    sealed class Result<out T, out E> {
-      data class Success<out T>(val value: T) : Result<T, Nothing>()
-      data class Ignore<out E>(val reason: E) : Result<Nothing, E>()
-    }
-
-    data class TelemetryEvent(val name: String, val attributes: Map<String, String?>)
   }
 
   open fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
@@ -61,7 +54,7 @@ open class PrisonMovementService(
   private fun toAgencyForPrisonTransfer(movement: Movement, trackingAttributes: Map<String, String>): Result<String, TelemetryEvent> {
     return movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
         ?.let { Success(it) }
-        ?:Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Not a transfer")))
+        ?: Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Not a transfer")))
   }
 
 
@@ -88,13 +81,6 @@ open class PrisonMovementService(
 
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
 
-  // either return the value or execute the block that must return "nothing" e.g it must throw or return out of parent
-  private inline fun <T, E> Result<T, E>.onIgnore(block: (Ignore<E>) -> Nothing): T {
-    return when (this) {
-      is Success<T> -> value
-      is Ignore<E> -> block(this)
-    }
-  }
 }
 
 private fun isMovementTransferIntoPrison(movement: Movement) =

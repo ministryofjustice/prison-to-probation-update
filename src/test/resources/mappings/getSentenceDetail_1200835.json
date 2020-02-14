@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/bookings/1200835/sentenceDetail"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    {
+      "sentenceExpiryDate": "2025-09-10",
+      "conditionalReleaseDate": "2022-11-26",
+      "licenceExpiryDate": "2025-09-10",
+      "bookingId": 1200835,
+      "sentenceStartDate": "2020-02-11",
+      "nonDtoReleaseDate": "2022-11-26",
+      "nonDtoReleaseDateType": "CRD",
+      "releaseDate": "2022-11-26"
+    }
+  }
+}
