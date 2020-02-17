@@ -27,7 +27,7 @@ class ImprisonmentStatusChangeServiceTest {
       fun setup() {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
         whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "38339A", activeFlag = true, offenderNo = "A5089DY"))
-        whenever(communityService.updateProbationCustodyBookingNumber(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+        whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
       }
 
       @Test
@@ -45,7 +45,7 @@ class ImprisonmentStatusChangeServiceTest {
       @Test
       fun `will send update to probation`() {
         service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(communityService).updateProbationCustodyBookingNumber("A5089DY", "38339A", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29)))
+        verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29), "38339A"))
       }
 
       @Test
@@ -63,7 +63,7 @@ class ImprisonmentStatusChangeServiceTest {
       inner class WhenNotFound {
         @BeforeEach
         fun setup() {
-          whenever(communityService.updateProbationCustodyBookingNumber(anyString(), anyString(), any())).thenReturn(null)
+          whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(null)
         }
 
         @Test

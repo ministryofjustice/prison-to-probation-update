@@ -47,9 +47,9 @@ open class ImprisonmentStatusChangeService(
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
     val (bookingNumber, _, offenderNo) = getActiveBooking(bookingId).onIgnore { return it.reason }
 
-    val trackingAttributes = mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
+    val trackingAttributes = mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
 
-    return communityService.updateProbationCustodyBookingNumber(offenderNo, bookingNumber, UpdateCustodyBookingNumber(sentenceStartDate))?.let {
+    return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {
       TelemetryEvent("P2PImprisonmentStatusUpdated", trackingAttributes)
     } ?: TelemetryEvent("P2PImprisonmentStatusRecordNotFound", trackingAttributes)
   }
