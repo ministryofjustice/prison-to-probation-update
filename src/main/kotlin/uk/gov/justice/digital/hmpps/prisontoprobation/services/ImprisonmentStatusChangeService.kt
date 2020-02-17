@@ -23,7 +23,7 @@ open class ImprisonmentStatusChangeService(
     val (bookingId, imprisonmentStatusSeq) = message
     log.info("Imprisonment status for booking $bookingId has changed")
 
-    val (name, attributes) = processStatusChange(bookingId)
+    val (name, attributes) = processStatusChange(message)
 
     telemetryClient.trackEvent(name, attributes + mapOf(
         "imprisonmentStatusSeq" to imprisonmentStatusSeq.toString(),
@@ -41,14 +41,21 @@ open class ImprisonmentStatusChangeService(
     telemetryClient.trackEvent("P2PSentenceImposed", trackingAttributes, null)
   }
 
-  private fun processStatusChange(bookingId: Long): TelemetryEvent {
+  private fun processStatusChange(message: ImprisonmentStatusChangesMessage): TelemetryEvent {
+    val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
-    val bookingNumber = getActiveBookingNumber(bookingId).onIgnore { return it.reason }
+    val (bookingNumber, _, offenderNo) = getActiveBooking(bookingId).onIgnore { return it.reason }
     // send to Delius
 
 
     return TelemetryEvent("P2PImprisonmentStatusUpdated", mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE)))
   }
+
+  private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
+      // for each sentence 3 NOMIS events are raised with different sequences, the one with sequence zero happens to be a insert of a new status
+      // a ticket (DT-568) has been raised for a trigger change to improve this so only a new single event is raised when conviction status actually changes
+      // for now use this to optimise our processing (else we would process a single status change 3 times per imposed sentence)
+      if (statusChange.imprisonmentStatusSeq == 0L) Success(statusChange) else Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero"))
 
   private fun getSentenceStartDate(bookingId: Long): Result<LocalDate, TelemetryEvent> {
     val sentenceDetail = offenderService.getSentenceDetail(bookingId)
@@ -57,8 +64,8 @@ open class ImprisonmentStatusChangeService(
 
   }
 
-  private fun getActiveBookingNumber(bookingId: Long): Result<String, TelemetryEvent> =
-      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it.bookingNo) }
+  private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
+      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
           ?: Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not an active booking")))
 
 }
