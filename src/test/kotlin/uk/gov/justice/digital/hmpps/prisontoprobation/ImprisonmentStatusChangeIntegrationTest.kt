@@ -32,6 +32,7 @@ class ImprisonmentStatusChangeIntegrationTest : QueueIntegrationTest() {
         await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
+        await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
 
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), any(), isNull())
     }

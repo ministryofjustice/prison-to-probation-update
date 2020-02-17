@@ -258,7 +258,8 @@ class PrisonMovementServiceTest {
     )
 
     private fun createUpdatedCustody(description: String = "Moorland") = Custody(
-            institution = Institution(description)
+            institution = Institution(description),
+            bookingNumber = "38353A"
     )
 }
 

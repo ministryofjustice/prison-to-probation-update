@@ -1,56 +1,81 @@
 @file:Suppress("ClassName")
+
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
+
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyString
 import java.time.LocalDate
 
 class ImprisonmentStatusChangeServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val offenderService: OffenderService = mock()
+  private val communityService: CommunityService = mock()
 
-  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService)
+  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService)
 
   @Nested
   inner class CheckImprisonmentStatusChangeAndUpdateProbation {
 
     @Nested
-    inner class `when a successful change is processed` {
+    inner class StatusChange {
       @BeforeEach
       fun setup() {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
         whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "38339A", activeFlag = true, offenderNo = "A5089DY"))
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        whenever(communityService.updateProbationCustodyBookingNumber(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
       }
 
       @Test
       fun `will request the sentence start date`() {
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderService).getSentenceDetail(12345L)
       }
 
       @Test
       fun `will request the booking number`() {
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderService).getBooking(12345L)
       }
 
       @Test
-      @Disabled
       fun `will send update to probation`() {
-        TODO("implement community-api endpoint first")
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        verify(communityService).updateProbationCustodyBookingNumber("A5089DY", "38339A", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29)))
       }
 
       @Test
       fun `will log we have processed an imprisonment status change`() {
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), check {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["bookingNumber"]).isEqualTo("38339A")
           assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
         }, isNull())
+      }
+
+      @Nested
+      inner class WhenNotFound {
+        @BeforeEach
+        fun setup() {
+          whenever(communityService.updateProbationCustodyBookingNumber(anyString(), anyString(), any())).thenReturn(null)
+        }
+
+        @Test
+        fun `will log that we have not processed an imprisonment status change`() {
+          service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+          verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusRecordNotFound"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["bookingNumber"]).isEqualTo("38339A")
+            assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
+            assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+          }, isNull())
+        }
       }
     }
 

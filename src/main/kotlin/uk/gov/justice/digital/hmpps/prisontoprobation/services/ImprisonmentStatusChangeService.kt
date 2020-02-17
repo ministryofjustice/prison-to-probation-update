@@ -13,7 +13,8 @@ import java.time.format.DateTimeFormatter
 @Service
 open class ImprisonmentStatusChangeService(
     private val telemetryClient: TelemetryClient,
-    private val offenderService: OffenderService
+    private val offenderService: OffenderService,
+    private val communityService: CommunityService
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -45,10 +46,12 @@ open class ImprisonmentStatusChangeService(
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
     val (bookingNumber, _, offenderNo) = getActiveBooking(bookingId).onIgnore { return it.reason }
-    // send to Delius
 
+    val trackingAttributes = mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
 
-    return TelemetryEvent("P2PImprisonmentStatusUpdated", mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE)))
+    return communityService.updateProbationCustodyBookingNumber(offenderNo, bookingNumber, UpdateCustodyBookingNumber(sentenceStartDate))?.let {
+      TelemetryEvent("P2PImprisonmentStatusUpdated", trackingAttributes)
+    } ?: TelemetryEvent("P2PImprisonmentStatusRecordNotFound", trackingAttributes)
   }
 
   private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
