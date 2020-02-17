@@ -67,23 +67,36 @@ class CommunityServiceTest {
   inner class WhenUpdateCustodyBookingNumber {
 
     @Test
-    fun `test put custody calls rest template`() {
+    fun `test put custody booking number calls rest template`() {
       val expectedUpdatedCustody = createUpdatedCustody()
       whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString())).thenReturn(ResponseEntity.ok(expectedUpdatedCustody))
 
-      val updateCustodyBookingNumber = createUpdatedCustodyBookingNumber()
-      val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", "38353A", updateCustodyBookingNumber)
+      val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", UpdateCustodyBookingNumber(
+          sentenceStartDate = LocalDate.now(),
+          bookingNumber = "38353A"
+      )
+      )
 
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
 
-      verify(restTemplate).exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber", HttpMethod.PUT, HttpEntity(updateCustodyBookingNumber), Custody::class.java, "AB123D")
+      verify(restTemplate).exchange(
+          "/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber",
+          HttpMethod.PUT,
+          HttpEntity(UpdateCustodyBookingNumber(
+              sentenceStartDate = LocalDate.now(),
+              bookingNumber = "38353A"
+          )
+          ),
+          Custody::class.java,
+          "AB123D"
+      )
     }
 
     @Test
     fun `test get movement will be null if not found`() {
       whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
 
-      val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", "38353A", createUpdatedCustodyBookingNumber())
+      val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber())
 
       assertThat(updatedCustody).isNull()
     }
@@ -92,7 +105,7 @@ class CommunityServiceTest {
     fun `test get movement will throw exception for other types of http responses`() {
       whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
 
-      assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", "38353A", createUpdatedCustodyBookingNumber()) }.isInstanceOf(HttpClientErrorException::class.java)
+      assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber()) }.isInstanceOf(HttpClientErrorException::class.java)
     }
   }
 
@@ -107,7 +120,8 @@ class CommunityServiceTest {
   )
 
   private fun createUpdatedCustodyBookingNumber() = UpdateCustodyBookingNumber(
-      sentenceStartDate = LocalDate.now()
+      sentenceStartDate = LocalDate.now(),
+      bookingNumber = "38353A"
   )
 
 }

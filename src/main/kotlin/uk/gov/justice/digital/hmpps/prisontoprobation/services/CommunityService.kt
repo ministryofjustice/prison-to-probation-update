@@ -28,7 +28,7 @@ open class CommunityService(@Qualifier("communityApiRestTemplate") private val r
     }
   }
 
-  open fun updateProbationCustodyBookingNumber(offenderNo: String, bookingNumber: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
+  open fun updateProbationCustodyBookingNumber(offenderNo: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
     return try {
       val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber", HttpMethod.PUT, HttpEntity(updateCustodyBookingNumber), Custody::class.java, offenderNo)
       response.body!!
@@ -54,5 +54,6 @@ data class Custody(
 )
 
 data class UpdateCustodyBookingNumber(
-    val sentenceStartDate: LocalDate
+    val sentenceStartDate: LocalDate,
+    val bookingNumber: String
 )
