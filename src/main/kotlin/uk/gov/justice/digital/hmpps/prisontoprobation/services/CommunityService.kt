@@ -9,33 +9,50 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
+import java.time.LocalDate
 
 @Service
 open class CommunityService(@Qualifier("communityApiRestTemplate") private val restTemplate: RestTemplate) {
-    companion object {
-        val log: Logger = LoggerFactory.getLogger(this::class.java)
-    }
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
-    open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
-        return try {
-            val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
-            response.body!!
-        } catch (e: HttpClientErrorException) {
-            if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-            log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
-            null
-        }
+  open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
+    return try {
+      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
+      response.body!!
+    } catch (e: HttpClientErrorException) {
+      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+      log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
+      null
     }
+  }
+
+  open fun updateProbationCustodyBookingNumber(offenderNo: String, bookingNumber: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
+    return try {
+      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber", HttpMethod.PUT, HttpEntity(updateCustodyBookingNumber), Custody::class.java, offenderNo)
+      response.body!!
+    } catch (e: HttpClientErrorException) {
+      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+      log.info("Booking not found for {} message is {}", offenderNo, e.responseBodyAsString)
+      null
+    }
+  }
 }
 
 data class UpdateCustody(
-        val nomsPrisonInstitutionCode: String
+    val nomsPrisonInstitutionCode: String
 )
 
 data class Institution(
-        val description: String?
+    val description: String?
 )
 
 data class Custody(
-        val institution: Institution
+    val institution: Institution,
+    val bookingNumber: String
+)
+
+data class UpdateCustodyBookingNumber(
+    val sentenceStartDate: LocalDate
 )

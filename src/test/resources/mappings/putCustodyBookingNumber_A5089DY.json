@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    {
+      "bookingNumber": "38353A",
+      "institution": {
+        "institutionId": 157,
+        "isEstablishment": true,
+        "code": "UNKNOW",
+        "description": "Unknown",
+        "institutionName": "Unknown",
+        "establishmentType": {
+          "code": "E",
+          "description": "Prison"
+        }
+      }
+    }
+  }
+}
