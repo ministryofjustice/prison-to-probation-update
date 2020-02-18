@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
@@ -14,7 +15,8 @@ import java.time.format.DateTimeFormatter
 open class ImprisonmentStatusChangeService(
     private val telemetryClient: TelemetryClient,
     private val offenderService: OffenderService,
-    private val communityService: CommunityService
+    private val communityService: CommunityService,
+    @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -45,7 +47,8 @@ open class ImprisonmentStatusChangeService(
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): TelemetryEvent {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
-    val (bookingNumber, _, offenderNo) = getActiveBooking(bookingId).onIgnore { return it.reason }
+    val booking = getActiveBooking(bookingId).onIgnore { return it.reason }
+    val (bookingNumber, _, offenderNo) = getBookingForInterestedPrison(booking).onIgnore { return it.reason }
 
     val trackingAttributes = mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
 
@@ -70,6 +73,15 @@ open class ImprisonmentStatusChangeService(
   private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
       offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
           ?: Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not an active booking")))
+
+  private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
+      if (isBookingInInterestedPrison(booking.agencyId)) { Success(booking) }
+          else Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not at an interested prison")))
+
+  private fun isBookingInInterestedPrison(toAgency: String?) =
+      allowAnyPrison() || allowedPrisons.contains(toAgency)
+
+  private fun allowAnyPrison() = allowedPrisons.isEmpty()
 
 }
 

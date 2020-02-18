@@ -74,7 +74,8 @@ data class Movement(
 data class Booking(
     val bookingNo: String,
     val activeFlag: Boolean,
-    val offenderNo: String
+    val offenderNo: String,
+    val agencyId: String? = null
 )
 
 data class SentenceDetail(
