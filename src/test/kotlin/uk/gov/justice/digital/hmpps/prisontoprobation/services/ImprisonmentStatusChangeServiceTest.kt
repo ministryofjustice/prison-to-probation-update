@@ -26,7 +26,7 @@ class ImprisonmentStatusChangeServiceTest {
       @BeforeEach
       fun setup() {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
-        whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "38339A", activeFlag = true, offenderNo = "A5089DY", agencyId = "MDI"))
+        whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
       }
 
@@ -56,6 +56,10 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["bookingNumber"]).isEqualTo("38339A")
           assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+          assertThat(it["offenderNo"]).isEqualTo("A5089DY")
+          assertThat(it["firstName"]).isEqualTo("Johnny")
+          assertThat(it["lastName"]).isEqualTo("Barnes")
+          assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
         }, isNull())
       }
 
@@ -74,6 +78,10 @@ class ImprisonmentStatusChangeServiceTest {
             assertThat(it["bookingNumber"]).isEqualTo("38339A")
             assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
             assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+            assertThat(it["offenderNo"]).isEqualTo("A5089DY")
+            assertThat(it["firstName"]).isEqualTo("Johnny")
+            assertThat(it["lastName"]).isEqualTo("Barnes")
+            assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
           }, isNull())
         }
       }
@@ -109,7 +117,7 @@ class ImprisonmentStatusChangeServiceTest {
     @Test
     fun `will log that offender has no active booking and abandon update`() {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
-      whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "A1234", activeFlag = false, offenderNo = "A5089DY"))
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
       service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
@@ -121,7 +129,7 @@ class ImprisonmentStatusChangeServiceTest {
     @Test
     fun `will log that offender has booking at prison we are not interested in and abandon update`() {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
-      whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "A1234", activeFlag = true, offenderNo = "A5089DY"))
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
 
       service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
@@ -129,6 +137,11 @@ class ImprisonmentStatusChangeServiceTest {
         assertThat(it["bookingId"]).isEqualTo("12345")
         assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
         assertThat(it["reason"]).isEqualTo("Not at an interested prison")
+        assertThat(it["bookingNumber"]).isEqualTo("38339A")
+        assertThat(it["offenderNo"]).isEqualTo("A5089DY")
+        assertThat(it["firstName"]).isEqualTo("Johnny")
+        assertThat(it["lastName"]).isEqualTo("Barnes")
+        assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
       }, isNull())
     }
   }
@@ -146,3 +159,13 @@ class ImprisonmentStatusChangeServiceTest {
   }
 }
 
+
+private fun createBooking(activeFlag: Boolean = true, agencyId: String = "MDI") : Booking = Booking(
+    bookingNo = "38339A",
+    activeFlag = activeFlag,
+    offenderNo = "A5089DY",
+    agencyId = agencyId,
+    firstName = "Johnny",
+    lastName = "Barnes",
+    dateOfBirth = LocalDate.of(1965, 7, 19)
+)

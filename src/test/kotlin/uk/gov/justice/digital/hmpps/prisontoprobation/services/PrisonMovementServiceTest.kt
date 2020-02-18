@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PrisonMovementServiceTest {
@@ -245,17 +246,11 @@ class PrisonMovementServiceTest {
             directionCode = "OUT"
     )
 
-    private fun createCurrentBooking(bookingNo: String = "38353A") = Booking(
-            bookingNo = bookingNo,
-            activeFlag = true,
-            offenderNo = "AB123D"
-    )
+    private fun createCurrentBooking(bookingNo: String = "38353A") = createBooking(bookingNo = bookingNo)
 
-    private fun createInactiveBooking() = Booking(
-            bookingNo = "38353A",
-            activeFlag = false,
-            offenderNo = "AB123D"
-    )
+    private fun createInactiveBooking() = createBooking(activeFlag = false)
+
+    private fun createBooking(activeFlag: Boolean = true, bookingNo: String = "38353A") : Booking = Booking(bookingNo = bookingNo, activeFlag = activeFlag, offenderNo = "AB123D", agencyId = "MDI", firstName = "Johnny", lastName = "Barnes", dateOfBirth = LocalDate.of(1965, 7, 19))
 
     private fun createUpdatedCustody(description: String = "Moorland") = Custody(
             institution = Institution(description),

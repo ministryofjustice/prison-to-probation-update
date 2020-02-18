@@ -75,7 +75,11 @@ data class Booking(
     val bookingNo: String,
     val activeFlag: Boolean,
     val offenderNo: String,
-    val agencyId: String? = null
+    val agencyId: String? = null,
+    val firstName: String,
+    val lastName: String,
+    val dateOfBirth: LocalDate
+
 )
 
 data class SentenceDetail(

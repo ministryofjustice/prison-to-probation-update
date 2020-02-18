@@ -48,18 +48,16 @@ open class ImprisonmentStatusChangeService(
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
     val booking = getActiveBooking(bookingId).onIgnore { return it.reason }
-    val (bookingNumber, _, offenderNo) = getBookingForInterestedPrison(booking).onIgnore { return it.reason }
-
-    val trackingAttributes = mapOf("bookingNumber" to bookingNumber, "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+    val (bookingNumber, _, offenderNo) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking).with(sentenceStartDate) }
 
     return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {
-      TelemetryEvent("P2PImprisonmentStatusUpdated", trackingAttributes)
-    } ?: TelemetryEvent("P2PImprisonmentStatusRecordNotFound", trackingAttributes)
+      TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
+    } ?: TelemetryEvent("P2PImprisonmentStatusRecordNotFound").with(booking).with(sentenceStartDate)
   }
 
   private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
-      // for each sentence 3 NOMIS events are raised with different sequences, the one with sequence zero happens to be a insert of a new status
-      // a ticket (DT-568) has been raised for a trigger change to improve this so only a new single event is raised when conviction status actually changes
+  // for each sentence 3 NOMIS events are raised with different sequences, the one with sequence zero happens to be a insert of a new status
+  // a ticket (DT-568) has been raised for a trigger change to improve this so only a new single event is raised when conviction status actually changes
       // for now use this to optimise our processing (else we would process a single status change 3 times per imposed sentence)
       if (statusChange.imprisonmentStatusSeq == 0L) Success(statusChange) else Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero"))
 
@@ -75,8 +73,9 @@ open class ImprisonmentStatusChangeService(
           ?: Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not an active booking")))
 
   private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
-      if (isBookingInInterestedPrison(booking.agencyId)) { Success(booking) }
-          else Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not at an interested prison")))
+      if (isBookingInInterestedPrison(booking.agencyId)) {
+        Success(booking)
+      } else Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not at an interested prison")))
 
   private fun isBookingInInterestedPrison(toAgency: String?) =
       allowAnyPrison() || allowedPrisons.contains(toAgency)
@@ -85,4 +84,16 @@ open class ImprisonmentStatusChangeService(
 
 }
 
+
+fun TelemetryEvent.with(booking: Booking): TelemetryEvent = TelemetryEvent(this.name, this.attributes + mapOf(
+    "offenderNo" to booking.offenderNo,
+    "bookingNumber" to booking.bookingNo,
+    "firstName" to booking.firstName,
+    "lastName" to booking.lastName,
+    "dateOfBirth" to booking.dateOfBirth.format(DateTimeFormatter.ISO_DATE)
+))
+
+fun TelemetryEvent.with(sentenceStartDate: LocalDate): TelemetryEvent = TelemetryEvent(this.name, this.attributes + mapOf(
+    "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_DATE)
+))
 
