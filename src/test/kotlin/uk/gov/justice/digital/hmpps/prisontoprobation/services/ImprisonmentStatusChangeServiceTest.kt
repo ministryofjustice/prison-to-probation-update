@@ -16,7 +16,7 @@ class ImprisonmentStatusChangeServiceTest {
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
 
-  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService)
+  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService, listOf("MDI", "WII"))
 
   @Nested
   inner class CheckImprisonmentStatusChangeAndUpdateProbation {
@@ -26,7 +26,7 @@ class ImprisonmentStatusChangeServiceTest {
       @BeforeEach
       fun setup() {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
-        whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "38339A", activeFlag = true, offenderNo = "A5089DY"))
+        whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "38339A", activeFlag = true, offenderNo = "A5089DY", agencyId = "MDI"))
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
       }
 
@@ -116,6 +116,19 @@ class ImprisonmentStatusChangeServiceTest {
       verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusIgnored"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")
         assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+      }, isNull())
+    }
+    @Test
+    fun `will log that offender has booking at prison we are not interested in and abandon update`() {
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
+      whenever(offenderService.getBooking(any())).thenReturn(Booking(bookingNo = "A1234", activeFlag = true, offenderNo = "A5089DY"))
+
+      service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+      verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusIgnored"), check {
+        assertThat(it["bookingId"]).isEqualTo("12345")
+        assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+        assertThat(it["reason"]).isEqualTo("Not at an interested prison")
       }, isNull())
     }
   }
