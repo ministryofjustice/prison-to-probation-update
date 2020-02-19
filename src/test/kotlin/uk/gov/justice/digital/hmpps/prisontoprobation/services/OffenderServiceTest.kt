@@ -19,111 +19,116 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OffenderServiceTest {
-    private val restTemplate: OAuth2RestTemplate = mock()
+  private val restTemplate: OAuth2RestTemplate = mock()
 
-    private lateinit var service: OffenderService
+  private lateinit var service: OffenderService
 
-    @BeforeEach
-    fun before() {
-        service = OffenderService(restTemplate)
+  @BeforeEach
+  fun before() {
+    service = OffenderService(restTemplate)
+  }
+
+  @Test
+  fun `test get offender calls rest template`() {
+    val prisonerListType = object : ParameterizedTypeReference<List<Prisoner>>() {
     }
+    val expectedPrisoner = createPrisoner()
 
-    @Test
-    fun `test get offender calls rest template`() {
-        val prisonerListType = object : ParameterizedTypeReference<List<Prisoner>>() {
-        }
-        val expectedPrisoner = createPrisoner()
+    whenever(restTemplate.exchange(anyString(), any(), isNull(), eq(prisonerListType), anyString())).thenReturn(ResponseEntity.ok(listOf(expectedPrisoner)))
 
-        whenever(restTemplate.exchange(anyString(), any(), isNull(), eq(prisonerListType), anyString())).thenReturn(ResponseEntity.ok(listOf(expectedPrisoner)))
+    val offender = service.getOffender("AB123D")
 
-        val offender = service.getOffender("AB123D")
+    assertThat(offender).isEqualTo(expectedPrisoner)
 
-        assertThat(offender).isEqualTo(expectedPrisoner)
+    verify(restTemplate).exchange("/api/prisoners?offenderNo={offenderNo}", HttpMethod.GET, null, prisonerListType, "AB123D")
+  }
 
-        verify(restTemplate).exchange("/api/prisoners?offenderNo={offenderNo}", HttpMethod.GET, null, prisonerListType, "AB123D")
-    }
+  @Test
+  fun `test get movement calls rest template`() {
+    val expectedMovement = createMovement()
+    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenReturn(ResponseEntity.ok(expectedMovement))
 
-    @Test
-    fun `test get movement calls rest template`() {
-        val expectedMovement = createMovement()
-        whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenReturn(ResponseEntity.ok(expectedMovement))
+    val movement = service.getMovement(1234L, 1L)
 
-        val movement = service.getMovement(1234L, 1L)
+    assertThat(movement).isEqualTo(expectedMovement)
 
-        assertThat(movement).isEqualTo(expectedMovement)
+    verify(restTemplate).getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, 1234L, 1L)
+  }
 
-        verify(restTemplate).getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, 1234L, 1L)
-    }
+  @Test
+  fun `test get movement will be null if not found`() {
+    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
 
-    @Test
-    fun `test get movement will be null if not found`() {
-        whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
+    val movement = service.getMovement(1234L, 1L)
 
-        val movement = service.getMovement(1234L, 1L)
+    assertThat(movement).isNull()
+  }
 
-        assertThat(movement).isNull()
-    }
+  @Test
+  fun `test get movement will throw exception for other types of http responses`() {
+    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
 
-    @Test
-    fun `test get movement will throw exception for other types of http responses`() {
-        whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
+    assertThatThrownBy { service.getMovement(1234L, 1L) }.isInstanceOf(HttpClientErrorException::class.java)
+  }
 
-        assertThatThrownBy {  service.getMovement(1234L, 1L) } .isInstanceOf(HttpClientErrorException::class.java)
-    }
+  @Test
+  fun `test get booking calls rest template`() {
+    val expectedBooking = createBooking()
+    whenever(restTemplate.getForEntity<Booking>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedBooking))
 
-    @Test
-    fun `test get booking calls rest template`() {
-        val expectedBooking = createBooking()
-        whenever(restTemplate.getForEntity<Booking>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedBooking))
+    val booking = service.getBooking(1234L)
 
-        val booking = service.getBooking(1234L)
+    assertThat(booking).isEqualTo(expectedBooking)
 
-        assertThat(booking).isEqualTo(expectedBooking)
+    verify(restTemplate).getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, 1234L)
+  }
 
-        verify(restTemplate).getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, 1234L)
-    }
+  @Test
+  fun `test get sentence detail calls rest template`() {
+    val expectedSentenceDetails = SentenceDetail(sentenceStartDate = LocalDate.now())
+    whenever(restTemplate.getForEntity<SentenceDetail>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedSentenceDetails))
 
-    @Test
-    fun `test get sentence detail calls rest template`() {
-        val expectedSentenceDetails  = SentenceDetail(sentenceStartDate = LocalDate.now())
-        whenever(restTemplate.getForEntity<SentenceDetail>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedSentenceDetails))
+    val movement = service.getSentenceDetail(1234L)
 
-        val movement = service.getSentenceDetail(1234L)
+    assertThat(movement).isEqualTo(expectedSentenceDetails)
 
-        assertThat(movement).isEqualTo(expectedSentenceDetails)
-
-        verify(restTemplate).getForEntity("/api/bookings/{bookingId}/sentenceDetail", SentenceDetail::class.java, 1234L)
-    }
+    verify(restTemplate).getForEntity("/api/bookings/{bookingId}/sentenceDetail", SentenceDetail::class.java, 1234L)
+  }
 
 
-    private fun createPrisoner() = Prisoner(
-            offenderNo = "AB123D",
-            pncNumber = "",
-            croNumber = "",
-            firstName = "",
-            middleNames = "",
-            lastName = "",
-            dateOfBirth = "",
-            currentlyInPrison = "",
-            latestBookingId = 1L,
-            latestLocationId = "",
-            latestLocation = "",
-            convictedStatus = "",
-            imprisonmentStatus = "",
-            receptionDate = "")
+  private fun createPrisoner() = Prisoner(
+      offenderNo = "AB123D",
+      pncNumber = "",
+      croNumber = "",
+      firstName = "",
+      middleNames = "",
+      lastName = "",
+      dateOfBirth = "",
+      currentlyInPrison = "",
+      latestBookingId = 1L,
+      latestLocationId = "",
+      latestLocation = "",
+      convictedStatus = "",
+      imprisonmentStatus = "",
+      receptionDate = "")
 
-    private fun createMovement() = Movement(
-            offenderNo = "AB123D",
-            createDateTime = LocalDateTime.now(),
-            fromAgency = "LEI",
-            toAgency = "MDI",
-            movementType = "TRN",
-            directionCode = "OUT"
-    )
+  private fun createMovement() = Movement(
+      offenderNo = "AB123D",
+      createDateTime = LocalDateTime.now(),
+      fromAgency = "LEI",
+      toAgency = "MDI",
+      movementType = "TRN",
+      directionCode = "OUT"
+  )
 
-    private fun createBooking() = Booking(
-            bookingNo = "38353A",
-            activeFlag = true,
-            offenderNo = "A5089DY"
-    )
+  private fun createBooking() = Booking(
+      bookingNo = "38353A",
+      activeFlag = true,
+      offenderNo = "A5089DY",
+      agencyId = "MDI",
+      firstName = "Johnny",
+      lastName = "Barnes",
+      dateOfBirth = LocalDate.of(1965, 7, 19)
+
+  )
 }
