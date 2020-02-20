@@ -1,5 +1,8 @@
 # prison-to-probation-update
 
+[![CircleCI](https://circleci.com/gh/ministryofjustice/prison-to-probation-update/tree/master.svg?style=svg)](https://circleci.com/gh/ministryofjustice/prison-to-probation-update)
+[![Known Vulnerabilities](https://snyk.io/test/github/ministryofjustice/prison-to-probation-update/badge.svg)](https://snyk.io/test/github/ministryofjustice/prison-to-probation-update)
+
 Self-contained fat-jar micro-service to listen for events from Prison systems (NOMIS) to update offender sentence information in Probation systems (Delius)
 
 ### Pre-requisite
@@ -49,3 +52,4 @@ local test data:
 ```bash
 ./create-prison-movements-messages-local.bash 
 ```
+
