@@ -2,7 +2,7 @@
   "Type": "Notification",
   "MessageId": "cbaf5e7f-9a50-5dbc-b41b-08c182eafe59",
   "TopicArn": "arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7",
-  "Message": "{\"eventId\":\"7464509\",\"eventType\":\"SENTENCE-IMPOSED\",\"eventDatetime\":\"2020-02-12T15:14:26.706918\",\"rootOffenderId\":2581714,\"offenderIdDisplay\":\"A5081DY\",\"caseNoteId\":47006377,\"agencyLocationId\":\"MDI\"}",
+  "Message": "{\"eventId\":\"7464509\",\"eventType\":\"SENTENCE_CALCULATION_DATES-CHANGED\",\"bookingId\":1200835,\"eventDatetime\":\"2020-02-12T15:14:26.706918\"}",
   "Timestamp": "2020-02-12T15:15:06.284Z",
   "SignatureVersion": "1",
   "Signature": "Dpflc7CBXC1ySFzhK3YVdlArxsxwd3gj8bMUxJ9guvYT3g4qHhvVB8SsmHN5BsxMnuSWWfTHxyw2CxcPghkkmDs2DdyNHD8Li3q2whDJItk3CRZMZYNI28JpqqqSTgtLci9M2OyAbDUe8s50XC0MCuYdA7QjfywCgDMRzxpZ4v5qPs/9Nt8xIkRIHaqXzrA+BmAGhG4M++7Jy6bdKG57PWrwt1LJBojSCtClvWKoQYG1CGunTaGDskrQZayvSfDzvxkBv91152dK93TFkQxXIAUOhJHoXsWwm7ktwULHYcF7NzwZR/H8N2NGZziJo6ANUm/QbG5gjvqrL10iotH0WQ==",
@@ -11,7 +11,7 @@
   "MessageAttributes": {
     "eventType": {
       "Type": "String",
-      "Value": "SENTENCE-IMPOSED"
+      "Value": "SENTENCE_CALCULATION_DATES-CHANGED"
     },
     "id": {
       "Type": "String",
