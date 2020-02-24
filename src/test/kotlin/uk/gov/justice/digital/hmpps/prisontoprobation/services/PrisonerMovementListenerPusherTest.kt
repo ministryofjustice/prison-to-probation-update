@@ -9,12 +9,13 @@ class PrisonerMovementListenerPusherTest {
   private val prisonMovementService: PrisonMovementService = mock()
   private val bookingChangeService: BookingChangeService = mock()
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService = mock()
+  private val sentenceDatesChangeService: SentenceDatesChangeService = mock()
 
   private lateinit var listener: PrisonerMovementListenerPusher
 
   @BeforeEach
   fun before() {
-    listener = PrisonerMovementListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService)
+    listener = PrisonerMovementListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService, sentenceDatesChangeService)
   }
 
   @Test
@@ -41,13 +42,13 @@ class PrisonerMovementListenerPusherTest {
   }
 
   @Test
-  fun `sentence imposed change will be checked for processing`() {
+  fun `sentence date change will be checked for processing`() {
     // message body is as follows
-    //  "Message": "{\"eventId\":\"7464509\",\"eventType\":\"SENTENCE-IMPOSED\",\"eventDatetime\":\"2020-02-12T15:14:26.706918\",\"rootOffenderId\":2581714,\"offenderIdDisplay\":\"A5081DY\",\"caseNoteId\":47006377,\"agencyLocationId\":\"MDI\"}",
-    listener.pushPrisonUpdateToProbation("/messages/sentenceImposed.json".readResourceAsText())
+    // "Message": "{\"eventId\":\"7464509\",\"eventType\":\"SENTENCE_CALCULATION_DATES-CHANGED\",\"bookingId\":1200835,\"eventDatetime\":\"2020-02-12T15:14:26.706918\"}",
+    listener.pushPrisonUpdateToProbation("/messages/sentenceDatesChanged.json".readResourceAsText())
 
-    verify(imprisonmentStatusChangeService).checkSentenceImposedAndUpdateProbation(check {
-      assertThat(it.offenderNo).isEqualTo("A5081DY")
+    verify(sentenceDatesChangeService).checkSentenceDateChangeAndUpdateProbation(check {
+      assertThat(it.bookingId).isEqualTo(1200835L)
     })
   }
 
@@ -57,9 +58,8 @@ class PrisonerMovementListenerPusherTest {
 
     verify(prisonMovementService, never()).checkMovementAndUpdateProbation(any())
     verify(imprisonmentStatusChangeService, never()).checkImprisonmentStatusChangeAndUpdateProbation(any())
-    verify(imprisonmentStatusChangeService, never()).checkSentenceImposedAndUpdateProbation(any())
+    verify(sentenceDatesChangeService, never()).checkSentenceDateChangeAndUpdateProbation(any())
     verify(bookingChangeService, never()).checkBookingReassignedAndUpdateProbation(any())
-    verify(bookingChangeService, never()).checkBookingCreationAndUpdateProbation(any())
     verify(bookingChangeService, never()).checkBookingNumberChangedAndUpdateProbation(any())
   }
 

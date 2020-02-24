@@ -34,16 +34,6 @@ open class ImprisonmentStatusChangeService(
     ), null)
   }
 
-  open fun checkSentenceImposedAndUpdateProbation(message: SentenceImposedMessage) {
-    val (offenderNo) = message
-
-    val trackingAttributes = mapOf(
-        "offenderNo" to offenderNo)
-
-    log.info("Sentence imposed for offender $offenderNo")
-    telemetryClient.trackEvent("P2PSentenceImposed", trackingAttributes, null)
-  }
-
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): TelemetryEvent {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }

@@ -13,16 +13,6 @@ open class BookingChangeService(private val telemetryClient: TelemetryClient
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun checkBookingCreationAndUpdateProbation(message: OffenderBookingInsertedMessage) {
-    val (bookingId, offenderId) = message
-    val trackingAttributes = mapOf(
-        "bookingId" to bookingId.toString(),
-        "offenderId" to offenderId.toString())
-
-    log.info("Booking $bookingId created for offender $offenderId")
-    telemetryClient.trackEvent("P2PBookingCreated", trackingAttributes, null)
-  }
-
   open fun checkBookingReassignedAndUpdateProbation(message: OffenderBookingReassignedMessage) {
     val (bookingId, offenderId, previousOffenderId) = message
     val trackingAttributes = mapOf(

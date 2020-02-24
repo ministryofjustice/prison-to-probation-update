@@ -145,18 +145,6 @@ class ImprisonmentStatusChangeServiceTest {
       }, isNull())
     }
   }
-
-  @Nested
-  inner class CheckSentenceImposedAndUpdateProbation {
-    @Test
-    fun `will log we are processing a sentence imposed`() {
-      service.checkSentenceImposedAndUpdateProbation(SentenceImposedMessage("A5081DY"))
-
-      verify(telemetryClient).trackEvent(eq("P2PSentenceImposed"), check {
-        assertThat(it["offenderNo"]).isEqualTo("A5081DY")
-      }, isNull())
-    }
-  }
 }
 
 
