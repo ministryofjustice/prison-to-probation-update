@@ -9,6 +9,8 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.mockingDetails
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 
@@ -33,6 +35,7 @@ class PrisonerMovementIntegrationTest : QueueIntegrationTest() {
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
         await untilCallTo { eliteRequestCountFor("/api/prisoners?offenderNo=A5089DY") } matches { it == 1 }
         await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
+        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 2 }
 
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), any(), isNull())
     }
