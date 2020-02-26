@@ -142,6 +142,7 @@ class ImprisonmentStatusChangeServiceTest {
         assertThat(it["firstName"]).isEqualTo("Johnny")
         assertThat(it["lastName"]).isEqualTo("Barnes")
         assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
+        assertThat(it["agencyId"]).isEqualTo("XXX")
       }, isNull())
     }
   }
