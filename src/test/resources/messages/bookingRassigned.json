@@ -1,21 +1,21 @@
 {
   "Type": "Notification",
-  "MessageId": "20e13002-d1be-56e7-be8c-66cdd7e23341",
+  "MessageId": "4f447a13-f5b9-58d1-a193-2cdd085e7136",
   "TopicArn": "arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7",
-  "Message": "{\"eventType\":\"SENTENCE_CALCULATION_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200849,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}",
-  "Timestamp": "2020-02-25T11:25:16.169Z",
+  "Message": "{\"eventType\":\"OFFENDER_BOOKING-REASSIGNED\",\"eventDatetime\":\"2020-02-25T10:48:26.606784\",\"offenderId\":2581805,\"previousOffenderId\":2581801,\"bookingId\":1200865,\"nomisEventType\":\"OFF_BKB_UPD\"}",
+  "Timestamp": "2020-02-25T10:49:11.244Z",
   "SignatureVersion": "1",
-  "Signature": "h5p3FnnbsSHxj53RFePh8HR40cbVvgEZa6XUVTlYs/yuqfDsi17MPA+bX4ijKmmTT2l6xG2xYhcmRAbJWQ4wrwncTBm2azgiwSO5keRNWYVdiC0rI484KLZboP1SDsE+Y7hOU/R0dz49q7+0yd+QIocPteKB/8xG7/6kjGStAZKf3cEdlxOwLhN+7RU1Yk2ENuwAJjVRtvlAa76yKB3xvL2hId7P7ZLmHGlzZDNZNYxbg9C8HGxteOzZ9ZeeQsWDf9jmZ+5+7dKXQoW9LeqwHxEAq2vuwSZ8uwM5JljXbtS5w1P0psXPYNoin2gU1F5MDK8RPzjUtIvjINx08rmEOA==",
+  "Signature": "TFYqQEayYRzbWafvdkIuS5uqgxRRiSwHUHiMRAJqb2ufuXh5H5EWRLGlNWXIO9Aa/LKTBfWy1DzqsO2R2WCbzFlhjMPf1iXKo2tPsv8LO/zO/acV+Oo7vhL3VnaHu5Hd5u/TUJp+QV5kZZsJT4hzJfpHO34XRvpEqVCTcO4UuNwiy9dPkEnEgq8jS99lue5vDH8uIPGMUYnUgAPDspHHblpiRByIa4c0olmHFCbXXFElnfVCw1ZByBIktspVGrsUPcZy5ukKBHmrJxgjWVu154CjXc3W3v0Y6NjxAg6vLovJYy+Se5EOgLGdI9hnRgjV2FF0+pltJWujtmec28uKbA==",
   "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
   "UnsubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7:92545cfe-de5d-43e1-8339-c366bf0172aa",
   "MessageAttributes": {
     "eventType": {
       "Type": "String",
-      "Value": "SENTENCE_CALCULATION_DATES-CHANGED"
+      "Value": "OFFENDER_BOOKING-REASSIGNED"
     },
     "id": {
       "Type": "String",
-      "Value": "cb4645f2-d0c1-4677-806a-8036ed54bf69"
+      "Value": "adf365bb-4bcf-28d5-379d-cdfac6eef4d2"
     },
     "contentType": {
       "Type": "String",
@@ -23,7 +23,8 @@
     },
     "timestamp": {
       "Type": "Number.java.lang.Long",
-      "Value": "1582629916147"
+      "Value": "1582627751205"
     }
   }
 }
+

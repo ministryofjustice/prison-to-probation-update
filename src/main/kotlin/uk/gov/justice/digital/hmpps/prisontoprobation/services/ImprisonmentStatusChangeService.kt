@@ -80,6 +80,7 @@ fun TelemetryEvent.with(booking: Booking): TelemetryEvent = TelemetryEvent(this.
     "bookingNumber" to booking.bookingNo,
     "firstName" to booking.firstName,
     "lastName" to booking.lastName,
+    "agencyId" to (booking.agencyId ?: "not present"),
     "dateOfBirth" to booking.dateOfBirth.format(DateTimeFormatter.ISO_DATE)
 ))
 
