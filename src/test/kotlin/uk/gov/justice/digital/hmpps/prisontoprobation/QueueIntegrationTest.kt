@@ -19,4 +19,6 @@ open class QueueIntegrationTest : IntegrationTest() {
     fun eliteRequestCountFor(url: String) = elite2MockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
     fun communityPutCountFor(url: String)= communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
+
+    fun communityPostCountFor(url: String)= communityMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
 }

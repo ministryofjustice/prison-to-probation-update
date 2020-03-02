@@ -93,7 +93,7 @@ class CommunityServiceTest {
     }
 
     @Test
-    fun `test get movement will be null if not found`() {
+    fun `test custody will be null if not found`() {
       whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
 
       val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber())
@@ -102,13 +102,45 @@ class CommunityServiceTest {
     }
 
     @Test
-    fun `test get movement will throw exception for other types of http responses`() {
+    fun `test will throw exception for other types of http responses`() {
       whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
 
       assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber()) }.isInstanceOf(HttpClientErrorException::class.java)
     }
   }
 
+  @Nested
+  inner class WhenReplaceProbationCustodyKeyDates {
+
+    @Test
+    fun `test post key dates calls rest template`() {
+      val expectedUpdatedCustody = createUpdatedCustody()
+      whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString(), anyString())).thenReturn(ResponseEntity.ok(expectedUpdatedCustody))
+
+      val replaceCustodyKeyDates = createReplaceCustodyKeyDates()
+      val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", replaceCustodyKeyDates)
+
+      assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
+
+      verify(restTemplate).exchange("/secure/offenders/nomsNumber/{nomsNumber}/bookingNumber/{bookingNo}/custody/keyDates", HttpMethod.POST, HttpEntity(replaceCustodyKeyDates), Custody::class.java, "AB123D", "38353A")
+    }
+
+    @Test
+    fun `test custody will be null if not found`() {
+      whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString(), anyString())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
+
+      val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
+
+      assertThat(updatedCustody).isNull()
+    }
+
+    @Test
+    fun `test will throw exception for other types of http responses`() {
+      whenever(restTemplate.exchange(anyString(), any(), any(), eq(Custody::class.java), anyString(), anyString())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
+
+      assertThatThrownBy {  service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates()) }.isInstanceOf(HttpClientErrorException::class.java)
+    }
+  }
 
   private fun createUpdatedCustody() = Custody(
       institution = Institution("Doncaster"),
@@ -124,4 +156,5 @@ class CommunityServiceTest {
       bookingNumber = "38353A"
   )
 
+  private fun createReplaceCustodyKeyDates() = ReplaceCustodyKeyDates()
 }

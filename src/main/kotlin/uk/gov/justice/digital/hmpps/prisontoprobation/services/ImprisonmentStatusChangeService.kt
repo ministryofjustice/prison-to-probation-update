@@ -75,16 +75,7 @@ open class ImprisonmentStatusChangeService(
 }
 
 
-fun TelemetryEvent.with(booking: Booking): TelemetryEvent = TelemetryEvent(this.name, this.attributes + mapOf(
-    "offenderNo" to booking.offenderNo,
-    "bookingNumber" to booking.bookingNo,
-    "firstName" to booking.firstName,
-    "lastName" to booking.lastName,
-    "agencyId" to (booking.agencyId ?: "not present"),
-    "dateOfBirth" to booking.dateOfBirth.format(DateTimeFormatter.ISO_DATE)
-))
-
-fun TelemetryEvent.with(sentenceStartDate: LocalDate): TelemetryEvent = TelemetryEvent(this.name, this.attributes + mapOf(
+private fun TelemetryEvent.with(sentenceStartDate: LocalDate): TelemetryEvent = TelemetryEvent(this.name, this.attributes + mapOf(
     "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_DATE)
 ))
 
