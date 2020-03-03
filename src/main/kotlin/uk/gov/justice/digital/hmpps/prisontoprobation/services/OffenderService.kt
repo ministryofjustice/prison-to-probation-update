@@ -83,14 +83,14 @@ data class Booking(
 )
 
 data class SentenceDetail(
-    val sentenceStartDate: LocalDate?,
-    val confirmedReleaseDate: LocalDate?,
-    val conditionalReleaseDate: LocalDate?,
-    val conditionalReleaseOverrideDate: LocalDate?,
-    val licenceExpiryDate: LocalDate?,
-    val paroleEligibilityDate: LocalDate?,
-    val sentenceExpiryDate: LocalDate?,
-    val topupSupervisionExpiryDate: LocalDate?,
-    val releaseDate: LocalDate?,
-    val homeDetentionCurfewEligibilityDate: LocalDate?
+    val sentenceStartDate: LocalDate? = null,
+    val confirmedReleaseDate: LocalDate? = null,
+    val conditionalReleaseDate: LocalDate? = null,
+    val conditionalReleaseOverrideDate: LocalDate? = null,
+    val licenceExpiryDate: LocalDate? = null,
+    val paroleEligibilityDate: LocalDate? = null,
+    val sentenceExpiryDate: LocalDate? = null,
+    val topupSupervisionExpiryDate: LocalDate? = null,
+    val releaseDate: LocalDate? = null,
+    val homeDetentionCurfewEligibilityDate: LocalDate? = null
 )

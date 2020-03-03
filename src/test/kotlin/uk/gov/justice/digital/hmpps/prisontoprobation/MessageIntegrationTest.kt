@@ -15,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 
 class MessageIntegrationTest : QueueIntegrationTest() {
 
-    @Autowired
     @MockBean
     private lateinit var telemetryClient: TelemetryClient
 

@@ -25,7 +25,7 @@ class ImprisonmentStatusChangeServiceTest {
     inner class StatusChange {
       @BeforeEach
       fun setup() {
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
       }
@@ -102,7 +102,7 @@ class ImprisonmentStatusChangeServiceTest {
 
     @Test
     fun `will log that offender has no sentence date and abandon update`() {
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(sentenceStartDate = null))
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
 
       service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
@@ -116,7 +116,7 @@ class ImprisonmentStatusChangeServiceTest {
 
     @Test
     fun `will log that offender has no active booking and abandon update`() {
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(sentenceStartDate = LocalDate.now()))
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
       service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -128,7 +128,7 @@ class ImprisonmentStatusChangeServiceTest {
     }
     @Test
     fun `will log that offender has booking at prison we are not interested in and abandon update`() {
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(sentenceStartDate = LocalDate.now()))
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
 
       service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -157,17 +157,4 @@ private fun createBooking(activeFlag: Boolean = true, agencyId: String = "MDI") 
     firstName = "Johnny",
     lastName = "Barnes",
     dateOfBirth = LocalDate.of(1965, 7, 19)
-)
-
-private fun createSentenceDetail(sentenceStartDate: LocalDate?) : SentenceDetail = SentenceDetail(
-    sentenceStartDate = sentenceStartDate,
-    conditionalReleaseDate = null,
-    conditionalReleaseOverrideDate = null,
-    confirmedReleaseDate = null,
-    licenceExpiryDate = null,
-    paroleEligibilityDate = null,
-    releaseDate = null,
-    sentenceExpiryDate = null,
-    topupSupervisionExpiryDate = null,
-    homeDetentionCurfewEligibilityDate = null
 )
