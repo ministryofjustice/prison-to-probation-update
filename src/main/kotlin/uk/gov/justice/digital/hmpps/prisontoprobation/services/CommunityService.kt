@@ -38,6 +38,16 @@ open class CommunityService(@Qualifier("communityApiRestTemplate") private val r
       null
     }
   }
+  open fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Custody? {
+    return try {
+      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/bookingNumber/{bookingNo}/custody/keyDates", HttpMethod.POST, HttpEntity(replaceCustodyKeyDates), Custody::class.java, offenderNo, bookingNo)
+      response.body!!
+    } catch (e: HttpClientErrorException) {
+      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+      log.info("Booking not found for {} offender {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
+      null
+    }
+  }
 }
 
 data class UpdateCustody(
@@ -56,4 +66,14 @@ data class Custody(
 data class UpdateCustodyBookingNumber(
     val sentenceStartDate: LocalDate,
     val bookingNumber: String
+)
+
+data class ReplaceCustodyKeyDates(
+    val conditionalReleaseDate: LocalDate? = null,
+    val licenceExpiryDate: LocalDate? = null,
+    val hdcEligibilityDate: LocalDate? = null,
+    val paroleEligibilityDate: LocalDate? = null,
+    val sentenceExpiryDate: LocalDate? = null,
+    val expectedReleaseDate: LocalDate? = null,
+    val postSentenceSupervisionEndDate: LocalDate? = null
 )

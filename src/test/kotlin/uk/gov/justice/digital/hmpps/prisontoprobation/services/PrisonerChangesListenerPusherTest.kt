@@ -5,17 +5,17 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class PrisonerMovementListenerPusherTest {
+class PrisonerChangesListenerPusherTest {
   private val prisonMovementService: PrisonMovementService = mock()
   private val bookingChangeService: BookingChangeService = mock()
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService = mock()
   private val sentenceDatesChangeService: SentenceDatesChangeService = mock()
 
-  private lateinit var listener: PrisonerMovementListenerPusher
+  private lateinit var listener: PrisonerChangesListenerPusher
 
   @BeforeEach
   fun before() {
-    listener = PrisonerMovementListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService, sentenceDatesChangeService)
+    listener = PrisonerChangesListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService, sentenceDatesChangeService)
   }
 
   @Test
@@ -48,7 +48,7 @@ class PrisonerMovementListenerPusherTest {
     listener.pushPrisonUpdateToProbation("/messages/sentenceDatesChanged.json".readResourceAsText())
 
     verify(sentenceDatesChangeService).checkSentenceDateChangeAndUpdateProbation(check {
-      assertThat(it.bookingId).isEqualTo(1200849L)
+      assertThat(it.bookingId).isEqualTo(1200835L)
     })
   }
 
@@ -66,5 +66,5 @@ class PrisonerMovementListenerPusherTest {
 }
 
 private fun String.readResourceAsText(): String {
-  return PrisonerMovementListenerPusherTest::class.java.getResource(this).readText()
+  return PrisonerChangesListenerPusherTest::class.java.getResource(this).readText()
 }

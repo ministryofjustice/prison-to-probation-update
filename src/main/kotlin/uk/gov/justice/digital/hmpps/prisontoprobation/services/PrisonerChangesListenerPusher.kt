@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class PrisonerMovementListenerPusher(
+open class PrisonerChangesListenerPusher(
     private val prisonMovementService: PrisonMovementService,
     private val bookingChangeService: BookingChangeService,
     private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,

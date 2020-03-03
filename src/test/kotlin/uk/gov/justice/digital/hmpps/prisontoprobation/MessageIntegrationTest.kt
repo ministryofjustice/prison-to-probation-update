@@ -22,7 +22,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
     @Test
     fun `will consume a prison movement message, update probation and create movement insights event`() {
-        val message = this::class.java.getResource("/messages/externalMovement.json").readText()
+        val message = "/messages/externalMovement.json".readResourceAsText()
 
         // wait until our queue has been purged
         await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
@@ -41,7 +41,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
     @Test
     fun `will consume a imprisonment status change message, update probation and create movement insights event`() {
-        val message = this::class.java.getResource("/messages/imprisonmentStatusChanged.json").readText()
+        val message ="/messages/imprisonmentStatusChanged.json".readResourceAsText()
 
         // wait until our queue has been purged
         await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
@@ -57,4 +57,26 @@ class MessageIntegrationTest : QueueIntegrationTest() {
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), any(), isNull())
     }
 
+    @Test
+    fun `will consume a sentence date change message, update probation and create movement insights event`() {
+        val message = "/messages/sentenceDatesChanged.json".readResourceAsText()
+
+        // wait until our queue has been purged
+        await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+        awsSqsClient.sendMessage(queueUrl, message)
+
+        await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+        await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
+        await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
+        await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 1 }
+
+        verify(telemetryClient).trackEvent(eq("P2PSentenceDatesChanged"), any(), isNull())
+    }
+
+}
+
+private fun String.readResourceAsText(): String {
+    return MessageIntegrationTest::class.java.getResource(this).readText()
 }
