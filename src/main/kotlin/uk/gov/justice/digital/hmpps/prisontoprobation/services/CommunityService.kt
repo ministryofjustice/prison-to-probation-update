@@ -59,8 +59,8 @@ data class Institution(
 )
 
 data class Custody(
-    val institution: Institution,
-    val bookingNumber: String
+    val institution: Institution?,
+    val bookingNumber: String?
 )
 
 data class UpdateCustodyBookingNumber(
