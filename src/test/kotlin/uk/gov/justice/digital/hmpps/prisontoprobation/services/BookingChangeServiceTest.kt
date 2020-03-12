@@ -11,17 +11,6 @@ class BookingChangeServiceTest {
     private val service = BookingChangeService(telemetryClient)
 
     @Test
-    fun `will log we are processing a booking reassign`() {
-        service.checkBookingReassignedAndUpdateProbation(OffenderBookingReassignedMessage(12345L, 99L, 101L))
-
-        verify(telemetryClient).trackEvent(eq("P2PBookingReassigned"), check {
-            assertThat(it["bookingId"]).isEqualTo("12345")
-            assertThat(it["offenderId"]).isEqualTo("99")
-            assertThat(it["previousOffenderId"]).isEqualTo("101")
-        }, isNull())
-    }
-
-    @Test
     fun `will log we are processing a booking number changed`() {
         service.checkBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L, 99L, "A0001", "B0002"))
 

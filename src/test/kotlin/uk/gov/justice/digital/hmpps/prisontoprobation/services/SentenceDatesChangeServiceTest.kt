@@ -43,10 +43,7 @@ internal class SentenceDatesChangeServiceTest {
     fun `will send dates to probation`() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(
           bookingNo = "38339A",
-          offenderNo = "A5089DY",
-          firstName = "Bobby",
-          lastName = "Bridle",
-          dateOfBirth = LocalDate.of(1965, 7, 19)
+          offenderNo = "A5089DY"
       ))
       whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
           conditionalReleaseDate = LocalDate.of(1970, 1, 2),
@@ -78,10 +75,7 @@ internal class SentenceDatesChangeServiceTest {
       fun `will send the absence of dates to probation`() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY",
-            firstName = "Bobby",
-            lastName = "Bridle",
-            dateOfBirth = LocalDate.of(1965, 7, 19)
+            offenderNo = "A5089DY"
         ))
         whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
         ))
@@ -104,10 +98,7 @@ internal class SentenceDatesChangeServiceTest {
       fun `will send the override conditional release date to probation`() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY",
-            firstName = "Bobby",
-            lastName = "Bridle",
-            dateOfBirth = LocalDate.of(1965, 7, 19)
+            offenderNo = "A5089DY"
         ))
         whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
             conditionalReleaseDate = LocalDate.of(1970, 1, 2),
@@ -126,10 +117,7 @@ internal class SentenceDatesChangeServiceTest {
       fun `will send the original conditional release of date to probation`() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY",
-            firstName = "Bobby",
-            lastName = "Bridle",
-            dateOfBirth = LocalDate.of(1965, 7, 19)
+            offenderNo = "A5089DY"
         ))
         whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
             conditionalReleaseDate = LocalDate.of(1970, 1, 2)
@@ -168,9 +156,6 @@ internal class SentenceDatesChangeServiceTest {
         assertThat(it["bookingId"]).isEqualTo("12345")
         assertThat(it["bookingNumber"]).isEqualTo("38339A")
         assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-        assertThat(it["firstName"]).isEqualTo("Bobby")
-        assertThat(it["lastName"]).isEqualTo("Bridle")
-        assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
         assertThat(it["sentenceStartDate"]).isEqualTo("1970-01-01")
         assertThat(it["conditionalReleaseDate"]).isEqualTo("1970-01-02")
         assertThat(it["conditionalReleaseOverrideDate"]).isEqualTo("1970-01-03")
@@ -191,10 +176,7 @@ internal class SentenceDatesChangeServiceTest {
 
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY",
-            firstName = "Bobby",
-            lastName = "Bridle",
-            dateOfBirth = LocalDate.of(1965, 7, 19)
+            offenderNo = "A5089DY"
         ))
         service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
 
@@ -202,9 +184,6 @@ internal class SentenceDatesChangeServiceTest {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["bookingNumber"]).isEqualTo("38339A")
           assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-          assertThat(it["firstName"]).isEqualTo("Bobby")
-          assertThat(it["lastName"]).isEqualTo("Bridle")
-          assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
         }, isNull())
       }
     }

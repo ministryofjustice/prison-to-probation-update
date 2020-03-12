@@ -90,8 +90,6 @@ private fun isMovementTransferIntoPrison(movement: Movement) =
 private fun updateTrackingAttributesFor(movementAttributes: Map<String, String>, prisoner: Prisoner) =
     movementAttributes + mapOf(
         "offenderNo" to prisoner.offenderNo,
-        "firstName" to prisoner.firstName,
-        "lastName" to prisoner.lastName,
         "latestLocation" to prisoner.latestLocation,
         "convictedStatus" to prisoner.convictedStatus
     )

@@ -57,9 +57,6 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
           assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-          assertThat(it["firstName"]).isEqualTo("Johnny")
-          assertThat(it["lastName"]).isEqualTo("Barnes")
-          assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
         }, isNull())
       }
 
@@ -79,9 +76,6 @@ class ImprisonmentStatusChangeServiceTest {
             assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
             assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-            assertThat(it["firstName"]).isEqualTo("Johnny")
-            assertThat(it["lastName"]).isEqualTo("Barnes")
-            assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
           }, isNull())
         }
       }
@@ -139,9 +133,6 @@ class ImprisonmentStatusChangeServiceTest {
         assertThat(it["reason"]).isEqualTo("Not at an interested prison")
         assertThat(it["bookingNumber"]).isEqualTo("38339A")
         assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-        assertThat(it["firstName"]).isEqualTo("Johnny")
-        assertThat(it["lastName"]).isEqualTo("Barnes")
-        assertThat(it["dateOfBirth"]).isEqualTo("1965-07-19")
         assertThat(it["agencyId"]).isEqualTo("XXX")
       }, isNull())
     }
