@@ -85,7 +85,7 @@ class OffenderServiceTest {
 
   @Test
   fun `test get sentence detail calls rest template`() {
-    val expectedSentenceDetails = createSentenceDetail()
+    val expectedSentenceDetails = SentenceDetail()
     whenever(restTemplate.getForEntity<SentenceDetail>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedSentenceDetails))
 
     val movement = service.getSentenceDetail(1234L)
@@ -130,18 +130,5 @@ class OffenderServiceTest {
       lastName = "Barnes",
       dateOfBirth = LocalDate.of(1965, 7, 19)
 
-  )
-
-  private fun createSentenceDetail() : SentenceDetail = SentenceDetail(
-      sentenceStartDate = LocalDate.now(),
-      conditionalReleaseDate = LocalDate.now(),
-      conditionalReleaseOverrideDate = LocalDate.now(),
-      confirmedReleaseDate = LocalDate.now(),
-      licenceExpiryDate = LocalDate.now(),
-      paroleEligibilityDate = LocalDate.now(),
-      releaseDate = LocalDate.now(),
-      sentenceExpiryDate = LocalDate.now(),
-      topupSupervisionExpiryDate = LocalDate.now(),
-      homeDetentionCurfewEligibilityDate = LocalDate.now()
   )
 }

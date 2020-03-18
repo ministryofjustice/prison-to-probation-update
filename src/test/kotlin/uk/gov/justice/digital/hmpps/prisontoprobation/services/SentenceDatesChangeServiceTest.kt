@@ -21,7 +21,7 @@ internal class SentenceDatesChangeServiceTest {
     @BeforeEach
     fun setup() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking())
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail())
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail())
       whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
     }
 
@@ -45,7 +45,7 @@ internal class SentenceDatesChangeServiceTest {
           bookingNo = "38339A",
           offenderNo = "A5089DY"
       ))
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
           conditionalReleaseDate = LocalDate.of(1970, 1, 2),
           conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3),
           confirmedReleaseDate = LocalDate.of(1970, 1, 4),
@@ -70,14 +70,14 @@ internal class SentenceDatesChangeServiceTest {
     }
 
     @Nested
-    inner class WheNoDates() {
+    inner class WhenNoDates() {
       @Test
       fun `will send the absence of dates to probation`() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(
             bookingNo = "38339A",
             offenderNo = "A5089DY"
         ))
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
         ))
         service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
 
@@ -100,7 +100,7 @@ internal class SentenceDatesChangeServiceTest {
             bookingNo = "38339A",
             offenderNo = "A5089DY"
         ))
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
             conditionalReleaseDate = LocalDate.of(1970, 1, 2),
             conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3)
         ))
@@ -119,7 +119,7 @@ internal class SentenceDatesChangeServiceTest {
             bookingNo = "38339A",
             offenderNo = "A5089DY"
         ))
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
             conditionalReleaseDate = LocalDate.of(1970, 1, 2)
         ))
         service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
@@ -138,7 +138,7 @@ internal class SentenceDatesChangeServiceTest {
           lastName = "Bridle",
           dateOfBirth = LocalDate.of(1965, 7, 19)
       ))
-      whenever(offenderService.getSentenceDetail(any())).thenReturn(createSentenceDetail(
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
           sentenceStartDate = LocalDate.of(1970, 1, 1),
           conditionalReleaseDate = LocalDate.of(1970, 1, 2),
           conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3),
@@ -246,28 +246,4 @@ private fun createBooking(
     firstName = firstName,
     lastName = lastName,
     dateOfBirth = dateOfBirth
-)
-
-private fun createSentenceDetail(
-    sentenceStartDate: LocalDate? = LocalDate.of(2020, 2, 29),
-    conditionalReleaseDate: LocalDate? = null,
-    conditionalReleaseOverrideDate: LocalDate? = null,
-    confirmedReleaseDate: LocalDate? = null,
-    licenceExpiryDate: LocalDate? = null,
-    paroleEligibilityDate: LocalDate? = null,
-    releaseDate: LocalDate? = null,
-    sentenceExpiryDate: LocalDate? = null,
-    topupSupervisionExpiryDate: LocalDate? = null,
-    homeDetentionCurfewEligibilityDate: LocalDate? = null
-): SentenceDetail = SentenceDetail(
-    sentenceStartDate = sentenceStartDate,
-    conditionalReleaseDate = conditionalReleaseDate,
-    conditionalReleaseOverrideDate = conditionalReleaseOverrideDate,
-    confirmedReleaseDate = confirmedReleaseDate,
-    licenceExpiryDate = licenceExpiryDate,
-    paroleEligibilityDate = paroleEligibilityDate,
-    releaseDate = releaseDate,
-    sentenceExpiryDate = sentenceExpiryDate,
-    topupSupervisionExpiryDate = topupSupervisionExpiryDate,
-    homeDetentionCurfewEligibilityDate = homeDetentionCurfewEligibilityDate
 )
