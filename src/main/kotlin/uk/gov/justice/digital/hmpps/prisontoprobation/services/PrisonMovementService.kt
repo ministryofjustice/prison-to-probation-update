@@ -47,7 +47,8 @@ open class PrisonMovementService(
     val updateTrackingAttributes = updateTrackingAttributesFor(movementTrackingAttributes, prisoner)
 
     return communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(toAgency))?.let {
-      TelemetryEvent("P2PTransferProbationUpdated", updateTrackingAttributes + ("toAgencyDescription" to it.institution.description))
+      TelemetryEvent("P2PTransferProbationUpdated", updateTrackingAttributes + ("toAgencyDescription" to (it.institution?.description
+          ?: "Not known")))
     } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateTrackingAttributes)
   }
 
@@ -89,8 +90,6 @@ private fun isMovementTransferIntoPrison(movement: Movement) =
 private fun updateTrackingAttributesFor(movementAttributes: Map<String, String>, prisoner: Prisoner) =
     movementAttributes + mapOf(
         "offenderNo" to prisoner.offenderNo,
-        "firstName" to prisoner.firstName,
-        "lastName" to prisoner.lastName,
         "latestLocation" to prisoner.latestLocation,
         "convictedStatus" to prisoner.convictedStatus
     )

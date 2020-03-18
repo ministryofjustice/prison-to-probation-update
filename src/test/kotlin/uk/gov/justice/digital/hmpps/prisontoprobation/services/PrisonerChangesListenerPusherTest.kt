@@ -44,7 +44,7 @@ class PrisonerChangesListenerPusherTest {
   @Test
   fun `sentence date change will be checked for processing`() {
     // message body is as follows
-    //   "Message": "{\"eventType\":\"SENTENCE_CALCULATION_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200849,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}",
+    //   "Message": "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200849,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}",
     listener.pushPrisonUpdateToProbation("/messages/sentenceDatesChanged.json".readResourceAsText())
 
     verify(sentenceDatesChangeService).checkSentenceDateChangeAndUpdateProbation(check {
@@ -59,7 +59,6 @@ class PrisonerChangesListenerPusherTest {
     verify(prisonMovementService, never()).checkMovementAndUpdateProbation(any())
     verify(imprisonmentStatusChangeService, never()).checkImprisonmentStatusChangeAndUpdateProbation(any())
     verify(sentenceDatesChangeService, never()).checkSentenceDateChangeAndUpdateProbation(any())
-    verify(bookingChangeService, never()).checkBookingReassignedAndUpdateProbation(any())
     verify(bookingChangeService, never()).checkBookingNumberChangedAndUpdateProbation(any())
   }
 

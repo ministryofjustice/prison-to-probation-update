@@ -171,8 +171,6 @@ class PrisonMovementServiceTest {
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
             assertThat(it["offenderNo"]).isEqualTo("AB123D")
-            assertThat(it["firstName"]).isEqualTo("Bobby")
-            assertThat(it["lastName"]).isEqualTo("Jones")
             assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
             assertThat(it["convictedStatus"]).isEqualTo("Convicted")
             assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
@@ -193,8 +191,6 @@ class PrisonMovementServiceTest {
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationRecordNotFound"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
             assertThat(it["offenderNo"]).isEqualTo("AB123D")
-            assertThat(it["firstName"]).isEqualTo("Bobby")
-            assertThat(it["lastName"]).isEqualTo("Jones")
             assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
             assertThat(it["convictedStatus"]).isEqualTo("Convicted")
             assertThat(it["fromAgency"]).isEqualTo("ABRYCT")

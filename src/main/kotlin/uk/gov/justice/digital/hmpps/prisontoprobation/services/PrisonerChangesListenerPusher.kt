@@ -31,9 +31,8 @@ open class PrisonerChangesListenerPusher(
     when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
-      "OFFENDER_BOOKING-REASSIGNED" -> bookingChangeService.checkBookingReassignedAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_CALCULATION_DATES-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
+      "SENTENCE_DATES-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
       else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
     }
   }
@@ -47,7 +46,6 @@ data class EventType(val Value: String)
 data class MessageAttributes(val eventType: EventType)
 data class Message(val Message: String, val MessageId: String, val MessageAttributes: MessageAttributes)
 data class ExternalPrisonerMovementMessage(val bookingId: Long, val movementSeq: Long)
-data class OffenderBookingReassignedMessage(val bookingId: Long, val offenderId: Long, val previousOffenderId: Long)
 data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
 data class SentenceDatesChangeMessage(val bookingId: Long)

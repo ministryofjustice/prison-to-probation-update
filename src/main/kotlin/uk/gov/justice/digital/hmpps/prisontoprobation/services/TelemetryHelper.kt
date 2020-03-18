@@ -9,10 +9,7 @@ fun TelemetryEvent.with(booking: Booking): TelemetryEvent = TelemetryEvent(this.
       mapOf(
           "offenderNo" to offenderNo,
           "bookingNumber" to bookingNo,
-          "firstName" to firstName,
-          "lastName" to lastName,
-          "agencyId" to (agencyId ?: "not present"),
-          "dateOfBirth" to dateOfBirth.format(DateTimeFormatter.ISO_DATE))
+          "agencyId" to (agencyId ?: "not present"))
     }
 )
 
