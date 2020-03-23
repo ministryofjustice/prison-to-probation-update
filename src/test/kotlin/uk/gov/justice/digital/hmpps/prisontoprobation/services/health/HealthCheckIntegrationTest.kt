@@ -6,19 +6,24 @@ import com.amazonaws.services.sqs.model.QueueAttributeName
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.nhaarman.mockito_kotlin.whenever
-import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.MESSAGES_ON_DLQ
+import org.springframework.test.web.reactive.server.WebTestClient
 
 
+@ExtendWith(SpringExtension::class)
 class HealthCheckIntegrationTest : IntegrationTest() {
   @Autowired
   private lateinit var queueHealth: QueueHealth
+
+  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
+  @Autowired
+  private lateinit var webTestClient: WebTestClient
 
   @Autowired
   @Value("\${sqs.queue.name}")
@@ -40,49 +45,62 @@ class HealthCheckIntegrationTest : IntegrationTest() {
   fun `Health page reports ok`() {
     subPing(200)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
-
-    assertThatJson(response.body).node("components.OAuthApiHealth.details.HttpStatus").isEqualTo("OK")
-    assertThatJson(response.body).node("components.elite2ApiHealth.details.HttpStatus").isEqualTo("OK")
-    assertThatJson(response.body).node("components.communityApiHealth.details.HttpStatus").isEqualTo("OK")
-    assertThatJson(response.body).node("status").isEqualTo("UP")
-    assertThat(response.statusCodeValue).isEqualTo(200)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("OK")
+        .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("OK")
+        .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("OK")
+        .jsonPath("status").isEqualTo("UP")
   }
 
   @Test
   fun `Health ping page is accessible`() {
     subPing(200)
 
-    val response = restTemplate.getForEntity("/health/ping", String::class.java)
-
-    assertThatJson(response.body).node("status").isEqualTo("UP")
-    assertThat(response.statusCodeValue).isEqualTo(200)
+    webTestClient.get()
+        .uri("/health/ping")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("status").isEqualTo("UP")
   }
 
   @Test
   fun `Health page reports down`() {
     subPing(404)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("status").isEqualTo("DOWN")
+        .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
+        .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
+        .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
 
-    assertThatJson(response.body).node("components.OAuthApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException\$NotFound: 404 Not Found: [some error]")
-    assertThatJson(response.body).node("components.elite2ApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException\$NotFound: 404 Not Found: [some error]")
-    assertThatJson(response.body).node("components.communityApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException\$NotFound: 404 Not Found: [some error]")
-    assertThatJson(response.body).node("status").isEqualTo("DOWN")
-    assertThat(response.statusCodeValue).isEqualTo(503)
   }
 
   @Test
   fun `Health page reports a teapot`() {
     subPing(418)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
-
-    assertThatJson(response.body).node("components.OAuthApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException: 418 418: [some error]")
-    assertThatJson(response.body).node("components.elite2ApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException: 418 418: [some error]")
-    assertThatJson(response.body).node("components.communityApiHealth.details.error").isEqualTo("org.springframework.web.client.HttpClientErrorException: 418 418: [some error]")
-    assertThatJson(response.body).node("status").isEqualTo("DOWN")
-    assertThat(response.statusCodeValue).isEqualTo(503)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
+        .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
+        .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
+        .jsonPath("status").isEqualTo("DOWN")
   }
 
   @Test
@@ -90,32 +108,45 @@ class HealthCheckIntegrationTest : IntegrationTest() {
     ReflectionTestUtils.setField(queueHealth, "queueName", "missing_queue")
     subPing(200)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("components.queueHealth.status").isEqualTo("DOWN")
+        .jsonPath("status").isEqualTo("DOWN")
 
-    assertThatJson(response.body).node("status").isEqualTo("DOWN")
-    assertThatJson(response.body).node("components.queueHealth.status").isEqualTo("DOWN")
-    assertThat(response.statusCodeValue).isEqualTo(503)
   }
 
   @Test
   fun `Queue health ok and dlq health ok, reports everything up`() {
     subPing(200)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("components.queueHealth.status").isEqualTo("UP")
+        .jsonPath("components.queueHealth.status").isEqualTo(DlqStatus.UP.description)
+        .jsonPath("status").isEqualTo("UP")
 
-    assertThatJson(response.body).node("status").isEqualTo("UP")
-    assertThatJson(response.body).node("components.queueHealth.status").isEqualTo("UP")
-    assertThatJson(response.body).node("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.UP.description)
-    assertThat(response.statusCodeValue).isEqualTo(200)
   }
 
   @Test
   fun `Dlq health reports interesting attributes`() {
     subPing(200)
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .isOk
+        .expectBody()
+        .jsonPath("components.queueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
 
-    assertThatJson(response.body).node("components.queueHealth.details.${MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
   }
 
   @Test
@@ -123,12 +154,15 @@ class HealthCheckIntegrationTest : IntegrationTest() {
     subPing(200)
     mockQueueWithoutRedrivePolicyAttributes()
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
-
-    assertThatJson(response.body).node("status").isEqualTo("DOWN")
-    assertThatJson(response.body).node("components.queueHealth.status").isEqualTo("DOWN")
-    assertThatJson(response.body).node("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-    assertThat(response.statusCodeValue).isEqualTo(503)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("status").isEqualTo("DOWN")
+        .jsonPath("components.queueHealth.status").isEqualTo("DOWN")
+        .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
   }
 
   @Test
@@ -136,10 +170,14 @@ class HealthCheckIntegrationTest : IntegrationTest() {
     subPing(200)
     mockQueueWithoutRedrivePolicyAttributes()
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
 
-    assertThatJson(response.body).node("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-    assertThat(response.statusCodeValue).isEqualTo(503)
   }
 
   @Test
@@ -147,10 +185,14 @@ class HealthCheckIntegrationTest : IntegrationTest() {
     subPing(200)
     ReflectionTestUtils.setField(queueHealth, "dlqName", "missing_queue")
 
-    val response = restTemplate.getForEntity("/health", String::class.java)
+    webTestClient.get()
+        .uri("/health")
+        .exchange()
+        .expectStatus()
+        .is5xxServerError
+        .expectBody()
+        .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
 
-    assertThatJson(response.body).node("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
-    assertThat(response.statusCodeValue).isEqualTo(503)
   }
 
   private fun subPing(status: Int) {

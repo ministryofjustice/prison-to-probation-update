@@ -3,50 +3,56 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.time.LocalDate
 
 @Service
-open class CommunityService(@Qualifier("communityApiRestTemplate") private val restTemplate: RestTemplate) {
+class CommunityService(@Qualifier("probationApiWebClient") private val webClient: WebClient) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
-    return try {
-      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber/{bookingNumber}", HttpMethod.PUT, HttpEntity(updateCustody), Custody::class.java, offenderNo, bookingNo)
-      response.body!!
-    } catch (e: HttpClientErrorException) {
-      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-      log.info("Booking {} not found for {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
-      null
-    }
+  fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
+    return webClient.put()
+        .uri("/secure/offenders/nomsNumber/$offenderNo/custody/bookingNumber/$bookingNo")
+        .bodyValue(updateCustody)
+        .retrieve()
+        .onStatus({ it == HttpStatus.NOT_FOUND }, {
+          log.info("Booking $bookingNo not found for $offenderNo message is ${it.statusCode().reasonPhrase}")
+          Mono.empty()
+        })
+        .bodyToMono(Custody::class.java)
+        .block()
   }
 
-  open fun updateProbationCustodyBookingNumber(offenderNo: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
-    return try {
-      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/custody/bookingNumber", HttpMethod.PUT, HttpEntity(updateCustodyBookingNumber), Custody::class.java, offenderNo)
-      response.body!!
-    } catch (e: HttpClientErrorException) {
-      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-      log.info("Booking not found for {} message is {}", offenderNo, e.responseBodyAsString)
-      null
-    }
+  fun updateProbationCustodyBookingNumber(offenderNo: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
+    return webClient.put()
+        .uri("/secure/offenders/nomsNumber/$offenderNo/custody/bookingNumber")
+        .bodyValue(updateCustodyBookingNumber)
+        .retrieve()
+        .onStatus({ it == HttpStatus.NOT_FOUND }, {
+          log.info("Booking not found for $offenderNo message is ${it.statusCode().reasonPhrase}")
+          Mono.empty()
+        })
+        .bodyToMono(Custody::class.java)
+        .block()
   }
-  open fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Custody? {
-    return try {
-      val response = restTemplate.exchange("/secure/offenders/nomsNumber/{nomsNumber}/bookingNumber/{bookingNo}/custody/keyDates", HttpMethod.POST, HttpEntity(replaceCustodyKeyDates), Custody::class.java, offenderNo, bookingNo)
-      response.body!!
-    } catch (e: HttpClientErrorException) {
-      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-      log.info("Booking not found for {} offender {} message is {}", bookingNo, offenderNo, e.responseBodyAsString)
-      null
-    }
+
+  fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Custody? {
+    return webClient.post()
+        .uri("/secure/offenders/nomsNumber/$offenderNo/bookingNumber/$bookingNo/custody/keyDates")
+        .bodyValue(replaceCustodyKeyDates)
+        .retrieve()
+        .onStatus({ it == HttpStatus.NOT_FOUND }, {
+          log.info("Booking not found for $bookingNo offender $offenderNo message is ${it.statusCode().reasonPhrase}")
+          Mono.empty()
+        })
+        .bodyToMono(Custody::class.java)
+        .block()
   }
 }
 

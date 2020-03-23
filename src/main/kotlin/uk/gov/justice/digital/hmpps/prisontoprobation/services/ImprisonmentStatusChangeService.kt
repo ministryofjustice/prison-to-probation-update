@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 
 
 @Service
-open class ImprisonmentStatusChangeService(
+class ImprisonmentStatusChangeService(
     private val telemetryClient: TelemetryClient,
     private val offenderService: OffenderService,
     private val communityService: CommunityService,
@@ -22,7 +22,7 @@ open class ImprisonmentStatusChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun checkImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage) {
+  fun checkImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage) {
     val (bookingId, imprisonmentStatusSeq) = message
     log.info("Imprisonment status for booking $bookingId has changed")
 

@@ -2,62 +2,63 @@
 
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
-import com.nhaarman.mockito_kotlin.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyLong
-import org.mockito.ArgumentMatchers.anyString
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.security.oauth2.client.OAuth2RestTemplate
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
+import java.net.HttpURLConnection.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class OffenderServiceTest {
-  private val restTemplate: OAuth2RestTemplate = mock()
-
+class OffenderServiceTest : IntegrationTest() {
+  @Autowired
   private lateinit var service: OffenderService
-
-  @BeforeEach
-  fun before() {
-    service = OffenderService(restTemplate)
-  }
+  @Autowired
+  private lateinit var objectMapper: ObjectMapper
 
   @Test
-  fun `test get offender calls rest template`() {
-    val prisonerListType = object : ParameterizedTypeReference<List<Prisoner>>() {
-    }
+  fun `test get offender calls rest endpoint`() {
     val expectedPrisoner = createPrisoner()
 
-    whenever(restTemplate.exchange(anyString(), any(), isNull(), eq(prisonerListType), anyString())).thenReturn(ResponseEntity.ok(listOf(expectedPrisoner)))
+    elite2MockServer.stubFor(get(anyUrl()).willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(listOf(expectedPrisoner).asJson())
+        .withStatus(HTTP_OK)))
+
 
     val offender = service.getOffender("AB123D")
 
     assertThat(offender).isEqualTo(expectedPrisoner)
-
-    verify(restTemplate).exchange("/api/prisoners?offenderNo={offenderNo}", HttpMethod.GET, null, prisonerListType, "AB123D")
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/prisoners?offenderNo=AB123D"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
   }
 
   @Test
-  fun `test get movement calls rest template`() {
+  fun `test get movement calls rest endpoint`() {
     val expectedMovement = createMovement()
-    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenReturn(ResponseEntity.ok(expectedMovement))
+
+    elite2MockServer.stubFor(get(anyUrl()).willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(expectedMovement.asJson())
+        .withStatus(HTTP_OK)))
 
     val movement = service.getMovement(1234L, 1L)
 
     assertThat(movement).isEqualTo(expectedMovement)
-
-    verify(restTemplate).getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, 1234L, 1L)
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/bookings/1234/movement/1"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
   }
 
   @Test
   fun `test get movement will be null if not found`() {
-    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.NOT_FOUND))
+    elite2MockServer.stubFor(get("/api/bookings/1234/movement/1").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withStatus(HTTP_NOT_FOUND)))
 
     val movement = service.getMovement(1234L, 1L)
 
@@ -66,33 +67,45 @@ class OffenderServiceTest {
 
   @Test
   fun `test get movement will throw exception for other types of http responses`() {
-    whenever(restTemplate.getForEntity<Movement>(anyString(), any(), anyLong(), anyLong())).thenThrow(HttpClientErrorException(HttpStatus.BAD_REQUEST))
+    elite2MockServer.stubFor(get("/api/bookings/1234/movement/1").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withStatus(HTTP_BAD_REQUEST)))
 
-    assertThatThrownBy { service.getMovement(1234L, 1L) }.isInstanceOf(HttpClientErrorException::class.java)
+
+    assertThatThrownBy { service.getMovement(1234L, 1L) }.isInstanceOf(BadRequest::class.java)
   }
 
   @Test
-  fun `test get booking calls rest template`() {
+  fun `test get booking calls rest endpoint`() {
     val expectedBooking = createBooking()
-    whenever(restTemplate.getForEntity<Booking>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedBooking))
+    elite2MockServer.stubFor(get(anyUrl()).willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(expectedBooking.asJson())
+        .withStatus(HTTP_OK)))
 
     val booking = service.getBooking(1234L)
 
     assertThat(booking).isEqualTo(expectedBooking)
-
-    verify(restTemplate).getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, 1234L)
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/bookings/1234?basicInfo=true"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
   }
 
   @Test
-  fun `test get sentence detail calls rest template`() {
+  fun `test get sentence detail calls rest endpoint`() {
     val expectedSentenceDetails = SentenceDetail()
-    whenever(restTemplate.getForEntity<SentenceDetail>(anyString(), any(), anyLong())).thenReturn(ResponseEntity.ok(expectedSentenceDetails))
+
+    elite2MockServer.stubFor(get("/api/bookings/1234/sentenceDetail").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(expectedSentenceDetails.asJson())
+        .withStatus(HTTP_OK)))
+
 
     val movement = service.getSentenceDetail(1234L)
 
     assertThat(movement).isEqualTo(expectedSentenceDetails)
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/bookings/1234/sentenceDetail"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
 
-    verify(restTemplate).getForEntity("/api/bookings/{bookingId}/sentenceDetail", SentenceDetail::class.java, 1234L)
   }
 
 
@@ -131,4 +144,7 @@ class OffenderServiceTest {
       dateOfBirth = LocalDate.of(1965, 7, 19)
 
   )
+
+  private fun Any.asJson() = objectMapper.writeValueAsBytes(this)
+
 }
