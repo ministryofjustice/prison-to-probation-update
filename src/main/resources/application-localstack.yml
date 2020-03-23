@@ -13,3 +13,6 @@ elite2:
 
 community:
   endpoint.url: http://localhost:8096
+
+offender-search:
+  endpoint.url: http://localhost:8097

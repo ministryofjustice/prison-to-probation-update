@@ -54,6 +54,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
         .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("OK")
         .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("OK")
         .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("OK")
+        .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("OK")
         .jsonPath("status").isEqualTo("UP")
   }
 
@@ -84,7 +85,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
         .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
         .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
         .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
-
+        .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
   }
 
   @Test
@@ -100,6 +101,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
         .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
         .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
         .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
+        .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
         .jsonPath("status").isEqualTo("DOWN")
   }
 
@@ -196,17 +198,22 @@ class HealthCheckIntegrationTest : IntegrationTest() {
   }
 
   private fun subPing(status: Int) {
-    oauthMockServer.stubFor(get("/auth/ping").willReturn(aResponse()
+    oauthMockServer.stubFor(get("/auth/health/ping").willReturn(aResponse()
         .withHeader("Content-Type", "application/json")
         .withBody(if (status == 200) "pong" else "some error")
         .withStatus(status)))
 
-    elite2MockServer.stubFor(get("/ping").willReturn(aResponse()
+    elite2MockServer.stubFor(get("/health/ping").willReturn(aResponse()
         .withHeader("Content-Type", "application/json")
         .withBody(if (status == 200) "pong" else "some error")
         .withStatus(status)))
 
-    communityMockServer.stubFor(get("/ping").willReturn(aResponse()
+    communityMockServer.stubFor(get("/health/ping").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(if (status == 200) "pong" else "some error")
+        .withStatus(status)))
+
+    searchMockServer.stubFor(get("/health/ping").willReturn(aResponse()
         .withHeader("Content-Type", "application/json")
         .withBody(if (status == 200) "pong" else "some error")
         .withStatus(status)))

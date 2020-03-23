@@ -15,7 +15,8 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfiguration(@Value("\${community.endpoint.url}") private val communityRootUri: String,
                              @Value("\${elite2.endpoint.url}") private val elite2RootUri: String,
-                             @Value("\${oauth.endpoint.url}") private val oauthRootUri: String) {
+                             @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
+                             @Value("\${offender-search.endpoint.url}") private val searchRootUri: String) {
 
   @Bean
   fun probationApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager?): WebClient? {
@@ -55,6 +56,11 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
   @Bean
   fun probationApiHealthWebClient(): WebClient {
     return WebClient.builder().baseUrl(communityRootUri).build()
+  }
+
+  @Bean
+  fun searchApiHealthWebClient(): WebClient {
+    return WebClient.builder().baseUrl(searchRootUri).build()
   }
 
   @Bean
