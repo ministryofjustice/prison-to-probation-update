@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-open class SentenceDatesChangeService(
+class SentenceDatesChangeService(
     val telemetryClient: TelemetryClient,
     private val offenderService: OffenderService,
     private val communityService: CommunityService,
@@ -17,7 +17,7 @@ open class SentenceDatesChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun checkSentenceDateChangeAndUpdateProbation(message: SentenceDatesChangeMessage) {
+  fun checkSentenceDateChangeAndUpdateProbation(message: SentenceDatesChangeMessage) {
     val (bookingId) = message
     log.info("Sentence dates for booking $bookingId have changed")
 

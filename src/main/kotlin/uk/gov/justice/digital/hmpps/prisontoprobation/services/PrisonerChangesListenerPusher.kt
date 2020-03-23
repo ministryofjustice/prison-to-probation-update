@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class PrisonerChangesListenerPusher(
+class PrisonerChangesListenerPusher(
     private val prisonMovementService: PrisonMovementService,
     private val bookingChangeService: BookingChangeService,
     private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
@@ -22,7 +22,7 @@ open class PrisonerChangesListenerPusher(
   }
 
   @JmsListener(destination = "\${sqs.queue.name}")
-  open fun pushPrisonUpdateToProbation(requestJson: String?) {
+  fun pushPrisonUpdateToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
     val eventType = messageAttributes.eventType.Value

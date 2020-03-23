@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
 
 @ActiveProfiles(profiles = ["test", "test-queue"])
-open class QueueIntegrationTest : IntegrationTest() {
+class QueueIntegrationTest : IntegrationTest() {
 
     @Autowired
     lateinit var queueUrl: String

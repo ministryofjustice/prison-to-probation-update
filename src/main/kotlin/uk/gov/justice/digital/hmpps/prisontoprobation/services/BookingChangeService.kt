@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service
 
 
 @Service
-open class BookingChangeService(private val telemetryClient: TelemetryClient
+class BookingChangeService(private val telemetryClient: TelemetryClient
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun checkBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) {
+  fun checkBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) {
     val (bookingId: Long, offenderId: Long, bookingNumber: String, previousBookingNumber: String) = message
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),

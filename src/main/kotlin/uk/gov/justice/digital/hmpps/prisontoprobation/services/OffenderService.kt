@@ -1,47 +1,51 @@
-@file:Suppress("DEPRECATION")
-
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.security.oauth2.client.OAuth2RestTemplate
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
-open class OffenderService(@Qualifier("elite2ApiRestTemplate") val restTemplate: OAuth2RestTemplate) {
+class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: WebClient) {
 
   private val prisonerListType = object : ParameterizedTypeReference<List<Prisoner>>() {
   }
 
-  open fun getOffender(offenderNo: String): Prisoner {
-    val response = restTemplate.exchange("/api/prisoners?offenderNo={offenderNo}", HttpMethod.GET, null, prisonerListType, offenderNo)
-    return response.body!![0]
+  fun getOffender(offenderNo: String): Prisoner {
+    return webClient.get()
+        .uri("/api/prisoners?offenderNo=$offenderNo")
+        .retrieve()
+        .bodyToMono(prisonerListType)
+        .block()!![0]
   }
 
-  open fun getBooking(bookingId: Long): Booking {
-    val response = restTemplate.getForEntity("/api/bookings/{bookingId}?basicInfo=true", Booking::class.java, bookingId)
-    return response.body!!
+  fun getBooking(bookingId: Long): Booking {
+    return webClient.get()
+        .uri("/api/bookings/$bookingId?basicInfo=true")
+        .retrieve()
+        .bodyToMono(Booking::class.java)
+        .block()!!
   }
 
-  open fun getSentenceDetail(bookingId: Long): SentenceDetail {
-    val response = restTemplate.getForEntity("/api/bookings/{bookingId}/sentenceDetail", SentenceDetail::class.java, bookingId)
-    return response.body!!
+  fun getSentenceDetail(bookingId: Long): SentenceDetail {
+    return webClient.get()
+        .uri("/api/bookings/$bookingId/sentenceDetail")
+        .retrieve()
+        .bodyToMono(SentenceDetail::class.java)
+        .block()!!
   }
 
-  open fun getMovement(bookingId: Long, movementSeq: Long): Movement? {
-    return try {
-      val response = restTemplate.getForEntity("/api/bookings/{bookingId}/movement/{movementSeq}", Movement::class.java, bookingId, movementSeq)
-      response.body!!
-    } catch (e: HttpClientErrorException) {
-      if (e.statusCode != HttpStatus.NOT_FOUND) throw e
-      // 404 is "valid" since it means movement is for an inactive booking
-      null
-    }
+  fun getMovement(bookingId: Long, movementSeq: Long): Movement? {
+    return webClient.get()
+        .uri("/api/bookings/$bookingId/movement/$movementSeq")
+        .retrieve()
+        .onStatus({ it == HttpStatus.NOT_FOUND }, { Mono.empty() })
+        .bodyToMono(Movement::class.java)
+        .block()
   }
 }
 

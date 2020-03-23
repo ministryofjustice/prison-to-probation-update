@@ -4,12 +4,10 @@ import com.amazonaws.services.sqs.AmazonSQS
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -23,10 +21,6 @@ import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockSe
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 abstract class IntegrationTest {
-  @Suppress("unused")
-  @Autowired
-  lateinit var restTemplate: TestRestTemplate
-
   @Value("\${token}")
   private val token: String? = null
 

@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 
 @Service
-open class PrisonMovementService(
+class PrisonMovementService(
     private val offenderService: OffenderService,
     private val communityService: CommunityService,
     private val telemetryClient: TelemetryClient,
@@ -19,7 +19,7 @@ open class PrisonMovementService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  open fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
+  fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
     val (bookingId, movementSeq) = prisonerMovementMessage
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),

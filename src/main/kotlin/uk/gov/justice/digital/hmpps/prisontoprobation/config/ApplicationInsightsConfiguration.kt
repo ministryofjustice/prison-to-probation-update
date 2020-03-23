@@ -9,10 +9,10 @@ import org.springframework.core.type.AnnotatedTypeMetadata
  * we don't get a telemetry bean and application won't start.  Therefore need this backup configuration.
  */
 @Configuration
-open class ApplicationInsightsConfiguration {
+class ApplicationInsightsConfiguration {
     @Bean
     @Conditional(AppInsightKeyAbsentCondition::class)
-    open fun telemetryClient(): TelemetryClient {
+    fun telemetryClient(): TelemetryClient {
         return TelemetryClient()
     }
 
