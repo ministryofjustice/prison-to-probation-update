@@ -13,7 +13,7 @@ abstract class HealthCheck(private val webClient: WebClient) : HealthIndicator {
 
   override fun health(): Health? {
     return webClient.get()
-        .uri("/ping")
+        .uri("/health/ping")
         .retrieve()
         .toEntity(String::class.java)
         .flatMap { Mono.just(Health.up().withDetail("HttpStatus", it?.statusCode).build()) }
@@ -30,6 +30,10 @@ constructor(@Qualifier("prisonApiHealthWebClient") webClient: WebClient) : Healt
 @Component
 class CommunityApiHealth
 constructor(@Qualifier("probationApiHealthWebClient") webClient: WebClient) : HealthCheck(webClient)
+
+@Component
+class SearchApiHealth
+constructor(@Qualifier("searchApiHealthWebClient") webClient: WebClient) : HealthCheck(webClient)
 
 @Component
 class OAuthApiHealth

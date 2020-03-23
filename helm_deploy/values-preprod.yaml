@@ -25,6 +25,7 @@ env:
   OAUTH_ENDPOINT_URL: "https://gateway.preprod.nomis-api.service.hmpps.dsd.io/auth"
   ELITE2_ENDPOINT_URL: "https://gateway.preprod.nomis-api.service.hmpps.dsd.io/elite2api"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.pre-prod.delius.probation.hmpps.dsd.io"
+  OFFENDER_SEARCH_ENDPOINT_URL: "https://offender-search.pre-prod.delius.probation.hmpps.dsd.io"
   PRISONTOPROBATION_ONLY_PRISONS: ""
 
 whitelist:

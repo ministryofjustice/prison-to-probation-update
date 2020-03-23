@@ -17,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.CommunityMockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.Elite2MockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockServer
+import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.SearchMockServer
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -32,6 +33,7 @@ abstract class IntegrationTest {
     internal val elite2MockServer = Elite2MockServer()
     internal val oauthMockServer = OAuthMockServer()
     internal val communityMockServer = CommunityMockServer()
+    internal val searchMockServer = SearchMockServer()
 
     @BeforeAll
     @JvmStatic
@@ -39,6 +41,7 @@ abstract class IntegrationTest {
       elite2MockServer.start()
       oauthMockServer.start()
       communityMockServer.start()
+      searchMockServer.start()
     }
 
     @AfterAll
@@ -47,6 +50,7 @@ abstract class IntegrationTest {
       elite2MockServer.stop()
       oauthMockServer.stop()
       communityMockServer.stop()
+      searchMockServer.stop()
     }
   }
 
@@ -61,6 +65,7 @@ abstract class IntegrationTest {
     oauthMockServer.resetAll()
     elite2MockServer.resetAll()
     communityMockServer.resetAll()
+    searchMockServer.resetAll()
 
     oauthMockServer.stubGrantToken()
   }

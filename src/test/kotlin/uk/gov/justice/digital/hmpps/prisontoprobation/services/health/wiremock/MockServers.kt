@@ -10,6 +10,8 @@ class Elite2MockServer : WireMockServer(8093)
 
 class CommunityMockServer : WireMockServer(8096)
 
+class SearchMockServer : WireMockServer(8097)
+
 class OAuthMockServer : WireMockServer(8090) {
   private val gson = GsonBuilder().create()
 
