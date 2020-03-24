@@ -10,7 +10,6 @@ import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mockingDetails
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 
 class MessageIntegrationTest : QueueIntegrationTest() {
@@ -50,8 +49,9 @@ class MessageIntegrationTest : QueueIntegrationTest() {
         await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
+        await untilCallTo { offenderSearchPostCountFor("/match") } matches { it == 1 }
         await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
-        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 1 }
+        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 2 }
 
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), any(), isNull())
     }

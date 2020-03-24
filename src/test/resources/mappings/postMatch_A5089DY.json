@@ -1,0 +1,310 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/match"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    {
+      "matches": [
+        {
+          "offender": {
+            "previousSurname": "Dolphin",
+            "offenderId": 2500155552,
+            "title": null,
+            "firstName": "Andy",
+            "middleNames": [
+              "Stephen"
+            ],
+            "surname": "Marke",
+            "dateOfBirth": "1965-07-19",
+            "gender": "Male",
+            "otherIds": {
+              "crn": "X142620",
+              "pncNumber": null,
+              "croNumber": "sg93/111111d",
+              "niNumber": "ne998877c",
+              "nomsNumber": null,
+              "immigrationNumber": null,
+              "mostRecentPrisonerNumber": null
+            },
+            "contactDetails": {
+              "phoneNumbers": [
+                {
+                  "number": "07973 111 5555",
+                  "type": "MOBILE"
+                }
+              ],
+              "emailAddresses": [
+                "andy.marke@digital.justice.gov.uk"
+              ],
+              "allowSMS": null,
+              "addresses": [
+                {
+                  "from": "2018-01-22",
+                  "to": "2018-02-02",
+                  "noFixedAbode": false,
+                  "notes": null,
+                  "addressNumber": "63",
+                  "buildingName": null,
+                  "streetName": "Broomgrove Road",
+                  "district": null,
+                  "town": "Sheffield",
+                  "county": "South Yorkshire",
+                  "postcode": "S10 2NA",
+                  "telephoneNumber": null,
+                  "status": {
+                    "code": "P",
+                    "description": "Previous"
+                  }
+                },
+                {
+                  "from": "2018-02-02",
+                  "to": null,
+                  "noFixedAbode": false,
+                  "notes": null,
+                  "addressNumber": "25",
+                  "buildingName": null,
+                  "streetName": "Colligiate Cresecent",
+                  "district": null,
+                  "town": "Sheffield",
+                  "county": null,
+                  "postcode": "S10 2BJ",
+                  "telephoneNumber": null,
+                  "status": {
+                    "code": "M",
+                    "description": "Main"
+                  }
+                }
+              ]
+            },
+            "offenderProfile": {
+              "ethnicity": null,
+              "nationality": null,
+              "secondaryNationality": null,
+              "notes": null,
+              "immigrationStatus": null,
+              "offenderLanguages": {
+                "primaryLanguage": null,
+                "otherLanguages": null,
+                "languageConcerns": null,
+                "requiresInterpreter": null
+              },
+              "religion": null,
+              "sexualOrientation": null,
+              "remandStatus": "Remanded In Custody",
+              "previousConviction": {
+                "convictionDate": null,
+                "detail": null
+              },
+              "riskColour": "Amber",
+              "disabilities": null
+            },
+            "offenderAliases": [
+              {
+                "dateOfBirth": "1999-08-05",
+                "firstName": "Andrew",
+                "middleNames": null,
+                "surname": "Marke",
+                "gender": "Male"
+              },
+              {
+                "dateOfBirth": "1975-07-19",
+                "firstName": "Mr",
+                "middleNames": null,
+                "surname": "Blobby",
+                "gender": "Male"
+              }
+            ],
+            "offenderManagers": [
+              {
+                "trustOfficer": {
+                  "forenames": "CRC",
+                  "surname": "Created"
+                },
+                "staff": {
+                  "forenames": "CRC",
+                  "surname": "Created"
+                },
+                "providerEmployee": null,
+                "partitionArea": "National Data",
+                "softDeleted": false,
+                "team": {
+                  "code": null,
+                  "description": "CRC Created",
+                  "telephone": null,
+                  "localDeliveryUnit": null,
+                  "district": {
+                    "code": "C09UAT",
+                    "description": "Unallocated Level 3(C09)"
+                  },
+                  "borough": {
+                    "code": "C09UAT",
+                    "description": "Unallocated Level 2(C09)"
+                  }
+                },
+                "probationArea": {
+                  "probationAreaId": null,
+                  "code": "C09",
+                  "description": "CPA South Yorkshire",
+                  "nps": null,
+                  "organisation": null,
+                  "institution": null,
+                  "teams": null
+                },
+                "fromDate": "2018-04-16",
+                "toDate": null,
+                "active": true,
+                "allocationReason": {
+                  "code": "ACRC",
+                  "description": "Case Allocated to CRC"
+                }
+              }
+            ],
+            "softDeleted": false,
+            "currentDisposal": "1",
+            "partitionArea": "National Data",
+            "currentRestriction": false,
+            "restrictionMessage": "This is a restricted offender record. Please contact a system administrator",
+            "currentExclusion": true,
+            "exclusionMessage": "You are excluded from viewing this offender record. Please contact a system administrator"
+          }
+        },
+        {
+          "offender": {
+            "previousSurname": null,
+            "offenderId": 2500194434,
+            "title": "Mr",
+            "firstName": "Andy",
+            "middleNames": [
+              "Charlie"
+            ],
+            "surname": "Dolphin-Marke",
+            "dateOfBirth": "1965-07-19",
+            "gender": "Male",
+            "otherIds": {
+              "crn": "X181002",
+              "pncNumber": "2004/0050290Y",
+              "croNumber": null,
+              "niNumber": null,
+              "nomsNumber": "G8020GG",
+              "immigrationNumber": null,
+              "mostRecentPrisonerNumber": null
+            },
+            "contactDetails": {
+              "phoneNumbers": [
+                {
+                  "number": "07973 555 1234",
+                  "type": "MOBILE"
+                }
+              ],
+              "emailAddresses": [
+                "andy.dolphin@digital.justice.gov.uk"
+              ],
+              "allowSMS": null,
+              "addresses": [
+                {
+                  "from": "2018-12-11",
+                  "to": null,
+                  "noFixedAbode": true,
+                  "notes": null,
+                  "addressNumber": null,
+                  "buildingName": null,
+                  "streetName": null,
+                  "district": null,
+                  "town": null,
+                  "county": null,
+                  "postcode": "NF1 1NF",
+                  "telephoneNumber": null,
+                  "status": {
+                    "code": "M",
+                    "description": "Main"
+                  }
+                }
+              ]
+            },
+            "offenderProfile": {
+              "ethnicity": null,
+              "nationality": null,
+              "secondaryNationality": null,
+              "notes": null,
+              "immigrationStatus": null,
+              "offenderLanguages": {
+                "primaryLanguage": null,
+                "otherLanguages": null,
+                "languageConcerns": null,
+                "requiresInterpreter": null
+              },
+              "religion": null,
+              "sexualOrientation": null,
+              "remandStatus": null,
+              "previousConviction": {
+                "convictionDate": null,
+                "detail": null
+              },
+              "riskColour": null,
+              "disabilities": null
+            },
+            "offenderAliases": null,
+            "offenderManagers": [
+              {
+                "trustOfficer": {
+                  "forenames": "Unallocated Staff(N01)",
+                  "surname": "Staff"
+                },
+                "staff": {
+                  "forenames": "Unallocated Staff(N01)",
+                  "surname": "Staff"
+                },
+                "providerEmployee": null,
+                "partitionArea": "National Data",
+                "softDeleted": false,
+                "team": {
+                  "code": null,
+                  "description": "Unallocated Team(N01)",
+                  "telephone": null,
+                  "localDeliveryUnit": null,
+                  "district": {
+                    "code": "N01NPSA",
+                    "description": "N01 Division"
+                  },
+                  "borough": {
+                    "code": "N01100",
+                    "description": "N01 Cluster 1"
+                  }
+                },
+                "probationArea": {
+                  "probationAreaId": null,
+                  "code": "N01",
+                  "description": "NPS North West",
+                  "nps": null,
+                  "organisation": null,
+                  "institution": null,
+                  "teams": null
+                },
+                "fromDate": "1900-01-01",
+                "toDate": null,
+                "active": true,
+                "allocationReason": {
+                  "code": "IN1",
+                  "description": "Initial Allocation"
+                }
+              }
+            ],
+            "softDeleted": false,
+            "currentDisposal": "0",
+            "partitionArea": "National Data",
+            "currentRestriction": true,
+            "restrictionMessage": "NAUGHTY!!!!",
+            "currentExclusion": true,
+            "exclusionMessage": "You are excluded from viewing this offender record. You can't be trusted."
+          }
+        }
+      ]
+    }
+  }
+}

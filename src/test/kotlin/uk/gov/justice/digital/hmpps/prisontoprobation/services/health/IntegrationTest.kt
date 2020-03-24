@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
 import com.amazonaws.services.sqs.AmazonSQS
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
@@ -28,6 +30,9 @@ abstract class IntegrationTest {
   @SpyBean
   @Qualifier("awsSqsClient")
   internal lateinit var awsSqsClient: AmazonSQS
+
+  @Autowired
+  private lateinit var objectMapper: ObjectMapper
 
   companion object {
     internal val elite2MockServer = Elite2MockServer()
@@ -76,4 +81,7 @@ abstract class IntegrationTest {
     headers.contentType = MediaType.APPLICATION_JSON
     return HttpEntity(entity, headers)
   }
+
+  internal fun Any.asJson() = objectMapper.writeValueAsBytes(this)
+
 }

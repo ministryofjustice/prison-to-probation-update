@@ -9,17 +9,23 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 
 class ImprisonmentStatusChangeServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
+  private val offenderProbationMatchService: OffenderProbationMatchService = mock()
 
-  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService, listOf("MDI", "WII"))
+  private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService, offenderProbationMatchService, listOf("MDI", "WII"))
 
   @Nested
   inner class CheckImprisonmentStatusChangeAndUpdateProbation {
+    @BeforeEach
+    fun setUp() {
+      whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo) }
+    }
 
     @Nested
     inner class StatusChange {
@@ -40,6 +46,15 @@ class ImprisonmentStatusChangeServiceTest {
       fun `will request the booking number`() {
         service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderService).getBooking(12345L)
+      }
+
+      @Test
+      fun `will check offender exists in probation`() {
+        val booking = createBooking()
+        whenever(offenderService.getBooking(any())).thenReturn(booking)
+
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        verify(offenderProbationMatchService).ensureOffenderNumberExistsInProbation(booking)
       }
 
       @Test

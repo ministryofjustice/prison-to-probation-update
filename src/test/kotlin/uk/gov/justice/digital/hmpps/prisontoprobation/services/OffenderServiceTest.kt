@@ -2,25 +2,27 @@
 
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
-import java.net.HttpURLConnection.*
+import java.net.HttpURLConnection.HTTP_BAD_REQUEST
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
+import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OffenderServiceTest : IntegrationTest() {
   @Autowired
   private lateinit var service: OffenderService
-  @Autowired
-  private lateinit var objectMapper: ObjectMapper
-
   @Test
   fun `test get offender calls rest endpoint`() {
     val expectedPrisoner = createPrisoner()
@@ -144,7 +146,4 @@ class OffenderServiceTest : IntegrationTest() {
       dateOfBirth = LocalDate.of(1965, 7, 19)
 
   )
-
-  private fun Any.asJson() = objectMapper.writeValueAsBytes(this)
-
 }

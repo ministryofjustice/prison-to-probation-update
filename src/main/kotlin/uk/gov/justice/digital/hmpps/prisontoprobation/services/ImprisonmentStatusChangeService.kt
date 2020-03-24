@@ -16,6 +16,7 @@ class ImprisonmentStatusChangeService(
     private val telemetryClient: TelemetryClient,
     private val offenderService: OffenderService,
     private val communityService: CommunityService,
+    private val offenderProbationMatchService: OffenderProbationMatchService,
     @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
@@ -38,7 +39,8 @@ class ImprisonmentStatusChangeService(
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
     val booking = getActiveBooking(bookingId).onIgnore { return it.reason }
-    val (bookingNumber, _, offenderNo) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking).with(sentenceStartDate) }
+    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking).onIgnore { return it.reason }
+    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking).with(sentenceStartDate) }
 
     return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {
       TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
