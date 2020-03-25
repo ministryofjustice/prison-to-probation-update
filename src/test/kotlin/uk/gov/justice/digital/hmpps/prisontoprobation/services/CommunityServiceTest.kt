@@ -1,7 +1,15 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.matching
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
@@ -9,14 +17,14 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
-import java.net.HttpURLConnection.*
+import java.net.HttpURLConnection.HTTP_BAD_REQUEST
+import java.net.HttpURLConnection.HTTP_NOT_FOUND
+import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
 
 class CommunityServiceTest : IntegrationTest() {
   @Autowired
   private lateinit var service: CommunityService
-  @Autowired
-  private lateinit var objectMapper: ObjectMapper
 
   @Nested
   inner class WhenUpdateCustody {
@@ -165,6 +173,4 @@ class CommunityServiceTest : IntegrationTest() {
   )
 
   private fun createReplaceCustodyKeyDates() = ReplaceCustodyKeyDates()
-
-  private fun Any.asJson() = objectMapper.writeValueAsBytes(this)
 }
