@@ -16,7 +16,8 @@ import org.springframework.web.reactive.function.client.WebClient
 class WebClientConfiguration(@Value("\${community.endpoint.url}") private val communityRootUri: String,
                              @Value("\${elite2.endpoint.url}") private val elite2RootUri: String,
                              @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
-                             @Value("\${offender-search.endpoint.url}") private val searchRootUri: String) {
+                             @Value("\${offender-search.endpoint.url}") private val searchRootUri: String,
+                             private val webClientBuilder: WebClient.Builder ) {
 
   @Bean
   fun probationApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
@@ -24,7 +25,7 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
     oauth2Client.setDefaultClientRegistrationId("probation-api")
 
 
-    return WebClient.builder()
+    return webClientBuilder
         .baseUrl(communityRootUri)
         .apply(oauth2Client.oauth2Configuration())
         .exchangeStrategies(ExchangeStrategies.builder()
@@ -41,7 +42,7 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("prison-api")
 
-    return WebClient.builder()
+    return webClientBuilder
         .baseUrl(elite2RootUri)
         .apply(oauth2Client.oauth2Configuration())
         .exchangeStrategies(ExchangeStrategies.builder()
@@ -59,7 +60,7 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
     oauth2Client.setDefaultClientRegistrationId("offender-search-api")
 
 
-    return WebClient.builder()
+    return webClientBuilder
         .baseUrl(searchRootUri)
         .apply(oauth2Client.oauth2Configuration())
         .exchangeStrategies(ExchangeStrategies.builder()
@@ -75,22 +76,22 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
 
   @Bean
   fun probationApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(communityRootUri).build()
+    return webClientBuilder.baseUrl(communityRootUri).build()
   }
 
   @Bean
   fun searchApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(searchRootUri).build()
+    return webClientBuilder.baseUrl(searchRootUri).build()
   }
 
   @Bean
   fun prisonApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(elite2RootUri).build()
+    return webClientBuilder.baseUrl(elite2RootUri).build()
   }
 
   @Bean
   fun oauthApiHealthWebClient(): WebClient {
-    return WebClient.builder().baseUrl(oauthRootUri).build()
+    return webClientBuilder.baseUrl(oauthRootUri).build()
   }
 
   @Bean

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -22,6 +23,7 @@ class OffenderSearchService(@Qualifier("offenderSearchApiWebClient") private val
 data class MatchRequest(
     val firstName: String,
     val surname: String,
+    @JsonFormat(pattern="yyyy-MM-dd")
     val dateOfBirth: LocalDate,
     val nomsNumber: String,
     val activeSentence: Boolean = true,
