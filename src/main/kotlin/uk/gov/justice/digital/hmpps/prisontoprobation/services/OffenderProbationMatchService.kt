@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 
@@ -8,17 +10,27 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 @Service
 class OffenderProbationMatchService(
     private val telemetryClient: TelemetryClient,
-    private val offenderSearchService: OffenderSearchService
+    private val offenderSearchService: OffenderSearchService,
+    private val offenderService: OffenderService
 ) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
   fun ensureOffenderNumberExistsInProbation(booking: Booking): Result<String, TelemetryEvent> {
+    val prisoner = offenderService.getOffender(booking.offenderNo)
 
     val result = offenderSearchService.matchProbationOffender(MatchRequest(
         firstName = booking.firstName,
         surname = booking.lastName,
         dateOfBirth = booking.dateOfBirth,
         nomsNumber = booking.offenderNo,
+        croNumber = prisoner.croNumber,
+        pncNumber = prisoner.pncNumber,
         activeSentence = true
     ))
+
+    log.debug("${booking.offenderNo} matched ${result.matches.size} offender(s)")
 
     // TODO for now just log the match and throw results away
     telemetryClient.trackEvent(

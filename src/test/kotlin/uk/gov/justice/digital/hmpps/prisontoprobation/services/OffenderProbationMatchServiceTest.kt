@@ -9,18 +9,25 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 internal class OffenderProbationMatchServiceTest {
   private val offenderSearchService: OffenderSearchService = mock()
+  private val offenderService: OffenderService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService)
+  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService, offenderService)
+
+  @BeforeEach
+  fun setup() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf()))
+    whenever(offenderService.getOffender(any())).thenReturn(prisonerOf())
+  }
 
   @Test
-  fun `will call matching service`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf()))
-
+  fun `will call matching service using booking and offender details`() {
+    whenever(offenderService.getOffender(any())).thenReturn(prisonerOf(croNumber = "SF80/655108T", pncNumber = "18/0123456X"))
     service.ensureOffenderNumberExistsInProbation(bookingOf(
         offenderNo = "AB123D",
         firstName = "John",
@@ -34,13 +41,29 @@ internal class OffenderProbationMatchServiceTest {
       assertThat(it.firstName).isEqualTo("John")
       assertThat(it.surname).isEqualTo("Smith")
       assertThat(it.nomsNumber).isEqualTo("AB123D")
+      assertThat(it.croNumber).isEqualTo("SF80/655108T")
+      assertThat(it.pncNumber).isEqualTo("18/0123456X")
+    })
+  }
+
+  @Test
+  fun `will call matching service with null keyids when not present`() {
+    whenever(offenderService.getOffender(any())).thenReturn(prisonerOf(croNumber = null, pncNumber = null))
+    service.ensureOffenderNumberExistsInProbation(bookingOf(
+        offenderNo = "AB123D",
+        firstName = "John",
+        lastName = "Smith",
+        dateOfBirth = LocalDate.of(1965, 7, 19)
+    ))
+
+    verify(offenderSearchService).matchProbationOffender(check {
+      assertThat(it.pncNumber).isNull()
+      assertThat(it.croNumber).isNull()
     })
   }
 
   @Test
   fun `will return the offender number`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf()))
-
     val offenderNo = service.ensureOffenderNumberExistsInProbation(bookingOf(
         offenderNo = "A5089DY")).onIgnore { return }
     assertThat(offenderNo).isEqualTo("A5089DY")
@@ -76,4 +99,21 @@ internal class OffenderProbationMatchServiceTest {
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth)
+
+  private fun prisonerOf(croNumber: String? = null, pncNumber: String? = null) = Prisoner(
+      offenderNo = "AB123D",
+      pncNumber = pncNumber,
+      croNumber = croNumber,
+      firstName = "",
+      middleNames = "",
+      lastName = "",
+      dateOfBirth = "",
+      currentlyInPrison = "",
+      latestBookingId = 1L,
+      latestLocationId = "",
+      latestLocation = "",
+      convictedStatus = "",
+      imprisonmentStatus = "",
+      receptionDate = "")
+
 }
