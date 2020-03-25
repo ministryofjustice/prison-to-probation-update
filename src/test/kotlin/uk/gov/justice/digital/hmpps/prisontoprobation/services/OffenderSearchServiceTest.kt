@@ -34,8 +34,7 @@ internal class OffenderSearchServiceTest : IntegrationTest() {
           .withRequestBody(matchingJsonPath("surname", equalTo("Smith")))
           .withRequestBody(matchingJsonPath("firstName", equalTo("John")))
           .withRequestBody(matchingJsonPath("nomsNumber", equalTo("A12345")))
-          // TODO work why dates are not written correctly in tests but are in real world
-          // .withRequestBody(matchingJsonPath("dateOfBirth", equalTo("1965-07-19")))
+          .withRequestBody(matchingJsonPath("dateOfBirth", equalTo("1965-07-19")))
           .withHeader("Authorization", equalTo("Bearer ABCDE")))
     }
 
