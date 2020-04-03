@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
@@ -158,6 +159,25 @@ class CommunityServiceTest : IntegrationTest() {
     }
   }
 
+  @Nested
+  internal inner class GetConvictions{
+    @Test
+    fun `test get convictions calls rest endpoint`() {
+      val expectedConvictions = listOf(Conviction(index = "1", active = true))
+
+      communityMockServer.stubFor(WireMock.get(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(expectedConvictions.asJson())
+          .withStatus(HTTP_OK)))
+
+
+      val convictions = service.getConvictions("X153626")
+
+      assertThat(convictions).isEqualTo(expectedConvictions)
+      communityMockServer.verify(WireMock.getRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/convictions"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE")))
+    }
+  }
   private fun createUpdatedCustody() = Custody(
       institution = Institution("Doncaster"),
       bookingNumber = "38353A"

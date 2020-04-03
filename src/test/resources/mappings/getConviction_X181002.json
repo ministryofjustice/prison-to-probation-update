@@ -1,0 +1,154 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/secure/offenders/crn/X181002/convictions"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "convictionId": 2500283547,
+        "index": "3",
+        "active": true,
+        "inBreach": false,
+        "convictionDate": "2020-01-24",
+        "referralDate": "2019-03-19",
+        "offences": [
+          {
+            "offenceId": "M2500283547",
+            "mainOffence": true,
+            "detail": {
+              "code": "01200",
+              "description": "Abandoning children under two years - 01200",
+              "mainCategoryCode": "012",
+              "mainCategoryDescription": "Abandoning children under two years",
+              "mainCategoryAbbreviation": "Abandoning children under two years",
+              "ogrsOffenceCategory": "Violence",
+              "subCategoryCode": "00",
+              "subCategoryDescription": "Abandoning children under two years",
+              "form20Code": "27"
+            },
+            "offenceDate": "2019-03-18T00:00:00",
+            "offenceCount": 1,
+            "offenderId": 2500166978,
+            "createdDatetime": "2019-03-19T08:38:00",
+            "lastUpdatedDatetime": "2019-03-19T08:38:00"
+          }
+        ],
+        "sentence": {
+          "description": "CJA - Std Determinate Custody",
+          "originalLength": 10,
+          "originalLengthUnits": "Years",
+          "defaultLength": 120,
+          "lengthInDays": 3652,
+          "startDate": "2019-02-11"
+        },
+        "latestCourtAppearanceOutcome": {
+          "code": "301",
+          "description": "CJA - Std Determinate Custody"
+        },
+        "custody": {
+          "bookingNumber": "38353A",
+          "institution": {
+            "institutionId": 97,
+            "isEstablishment": true,
+            "code": "MDIHMP",
+            "description": "Moorland (HMP & YOI)",
+            "institutionName": "Moorland (HMP & YOI)",
+            "establishmentType": {
+              "code": "E",
+              "description": "Prison"
+            },
+            "nomsPrisonInstitutionCode": "MDI"
+          },
+          "keyDates": {
+            "conditionalReleaseDate": "2027-09-19",
+            "licenceExpiryDate": "2032-01-21",
+            "hdcEligibilityDate": "2026-07-24",
+            "paroleEligibilityDate": "2024-07-20",
+            "sentenceExpiryDate": "2035-01-20",
+            "expectedReleaseDate": "2027-09-19"
+          }
+        }
+      },
+      {
+        "convictionId": 2500258955,
+        "index": "1",
+        "active": true,
+        "inBreach": false,
+        "convictionDate": "2018-10-30",
+        "referralDate": "2018-10-04",
+        "offences": [
+          {
+            "offenceId": "M2500258955",
+            "mainOffence": true,
+            "detail": {
+              "code": "80500",
+              "description": "Accident offences - 80500",
+              "mainCategoryCode": "805",
+              "mainCategoryDescription": "Accident offences",
+              "mainCategoryAbbreviation": "Accident offences",
+              "ogrsOffenceCategory": "Other motoring",
+              "subCategoryCode": "00",
+              "subCategoryDescription": "Accident offences",
+              "form20Code": "13"
+            },
+            "offenceDate": "2018-10-01T00:00:00",
+            "offenceCount": 1,
+            "offenderId": 2500166978,
+            "createdDatetime": "2018-10-05T12:13:43",
+            "lastUpdatedDatetime": "2018-10-05T12:13:43"
+          }
+        ],
+        "sentence": {
+          "description": "CJA - Community Order",
+          "originalLength": 12,
+          "originalLengthUnits": "Months",
+          "defaultLength": 12,
+          "lengthInDays": 364,
+          "startDate": "2018-10-31"
+        },
+        "latestCourtAppearanceOutcome": {
+          "code": "201",
+          "description": "CJA - Community Order"
+        }
+      },
+      {
+        "convictionId": 2500258960,
+        "index": "2",
+        "active": true,
+        "inBreach": false,
+        "referralDate": "2018-10-04",
+        "offences": [
+          {
+            "offenceId": "M2500258960",
+            "mainOffence": true,
+            "detail": {
+              "code": "15516",
+              "description": "Acting in a disruptive manner (Air Navigation) - 15516",
+              "mainCategoryCode": "155",
+              "mainCategoryDescription": "Air Force - offences associated with",
+              "mainCategoryAbbreviation": "Air Force - offences associated with",
+              "ogrsOffenceCategory": "Other offence",
+              "subCategoryCode": "16",
+              "subCategoryDescription": "Acting in a disruptive manner (Air Navigation)",
+              "form20Code": "15"
+            },
+            "offenceDate": "2018-10-03T00:00:00",
+            "offenceCount": 1,
+            "offenderId": 2500166978,
+            "createdDatetime": "2018-10-05T12:26:35",
+            "lastUpdatedDatetime": "2018-10-05T12:26:35"
+          }
+        ],
+        "latestCourtAppearanceOutcome": {
+          "code": "101",
+          "description": "Adjourned - Pre-Sentence Report"
+        }
+      }
+    ]
+  }
+}

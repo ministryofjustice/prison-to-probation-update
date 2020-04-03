@@ -39,7 +39,7 @@ class ImprisonmentStatusChangeService(
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
     val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
     val booking = getActiveBooking(bookingId).onIgnore { return it.reason }
-    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking).onIgnore { return it.reason }
+    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate).onIgnore { return it.reason }
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking).with(sentenceStartDate) }
 
     return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {

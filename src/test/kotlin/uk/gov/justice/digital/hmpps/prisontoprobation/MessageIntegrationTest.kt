@@ -49,9 +49,12 @@ class MessageIntegrationTest : QueueIntegrationTest() {
         await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
         await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
-        await untilCallTo { offenderSearchPostCountFor("/match") } matches { it == 1 }
+        // this will be 2 while we have additional analysis code in since we do everything twice
+        await untilCallTo { offenderSearchPostCountFor("/match") } matches { it == 2 }
+        await untilCallTo { communityGetCountFor("/secure/offenders/crn/X142620/convictions") } matches { it == 2 }
+        await untilCallTo { communityGetCountFor("/secure/offenders/crn/X181002/convictions") } matches { it == 2 }
         await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
-        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 2 }
+        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 3 }
 
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), any(), isNull())
     }

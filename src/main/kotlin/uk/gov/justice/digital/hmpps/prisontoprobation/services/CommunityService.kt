@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpStatus
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -15,6 +15,8 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
+
+  private val convictionListType = object : ParameterizedTypeReference<List<Conviction>>() {}
 
   fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
     return webClient.put()
@@ -54,6 +56,14 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyToMono(Custody::class.java)
         .block()
   }
+
+  fun getConvictions(crn: String): List<Conviction> {
+    return webClient.get()
+        .uri("/secure/offenders/crn/${crn}/convictions")
+        .retrieve()
+        .bodyToMono(convictionListType)
+        .block()!!
+  }
 }
 
 data class UpdateCustody(
@@ -83,3 +93,7 @@ data class ReplaceCustodyKeyDates(
     val expectedReleaseDate: LocalDate? = null,
     val postSentenceSupervisionEndDate: LocalDate? = null
 )
+
+data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null)
+
+data class Sentence(val startDate: LocalDate?, val custody: Custody?)
