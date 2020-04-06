@@ -1,0 +1,93 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/secure/offenders/crn/TEST/convictions"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "convictionId": 9999,
+        "index": "7",
+        "active": true,
+        "inBreach": false,
+        "referralDate": "2013-01-15",
+        "offences": [
+          {
+            "offenceId": "M123",
+            "mainOffence": true,
+            "detail": {
+              "code": "09270",
+              "description": "Class A - Cocaine - Having possession with intent to supply - 09270",
+              "mainCategoryCode": "092",
+              "mainCategoryDescription": "Misuse of Drugs (Custom and Excise/Misuse of Drugs Acts)",
+              "mainCategoryAbbreviation": "Misuse of Drugs (Custom and Excise/Misuse of Drug",
+              "ogrsOffenceCategory": "Drug possession/supply",
+              "subCategoryCode": "70",
+              "subCategoryDescription": "Class A - Cocaine - Having possession with intent to supply",
+              "form20Code": "61"
+            },
+            "offenceDate": "2010-01-14T00:00:00",
+            "offenceCount": 1,
+            "offenderId": 888,
+            "createdDatetime": "1900-01-01T00:00:00",
+            "lastUpdatedDatetime": "1900-01-01T00:00:00"
+          },
+          {
+            "offenceId": "A888",
+            "mainOffence": false,
+            "detail": {
+              "code": "09281",
+              "description": "Class B - Cannabis - Having possession with intent to supply - 09281",
+              "mainCategoryCode": "092",
+              "mainCategoryDescription": "Misuse of Drugs (Custom and Excise/Misuse of Drugs Acts)",
+              "mainCategoryAbbreviation": "Misuse of Drugs (Custom and Excise/Misuse of Drug",
+              "ogrsOffenceCategory": "Drug possession/supply",
+              "subCategoryCode": "81",
+              "subCategoryDescription": "Class B - Cannabis - Having possession with intent to supply",
+              "form20Code": "64"
+            },
+            "offenceDate": "2010-04-11T00:00:00",
+            "offenceCount": 1,
+            "createdDatetime": "2014-04-21T13:16:36",
+            "lastUpdatedDatetime": "2014-04-21T13:16:36"
+          }
+        ],
+        "sentence": {
+          "description": "CJA - Std Determinate Custody",
+          "originalLength": 100,
+          "originalLengthUnits": "Months",
+          "secondLength": 0,
+          "secondLengthUnits": "Months",
+          "defaultLength": 100,
+          "lengthInDays": 3105,
+          "startDate": "2013-06-25"
+        },
+        "latestCourtAppearanceOutcome": {
+          "code": "301",
+          "description": "CJA - Std Determinate Custody"
+        },
+        "custody": {
+          "bookingNumber": "K67032",
+          "institution": {
+            "institutionId": 199,
+            "isEstablishment": true,
+            "code": "UATLRG",
+            "description": "Unlawfully at Large",
+            "institutionName": "Unlawfully at Large",
+            "establishmentType": {
+              "code": "E",
+              "description": "Prison"
+            }
+          },
+          "keyDates": {
+            "licenceExpiryDate": "2022-09-24"
+          }
+        }
+      }
+    ]
+  }
+}
