@@ -120,9 +120,9 @@ class OffenderProbationMatchService(
   private fun custodySentenceDates(crn: String): List<LocalDate> {
     return communityService.getConvictions(crn).asSequence()
         .filter { conviction -> conviction.active }
+        .filter { conviction -> conviction.custody?.let { true } ?: false }
         .map { conviction -> conviction.sentence }
         .filterNotNull()
-        .filter { sentence -> sentence.custody?.let { true } ?: false }
         .map { it.startDate }
         .filterNotNull()
         .toList()

@@ -177,6 +177,14 @@ class CommunityServiceTest : IntegrationTest() {
       communityMockServer.verify(WireMock.getRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/convictions"))
           .withHeader("Authorization", equalTo("Bearer ABCDE")))
     }
+    @Test
+    fun `test can read conviction`() {
+      val convictions = service.getConvictions("TEST")
+
+      assertThat(convictions).hasSize(1)
+      assertThat(convictions[0].sentence?.startDate).isEqualTo(LocalDate.parse("2013-06-25"))
+      assertThat(convictions[0].custody).isNotNull
+    }
   }
   private fun createUpdatedCustody() = Custody(
       institution = Institution("Doncaster"),

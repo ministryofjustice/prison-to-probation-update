@@ -103,12 +103,14 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
     whenever(communityService.getConvictions("A12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("1970-03-29"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("1970-03-29")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -134,7 +136,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -156,7 +159,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-23"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-23")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -178,7 +182,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-02-06"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2020-02-06")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -200,7 +205,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2019-03-12"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2019-03-12")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -222,8 +228,9 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = null)
-    )))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = null)
+    ))
 
     service.ensureOffenderNumberExistsInProbation(
         bookingOf(
@@ -243,8 +250,9 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = false,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = Custody(institution = null, bookingNumber = null))
-    )))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null))
+    ))
 
     service.ensureOffenderNumberExistsInProbation(
         bookingOf(
@@ -298,7 +306,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = Custody(institution = null, bookingNumber = null))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
     )))
 
     service.ensureOffenderNumberExistsInProbation(
@@ -328,8 +337,9 @@ internal class OffenderProbationMatchServiceTest {
     whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30"), custody = Custody(institution = null, bookingNumber = null))
-    )))
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null))
+    ))
 
     service.ensureOffenderNumberExistsInProbation(
         bookingOf(

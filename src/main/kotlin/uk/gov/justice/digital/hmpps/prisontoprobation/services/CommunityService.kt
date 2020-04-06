@@ -94,6 +94,6 @@ data class ReplaceCustodyKeyDates(
     val postSentenceSupervisionEndDate: LocalDate? = null
 )
 
-data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null)
+data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null, val custody: Custody? = null)
 
-data class Sentence(val startDate: LocalDate?, val custody: Custody?)
+data class Sentence(val startDate: LocalDate?)
