@@ -32,7 +32,8 @@ data class MatchRequest(
     )
 
 data class OffenderMatches(
-    val matches: List<OffenderMatch>
+    val matches: List<OffenderMatch>,
+    val matchedBy: String? = null
 )
 
 data class OffenderMatch(
@@ -40,6 +41,7 @@ data class OffenderMatch(
 )
 
 data class OffenderDetail(
+    val otherIds: IDs,
     val previousSurname: String? = null,
     val title: String? = null,
     val firstName: String? = null,
@@ -47,12 +49,11 @@ data class OffenderDetail(
     val surname: String? = null,
     val dateOfBirth: LocalDate? = null,
     val gender: String? = null,
-    val otherIds: IDs? = null,
     val currentDisposal: String? = null
 )
 
 data class IDs(
-    val crn: String? = null,
+    val crn: String,
     val pncNumber: String? = null,
     val croNumber: String? = null,
     val niNumber: String? = null,

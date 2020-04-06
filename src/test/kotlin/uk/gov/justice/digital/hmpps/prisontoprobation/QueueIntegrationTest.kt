@@ -22,5 +22,7 @@ class QueueIntegrationTest : IntegrationTest() {
 
     fun communityPostCountFor(url: String)= communityMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
 
+    fun communityGetCountFor(url: String)= communityMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
+
     fun offenderSearchPostCountFor(url: String)= searchMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
 }

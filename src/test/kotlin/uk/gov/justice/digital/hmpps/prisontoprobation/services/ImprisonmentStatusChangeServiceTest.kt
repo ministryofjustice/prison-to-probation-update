@@ -24,7 +24,7 @@ class ImprisonmentStatusChangeServiceTest {
   inner class CheckImprisonmentStatusChangeAndUpdateProbation {
     @BeforeEach
     fun setUp() {
-      whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo) }
+      whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo) }
     }
 
     @Nested
@@ -52,9 +52,10 @@ class ImprisonmentStatusChangeServiceTest {
       fun `will check offender exists in probation`() {
         val booking = createBooking()
         whenever(offenderService.getBooking(any())).thenReturn(booking)
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.parse("2020-01-30")))
 
         service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(offenderProbationMatchService).ensureOffenderNumberExistsInProbation(booking)
+        verify(offenderProbationMatchService).ensureOffenderNumberExistsInProbation(booking, LocalDate.parse("2020-01-30"))
       }
 
       @Test
