@@ -245,7 +245,7 @@ internal class OffenderProbationMatchServiceTest {
     }, isNull())
   }
   @Test
-  fun `will filter out offenders that have an inactive custodial sentence starting on same date`() {
+  fun `will not filter out offenders that have an inactive custodial sentence starting on same date which maybe recalls`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
@@ -263,7 +263,7 @@ internal class OffenderProbationMatchServiceTest {
 
     verify(telemetryClient).trackEvent(eq("P2POffenderMatch"), check {
       assertThat(it["crns"]).isEqualTo("X12345")
-      assertThat(it["filtered_crns"]).isEqualTo("")
+      assertThat(it["filtered_crns"]).isEqualTo("X12345")
     }, isNull())
   }
 
