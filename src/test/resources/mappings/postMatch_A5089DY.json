@@ -304,7 +304,8 @@
             "exclusionMessage": "You are excluded from viewing this offender record. You can't be trusted."
           }
         }
-      ]
+      ],
+      "matchedBy": "EXTERNAL_KEY"
     }
   }
 }

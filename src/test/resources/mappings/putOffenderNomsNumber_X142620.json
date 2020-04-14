@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPath": "/secure/offenders/crn/X142620/nomsNumber"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    {
+      "crn": "X142620",
+      "nomsNumber": "A5089DY"
+    }
+  }
+}

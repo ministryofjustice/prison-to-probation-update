@@ -20,7 +20,7 @@ internal class OffenderSearchServiceTest : IntegrationTest() {
 
     @Test
     fun `test post match calls rest endpoint`() {
-      val expectResult = OffenderMatches(listOf())
+      val expectResult = OffenderMatches(matchedBy = "NOTHING",matches = listOf())
 
       searchMockServer.stubFor(post(anyUrl()).willReturn(aResponse()
           .withHeader("Content-Type", "application/json")

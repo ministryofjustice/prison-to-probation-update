@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS
@@ -52,7 +53,34 @@ class OffenderProbationMatchService(
         null
     )
 
+    // TODO remove this once we gathered enough data proving algorithm works
+    doMatchAnalysis(booking, prisoner, sentenceStartDate, filteredCRNs, result)
 
+    return when (result.matchedBy) {
+      "ALL_SUPPLIED", "HMPPS_KEY" -> Success(booking.offenderNo) // NOMS number is already set in probation
+      else -> {
+        when (filteredCRNs.size) {
+          0 -> Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())))
+          1 -> {
+            communityService.updateProbationOffenderNo(filteredCRNs.first(), booking.offenderNo)
+            telemetryClient.trackEvent(
+                "P2POffenderNumberSet",
+                mapOf(
+                    "offenderNo" to booking.offenderNo,
+                    "bookingNumber" to booking.bookingNo,
+                    "crn" to filteredCRNs.first()
+                ),
+                null
+            )
+            Success(booking.offenderNo)
+          }
+          else -> Ignore(TelemetryEvent(name = "P2POffenderTooManyMatches", attributes = mapOf("offenderNo" to booking.offenderNo, "filtered_crns" to filteredCRNs.sorted().joinToString())))
+        }
+      }
+    }
+  }
+
+  private fun doMatchAnalysis(booking: Booking, prisoner: Prisoner, sentenceStartDate: LocalDate, filteredCRNs: Set<String>, result: OffenderMatches) {
     // Now do search without NOMS number to see if we would have got a match, and if so was it was the same match
     // this is only to build up some analysis to  test how effective the matching aalgorithmis
     val sample = offenderSearchService.matchProbationOffender(MatchRequest(
@@ -100,12 +128,6 @@ class OffenderProbationMatchService(
           null
       )
     }
-
-    log.debug("${booking.offenderNo} matched ${result.matches.size} offender(s)")
-
-    // TODO we are currently ignoring the response, but shortly we will return an error if we can't match with a
-    // probation offender
-    return Success(booking.offenderNo)
   }
 
   private fun offendersWithMatchingSentenceDates(result: OffenderMatches, sentenceStartDate: LocalDate): Set<String> {

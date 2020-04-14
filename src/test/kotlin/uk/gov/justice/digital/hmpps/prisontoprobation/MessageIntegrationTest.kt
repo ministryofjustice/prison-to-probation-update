@@ -53,8 +53,9 @@ class MessageIntegrationTest : QueueIntegrationTest() {
         await untilCallTo { offenderSearchPostCountFor("/match") } matches { it == 2 }
         await untilCallTo { communityGetCountFor("/secure/offenders/crn/X142620/convictions") } matches { it == 2 }
         await untilCallTo { communityGetCountFor("/secure/offenders/crn/X181002/convictions") } matches { it == 2 }
+        await untilCallTo { communityPutCountFor("/secure/offenders/crn/X142620/nomsNumber") } matches { it == 1 }
         await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
-        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 3 }
+        await untilCallTo { mockingDetails(telemetryClient).invocations.size } matches { it == 4 }
 
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), any(), isNull())
     }

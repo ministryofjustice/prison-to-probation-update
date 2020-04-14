@@ -11,6 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.matching.MatchesJsonPathPattern
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
@@ -184,6 +185,25 @@ class CommunityServiceTest : IntegrationTest() {
       assertThat(convictions).hasSize(1)
       assertThat(convictions[0].sentence?.startDate).isEqualTo(LocalDate.parse("2013-06-25"))
       assertThat(convictions[0].custody).isNotNull
+    }
+  }
+
+  @Nested
+  internal inner class UpdateProbationOffenderNo{
+    @Test
+    fun `test updateProbationOffenderNo calls rest endpoint`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(IDs(crn = "X153626").asJson())
+          .withStatus(HTTP_OK)))
+
+
+      service.updateProbationOffenderNo("X153626", "AB123D")
+
+      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/nomsNumber"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D"))))
+
     }
   }
   private fun createUpdatedCustody() = Custody(

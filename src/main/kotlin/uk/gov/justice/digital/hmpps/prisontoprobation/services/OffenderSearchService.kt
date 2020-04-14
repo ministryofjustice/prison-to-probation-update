@@ -33,7 +33,7 @@ data class MatchRequest(
 
 data class OffenderMatches(
     val matches: List<OffenderMatch>,
-    val matchedBy: String? = null
+    val matchedBy: String
 )
 
 data class OffenderMatch(
