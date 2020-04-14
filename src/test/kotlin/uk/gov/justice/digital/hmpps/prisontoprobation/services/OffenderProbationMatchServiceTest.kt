@@ -8,12 +8,15 @@ import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import java.time.LocalDate
 
 internal class OffenderProbationMatchServiceTest {
@@ -25,7 +28,7 @@ internal class OffenderProbationMatchServiceTest {
 
   @BeforeEach
   fun setup() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf()))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(matchedBy = "NOTHING", matches = listOf()))
     whenever(offenderService.getOffender(any())).thenReturn(prisonerOf())
     whenever(communityService.getConvictions(any())).thenReturn(listOf())
   }
@@ -89,17 +92,118 @@ internal class OffenderProbationMatchServiceTest {
   }
 
   @Test
-  fun `will return the offender number`() {
+  fun `will return the offender number when matched to a single offender`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "ALL_SUPPLIED",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
     val offenderNo = service.ensureOffenderNumberExistsInProbation(
         bookingOf(offenderNo = "A5089DY"),
         LocalDate.parse("2020-01-30")
-    ).onIgnore { return }
+    ).onIgnore { Assertions.fail("should have got a result") }
+
     assertThat(offenderNo).isEqualTo("A5089DY")
   }
 
   @Test
+  fun `will return ignore with P2POffenderNoMatch telemetry when no offenders found`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "NOTHING",
+        matches = listOf()
+    ))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore {
+      assertThat(it.reason.name).isEqualTo("P2POffenderNoMatch")
+      return
+    }
+
+    fail("should have returned from onIgnore")
+  }
+
+  @Test
+  fun `will return ignore with P2POffenderNoMatch telemetry when no offenders found with matching sentence`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore {
+      assertThat(it.reason.name).isEqualTo("P2POffenderNoMatch")
+      return
+    }
+
+    fail("should have returned from onIgnore")
+  }
+
+  @Test
+  fun `will return offender number when no offenders found with matching sentence but one found with NOMS number`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "HMPPS_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
+    )))
+
+    val offenderNo = service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore { fail("should have got a result") }
+
+    assertThat(offenderNo).isEqualTo("A5089DY")
+  }
+
+  @Test
+  fun `will return ignore with P2POffenderTooManyMatches telemetry when more than one offender found with matching sentence`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345"))))
+    ))
+    whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore {
+      assertThat(it.reason.name).isEqualTo("P2POffenderTooManyMatches")
+      return
+    }
+
+    fail("should have returned from onIgnore")
+  }
+
+
+  @Test
   fun `will send telemetry event with a match summary`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "A12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "A12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -132,7 +236,7 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will not filter out offenders that have a custody sentence starting on the same date`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(matchedBy = "EXTERNAL_KEY", matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -155,7 +259,10 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will not filter out offenders that have a custody sentence starting just before the same date`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -178,7 +285,10 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will not filter out offenders that have a custody sentence starting just after the same date`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -201,7 +311,10 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will filter out offenders that have a custody sentence starting a completely different date`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -224,7 +337,10 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will filter out offenders that have a non-custodial sentence starting on same date`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -244,9 +360,13 @@ internal class OffenderProbationMatchServiceTest {
       assertThat(it["filtered_crns"]).isEqualTo("")
     }, isNull())
   }
+
   @Test
   fun `will not filter out offenders that have an inactive custodial sentence starting on same date which maybe recalls`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = false,
@@ -269,7 +389,10 @@ internal class OffenderProbationMatchServiceTest {
 
   @Test
   fun `will filter out offenders that have no sentence`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))))
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
     whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -292,12 +415,12 @@ internal class OffenderProbationMatchServiceTest {
   @Test
   fun `will log differences between a NOMS number search and other id search`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
-        OffenderMatches(listOf(
+        OffenderMatches(matchedBy = "EXTERNAL_KEY", matches = listOf(
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))),
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00002"))),
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00003")))
         ))).thenReturn(
-        OffenderMatches(listOf(
+        OffenderMatches(matchedBy = "EXTERNAL_KEY", matches = listOf(
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00002"))),
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00003"))),
             OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00004")))
@@ -327,13 +450,14 @@ internal class OffenderProbationMatchServiceTest {
   @Test
   fun `will log a perfect match between a NOMS number search and other id search`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
-        OffenderMatches(listOf(
-            OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001")))
-        ))).thenReturn(
-        OffenderMatches(listOf(
-            OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001")))
+        OffenderMatches(
+            matchedBy = "EXTERNAL_KEY",
+            matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))))
+        )).thenReturn(
+        OffenderMatches(
+            matchedBy = "EXTERNAL_KEY",
+            matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))))
         ))
-    )
     whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
         index = "1",
         active = true,
@@ -352,6 +476,115 @@ internal class OffenderProbationMatchServiceTest {
       assertThat(it["crns"]).isEqualTo("X00001")
     }, isNull())
   }
+
+  @Test
+  fun `will update probation with offender number when single match found not using NOMS number`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    )
+
+    verify(communityService).updateProbationOffenderNo("X12345", "A5089DY")
+  }
+
+  @Test
+  fun `will send telemetry event indicating NOMS number has been updated`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    )
+
+    verify(telemetryClient).trackEvent(eq("P2POffenderNumberSet"), check {
+      assertThat(it["crn"]).isEqualTo("X12345")
+      assertThat(it["offenderNo"]).isEqualTo("A5089DY")
+    }, isNull())
+  }
+
+  @Test
+  fun `will not update probation with offender number when match found using NOMS number and all other data`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "ALL_SUPPLIED",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    )
+
+    verify(communityService, never()).updateProbationOffenderNo(any(), any())
+  }
+
+  @Test
+  fun `will not update probation with offender number when match found using NOMS number`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "HMPPS_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    )
+
+    verify(communityService, never()).updateProbationOffenderNo(any(), any())
+  }
+
+  @Test
+  fun `will not update probation with offender number when multiple matches found`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345"))))
+    ))
+    whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    )
+
+    verify(communityService, never()).updateProbationOffenderNo(any(), any())
+  }
+
 
   private fun bookingOf(
       bookingNo: String = "38339A",

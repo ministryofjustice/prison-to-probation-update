@@ -64,7 +64,20 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyToMono(convictionListType)
         .block()!!
   }
+
+  fun updateProbationOffenderNo(crn: String, offenderNo: String): IDs {
+    return webClient.put()
+        .uri("/secure/offenders/crn/$crn/nomsNumber")
+        .bodyValue(UpdateOffenderNomsNumber(nomsNumber = offenderNo))
+        .retrieve()
+        .bodyToMono(IDs::class.java)
+        .block()!!
+  }
 }
+
+data class UpdateOffenderNomsNumber(
+    val nomsNumber: String
+)
 
 data class UpdateCustody(
     val nomsPrisonInstitutionCode: String
