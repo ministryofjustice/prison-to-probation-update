@@ -3,7 +3,6 @@ graceful:
 
 sqs:
   endpoint.url: http://localhost:4576
-  provider: localstack
 
 oauth:
   endpoint.url: http://localhost:8090/auth
@@ -16,3 +15,10 @@ community:
 
 offender-search:
   endpoint.url: http://localhost:8097
+
+dynamodb:
+  endpoint: http://localhost:4569
+  tableName: cp-message
+
+aws:
+  provider: localstack

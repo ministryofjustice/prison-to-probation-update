@@ -1,9 +1,15 @@
 graceful:
   shutdown.enabled: false
 
-sqs:
+aws:
   provider: embedded-localstack
+
+sqs:
   endpoint.url: http://localhost:4576
+
+dynamodb:
+  endpoint: http://localhost:4569
+  tableName: cp-message
 
 prisontoprobation:
   client:

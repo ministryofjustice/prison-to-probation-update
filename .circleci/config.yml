@@ -67,7 +67,7 @@ executors:
       - image: circleci/openjdk:11-jdk
       - image: localstack/localstack:0.10.5
         environment:
-          - SERVICES=sqs
+          - SERVICES=sqs,dynamodb
           - DEBUG=${DEBUG- }
           - DATA_DIR=/tmp/localstack/data
           - DOCKER_HOST=unix:///var/run/docker.sock
@@ -97,7 +97,7 @@ jobs:
             - gradle-
       - run:
           environment:
-            SQS_PROVIDER: localstack
+            AWS_PROVIDER: localstack
           command: ./gradlew build
       - run:
           name: Record the Application Version

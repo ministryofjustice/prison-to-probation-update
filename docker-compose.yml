@@ -85,7 +85,7 @@ services:
       - "4567-4597:4567-4597"
       - 8999:8080
     environment:
-      - SERVICES=sns,sqs,es
+      - SERVICES=sns,sqs,es,dynamodb
       - DEBUG=${DEBUG- }
       - DATA_DIR=${DATA_DIR- }
       - PORT_WEB_UI=${PORT_WEB_UI- }
