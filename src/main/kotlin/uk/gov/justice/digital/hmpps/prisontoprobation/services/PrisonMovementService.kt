@@ -19,7 +19,7 @@ class PrisonMovementService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) {
+  fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) : MessageResult {
     val (bookingId, movementSeq) = prisonerMovementMessage
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),
@@ -32,6 +32,7 @@ class PrisonMovementService(
 
     telemetryClient.trackEvent(name, attributes, null)
 
+    return Done()
   }
 
   private fun processMovement(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): TelemetryEvent {

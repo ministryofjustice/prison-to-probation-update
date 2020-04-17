@@ -84,4 +84,22 @@ env:
       secretKeyRef:
         name: ptpu-sqs-dl-instance-output
         key: sqs_ptpu_name
+
+  - name: DYNAMODB_TABLENAME
+    valueFrom:
+      secretKeyRef:
+        name: message-dynamodb-output
+        key: table_name
+
+  - name: DYNAMODB_AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: message-dynamodb-output
+        key: access_key_id
+
+  - name: DYNAMODB_AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: message-dynamodb-output
+        key: secret_access_key
 {{- end -}}

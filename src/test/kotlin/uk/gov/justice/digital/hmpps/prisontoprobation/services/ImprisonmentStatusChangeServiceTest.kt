@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 
@@ -76,8 +77,14 @@ class ImprisonmentStatusChangeServiceTest {
         }, isNull())
       }
 
+      @Test
+      fun `will indicate we are done with this change`() {
+        val result = service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        assertThat(result).isInstanceOf(Done::class.java)
+      }
+
       @Nested
-      inner class WhenNotFound {
+      inner class WhenUpdateReecordNotFound {
         @BeforeEach
         fun setup() {
           whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(null)
@@ -93,6 +100,19 @@ class ImprisonmentStatusChangeServiceTest {
             assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             assertThat(it["offenderNo"]).isEqualTo("A5089DY")
           }, isNull())
+        }
+      }
+      @Nested
+      inner class WhenMatchNotFound {
+        @BeforeEach
+        fun setup() {
+          whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenReturn(Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to "A5089DY", "crns" to ""))))
+        }
+
+        @Test
+        fun `will indicate we want to try again`() {
+          val result = service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+          assertThat(result).isInstanceOf(RetryLater::class.java)
         }
       }
     }

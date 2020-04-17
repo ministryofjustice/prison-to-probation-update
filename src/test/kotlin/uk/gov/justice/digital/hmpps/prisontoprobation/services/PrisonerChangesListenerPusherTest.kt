@@ -10,12 +10,13 @@ class PrisonerChangesListenerPusherTest {
   private val bookingChangeService: BookingChangeService = mock()
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService = mock()
   private val sentenceDatesChangeService: SentenceDatesChangeService = mock()
+  private val messageRetryService: MessageRetryService = mock()
 
   private lateinit var listener: PrisonerChangesListenerPusher
 
   @BeforeEach
   fun before() {
-    listener = PrisonerChangesListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService, sentenceDatesChangeService)
+    listener = PrisonerChangesListenerPusher(prisonMovementService, bookingChangeService, imprisonmentStatusChangeService, sentenceDatesChangeService, messageRetryService)
   }
 
   @Test
@@ -60,6 +61,25 @@ class PrisonerChangesListenerPusherTest {
     verify(imprisonmentStatusChangeService, never()).checkImprisonmentStatusChangeAndUpdateProbation(any())
     verify(sentenceDatesChangeService, never()).checkSentenceDateChangeAndUpdateProbation(any())
     verify(bookingChangeService, never()).checkBookingNumberChangedAndUpdateProbation(any())
+  }
+
+  @Test
+  fun `will call retry service when requested`() {
+    whenever(imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(any())).thenReturn(RetryLater(99L))
+
+    // "Message": "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+    listener.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
+
+    verify(messageRetryService).retryLater(bookingId = eq(99L), eventType = eq("IMPRISONMENT_STATUS-CHANGED"), message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+  }
+
+  @Test
+  fun `will not call retry service when done`() {
+    whenever(imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(any())).thenReturn(Done())
+
+    listener.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
+
+    verify(messageRetryService, never()).retryLater(any(), any(), any())
   }
 
 }

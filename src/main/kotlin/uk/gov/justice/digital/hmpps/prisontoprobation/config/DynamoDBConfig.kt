@@ -25,14 +25,17 @@ class DynamoDBConfig {
   @Bean
   @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "aws")
   fun amazonDynamoDB(
-      @Value("\${dynamodb.accesskey}")
+      @Value("\${dynamodb.aws.access.key.id}")
       amazonAWSAccessKey: String,
-      @Value("\${dynamodb.secretkey}")
-      amazonAWSSecretKey: String
+      @Value("\${dynamodb.aws.secret.access.key}")
+      amazonAWSSecretKey: String,
+      @Value("\${dynamodb.region}")
+      amazonAWSRegion: String
   ): AmazonDynamoDB {
     return AmazonDynamoDBClientBuilder
         .standard()
         .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(amazonAWSAccessKey, amazonAWSSecretKey)))
+        .withRegion(amazonAWSRegion)
         .build()
   }
 

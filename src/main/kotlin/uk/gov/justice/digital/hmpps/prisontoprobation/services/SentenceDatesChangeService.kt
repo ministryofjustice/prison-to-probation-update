@@ -17,7 +17,7 @@ class SentenceDatesChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkSentenceDateChangeAndUpdateProbation(message: SentenceDatesChangeMessage) {
+  fun checkSentenceDateChangeAndUpdateProbation(message: SentenceDatesChangeMessage) : MessageResult {
     val (bookingId) = message
     log.info("Sentence dates for booking $bookingId have changed")
 
@@ -26,6 +26,8 @@ class SentenceDatesChangeService(
           "bookingId" to bookingId.toString()
       ), null)
     }
+
+    return Done()
   }
 
   private fun processSentenceDatesChange(message: SentenceDatesChangeMessage): TelemetryEvent {

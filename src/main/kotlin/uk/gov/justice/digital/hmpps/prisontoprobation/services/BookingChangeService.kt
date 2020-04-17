@@ -13,7 +13,7 @@ class BookingChangeService(private val telemetryClient: TelemetryClient
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) {
+  fun checkBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) : MessageResult {
     val (bookingId: Long, offenderId: Long, bookingNumber: String, previousBookingNumber: String) = message
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),
@@ -21,7 +21,8 @@ class BookingChangeService(private val telemetryClient: TelemetryClient
         "bookingNumber" to bookingNumber,
         "previousBookingNumber" to previousBookingNumber)
 
-    log.info("Booking $bookingId has booking number changed to $bookingNumber")
     telemetryClient.trackEvent("P2PBookingNumberChanged", trackingAttributes, null)
+
+    return Done("Booking $bookingId has booking number changed to $bookingNumber")
   }
 }
