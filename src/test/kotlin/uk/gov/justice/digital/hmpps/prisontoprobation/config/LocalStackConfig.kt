@@ -23,7 +23,7 @@ class LocalStackConfig {
   fun localStackContainer(): LocalStackContainer {
     log.info("Starting localstack...")
     val localStackContainer: LocalStackContainer = LocalStackContainer()
-        .withServices(LocalStackContainer.Service.SQS)
+        .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.DYNAMODB)
         .withEnv("HOSTNAME_EXTERNAL", "localhost")
 
     localStackContainer.start()

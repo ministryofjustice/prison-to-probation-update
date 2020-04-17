@@ -23,28 +23,30 @@ class ImprisonmentStatusChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage) {
+  fun checkImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
     val (bookingId, imprisonmentStatusSeq) = message
     log.info("Imprisonment status for booking $bookingId has changed")
 
-    val (name, attributes) = processStatusChange(message)
+    val (result, telemetryEvent) = processStatusChange(message)
 
-    telemetryClient.trackEvent(name, attributes + mapOf(
+    telemetryClient.trackEvent(telemetryEvent.name, telemetryEvent.attributes + mapOf(
         "imprisonmentStatusSeq" to imprisonmentStatusSeq.toString(),
         "bookingId" to bookingId.toString()
     ), null)
+
+    return result
   }
 
-  private fun processStatusChange(message: ImprisonmentStatusChangesMessage): TelemetryEvent {
-    val (bookingId) = getSignificantStatusChange(message).onIgnore { return it.reason }
-    val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return it.reason }
-    val booking = getActiveBooking(bookingId).onIgnore { return it.reason }
-    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate).onIgnore { return it.reason }
-    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking).with(sentenceStartDate) }
+  private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
+    val (bookingId) = getSignificantStatusChange(message).onIgnore { return Done() to it.reason }
+    val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return Done() to it.reason }
+    val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
+    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate).onIgnore { return RetryLater(bookingId) to it.reason }
+    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return  Done() to it.reason.with(booking).with(sentenceStartDate) }
 
     return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {
-      TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
-    } ?: TelemetryEvent("P2PImprisonmentStatusRecordNotFound").with(booking).with(sentenceStartDate)
+      Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
+    } ?: Done() to TelemetryEvent("P2PImprisonmentStatusRecordNotFound").with(booking).with(sentenceStartDate)
   }
 
   private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =

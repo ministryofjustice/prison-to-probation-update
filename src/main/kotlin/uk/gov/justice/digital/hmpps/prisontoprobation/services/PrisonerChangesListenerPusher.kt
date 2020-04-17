@@ -13,7 +13,8 @@ class PrisonerChangesListenerPusher(
     private val prisonMovementService: PrisonMovementService,
     private val bookingChangeService: BookingChangeService,
     private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
-    private val sentenceDatesChangeService: SentenceDatesChangeService
+    private val sentenceDatesChangeService: SentenceDatesChangeService,
+    private val retryService: MessageRetryService
 
 ) {
   companion object {
@@ -28,12 +29,19 @@ class PrisonerChangesListenerPusher(
     val eventType = messageAttributes.eventType.Value
     log.info("Received message $messageId type $eventType")
 
-    when (eventType) {
+    val result : MessageResult = when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
       "SENTENCE_DATES-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
-      else -> log.warn("We received a message of event type $eventType which I really wasn't expecting")
+      else -> {
+        Done("We received a message of event type $eventType which I really wasn't expecting")
+      }
+    }
+
+    when(result) {
+      is RetryLater -> retryService.retryLater(result.bookingId, eventType, message)
+      is Done -> result.message?.let { log.info(it) }
     }
   }
 
@@ -49,3 +57,7 @@ data class ExternalPrisonerMovementMessage(val bookingId: Long, val movementSeq:
 data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
 data class SentenceDatesChangeMessage(val bookingId: Long)
+
+sealed class MessageResult
+class RetryLater(val bookingId: Long) : MessageResult()
+class Done(val message: String? = null) : MessageResult()
