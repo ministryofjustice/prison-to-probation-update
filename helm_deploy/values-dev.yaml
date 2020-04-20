@@ -4,7 +4,7 @@
 replicaCount: 2
 
 image:
-  repository: docker.io/mojdigitalstudio/prison-to-probation-update
+  repository: quay.io/hmpps/prison-to-probation-update
   tag: latest
   pullPolicy: Always
   port: 8080

@@ -57,22 +57,20 @@ dependencyUpdates {
 group = 'uk.gov.justice.digital.hmpps'
 
 def todaysDate = LocalDate.now().format('yyyy-MM-dd')
-def today = Instant.now()
-version = System.getenv('CI') ? "${todaysDate}.${System.getenv('CIRCLE_BUILD_NUM')}" : todaysDate
+version = System.getenv().containsKey("BUILD_NUMBER") ? System.getenv("BUILD_NUMBER") : todaysDate
 
 springBoot {
   buildInfo {
     properties {
       artifact = rootProject.name
-      version = version
-      group = group
+      version
+      group
       name = rootProject.name
-      time = today
+      time = Instant.now()
       additional = [
-          by                   : System.properties['user.name'],
-          operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
-          continuousIntegration: System.getenv('CI') ? true : false,
-          machine              : InetAddress.localHost.hostName
+              by                   : System.properties['user.name'],
+              operatingSystem      : "${System.properties['os.name']} (${System.properties['os.version']})",
+              machine              : InetAddress.localHost.hostName
       ]
     }
   }
