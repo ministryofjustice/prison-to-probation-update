@@ -1,7 +1,7 @@
 version: "3"
 services:
   prison-to-probation-update:
-    image: mojdigitalstudio/prison-to-probation-update:latest
+    image: quay.io/hmpps/prison-to-probation-update:latest
     network_mode: "host"
     container_name: prison-to-probation-update
     depends_on:
