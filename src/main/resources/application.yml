@@ -107,5 +107,10 @@ dynamodb:
 
 
 retry:
-  schedule:
-    cron: "0 0 */4 * * *"
+  schedules:
+    short:
+      cron: "0 0 * * * *"
+    medium:
+      cron: "0 15 */4 * * *"
+    long:
+      cron: "0 30 23 * * *"

@@ -3,29 +3,48 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
+import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 
 
 @Service
-class MessageRetryService(private val messageRepository: MessageRepository) {
+class MessageRetryService(private val messageRepository: MessageRepository, private val messageProcessor: MessageProcessor) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-
   fun retryLater(bookingId: Long, eventType: String, message: String) {
     log.info("Registering a retry for booking $bookingId for event $eventType")
-    // TODO first stab, will need to find and update existing row etc
     messageRepository.save(Message(bookingId = bookingId, eventType = eventType, message = message))
   }
 
-  fun retryAll() {
-    val messages = messageRepository.findAll()
-    messages.forEach {
-      log.info("Retrying ${it.eventType} for ${it.bookingId} for the ${it.retryCount} time")
-      messageRepository.save(it.retry())
-    }
+  fun retryShortTerm() {
+    retryForAttemptsMade(1..4)
   }
 
+  fun retryMediumTerm() {
+    retryForAttemptsMade(5..10)
+  }
+
+  fun retryLongTerm() {
+    retryForAttemptsMade(11..Int.MAX_VALUE)
+  }
+
+  private fun retryForAttemptsMade(range: IntRange) {
+    val messages = messageRepository.findByRetryCountBetween(range.first, range.last)
+    messages.forEach {
+      log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+      when (val result: MessageResult = messageProcessor.processMessage(it.eventType, it.message)) {
+        is RetryLater -> {
+          log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+          messageRepository.save(it.retry())
+        }
+        is Done -> {
+          log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+          messageRepository.delete(it)
+          result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
+        }
+      }
+    }
+  }
 }
