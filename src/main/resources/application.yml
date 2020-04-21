@@ -104,3 +104,8 @@ sqs:
 dynamodb:
   region: ${aws.region}
   provider: ${aws.provider}
+
+
+retry:
+  schedule:
+    cron: "0 0 */4 * * *"

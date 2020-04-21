@@ -19,6 +19,8 @@ offender-search:
 dynamodb:
   endpoint: http://localhost:4569
   tableName: cp-message
+  schedule:
+    tableName: cp-schedule
 
 aws:
   provider: localstack

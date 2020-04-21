@@ -11,10 +11,12 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.Build
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 
 
@@ -23,6 +25,7 @@ class DynamoDBConfig {
 
 
   @Bean
+  @Primary
   @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "aws")
   fun amazonDynamoDB(
       @Value("\${dynamodb.aws.access.key.id}")
@@ -40,6 +43,7 @@ class DynamoDBConfig {
   }
 
   @Bean("amazonDynamoDB")
+  @Primary
   @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "localstack")
   fun localstackDynamoDB(
       @Value("\${dynamodb.endpoint}")
@@ -57,6 +61,43 @@ class DynamoDBConfig {
     return dynamoDB
   }
 
+  @Bean("scheduleDynamoDB")
+  @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "aws")
+  fun amazonScheduleDynamoDB(
+      @Value("\${dynamodb.schedule.aws.access.key.id}")
+      amazonAWSAccessKey: String,
+      @Value("\${dynamodb.schedule.aws.secret.access.key}")
+      amazonAWSSecretKey: String,
+      @Value("\${dynamodb.region}")
+      amazonAWSRegion: String
+  ): AmazonDynamoDB {
+    return AmazonDynamoDBClientBuilder
+        .standard()
+        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(amazonAWSAccessKey, amazonAWSSecretKey)))
+        .withRegion(amazonAWSRegion)
+        .build()
+  }
+
+
+  @Bean("scheduleDynamoDB")
+  @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "localstack")
+  fun localstackScheduleDynamoDB(
+      @Value("\${dynamodb.endpoint}")
+      amazonDynamoDBEndpoint: String,
+      @Value("\${dynamodb.region}")
+      amazonDynamoDBRegion: String,
+      @Value("\${dynamodb.schedule.tableName}")
+      tableName: String
+  ): AmazonDynamoDB {
+    val dynamoDB = AmazonDynamoDBClientBuilder
+        .standard()
+        .withEndpointConfiguration(EndpointConfiguration(amazonDynamoDBEndpoint, amazonDynamoDBRegion))
+        .build()
+
+    DynamoDBUtils.createLockTable(dynamoDB, tableName, ProvisionedThroughput(1L, 1L))
+    return dynamoDB
+  }
+
 
   @Bean
   fun tableNameOverrider(@Value("\${dynamodb.tableName}")
@@ -65,6 +106,7 @@ class DynamoDBConfig {
   }
 
   @Bean
+  @Primary
   fun dynamoDBMapperConfig(tableNameOverrider: TableNameOverride): DynamoDBMapperConfig {
     val builder = Builder()
     builder.tableNameOverride = tableNameOverrider

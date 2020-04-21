@@ -20,4 +20,12 @@ class MessageRetryService(private val messageRepository: MessageRepository) {
     messageRepository.save(Message(bookingId = bookingId, eventType = eventType, message = message))
   }
 
+  fun retryAll() {
+    val messages = messageRepository.findAll()
+    messages.forEach {
+      log.info("Retrying ${it.eventType} for ${it.bookingId} for the ${it.retryCount} time")
+      messageRepository.save(it.retry())
+    }
+  }
+
 }
