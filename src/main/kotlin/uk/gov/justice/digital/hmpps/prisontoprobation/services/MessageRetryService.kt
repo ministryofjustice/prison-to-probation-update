@@ -34,7 +34,7 @@ class MessageRetryService(private val messageRepository: MessageRepository, priv
     val messages = messageRepository.findByRetryCountBetween(range.first, range.last)
     messages.forEach {
       log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
-      when (val result: MessageResult = messageProcessor.processMessage(it.eventType, it.message)) {
+      when (val result: MessageResult = processMessage(it.eventType, it.message, it.bookingId)) {
         is RetryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry())
@@ -45,6 +45,15 @@ class MessageRetryService(private val messageRepository: MessageRepository, priv
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
         }
       }
+    }
+  }
+
+  private fun processMessage(eventType: String, message: String, bookingId: Long): MessageResult {
+    return try {
+      messageProcessor.processMessage(eventType, message)
+    } catch (e: Exception) {
+      log.error("Exception while processing $eventType for $bookingId", e)
+      RetryLater(bookingId)
     }
   }
 }
