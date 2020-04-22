@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.stereotype.Component
@@ -38,4 +40,12 @@ constructor(@Qualifier("searchApiHealthWebClient") webClient: WebClient) : Healt
 @Component
 class OAuthApiHealth
 constructor(@Qualifier("oauthApiHealthWebClient") webClient: WebClient) : HealthCheck(webClient)
+
+@Component
+class MessageTable
+constructor(@Qualifier("amazonDynamoDB") dynamoDB: AmazonDynamoDB, @Value("\${dynamodb.tableName}") tableName: String) : DynamoDBHealthCheck(dynamoDB, tableName)
+
+@Component
+class ScheduleTable
+constructor(@Qualifier("scheduleDynamoDB") dynamoDB: AmazonDynamoDB, @Value("\${dynamodb.schedule.tableName}") tableName: String) : DynamoDBHealthCheck(dynamoDB, tableName)
 
