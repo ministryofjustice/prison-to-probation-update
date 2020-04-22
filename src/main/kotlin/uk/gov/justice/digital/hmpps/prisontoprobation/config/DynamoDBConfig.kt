@@ -11,6 +11,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.Build
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import com.amazonaws.services.dynamodbv2.model.TimeToLiveSpecification
+import com.amazonaws.services.dynamodbv2.model.UpdateTimeToLiveRequest
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -123,6 +125,10 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
       .generateCreateTableRequest(Message::class.java)
   tableRequest.provisionedThroughput = ProvisionedThroughput(1L, 1L)
   tableRequest.tableName = tableName
-
   dynamoDB.createTable(tableRequest)
+  dynamoDB.updateTimeToLive(UpdateTimeToLiveRequest()
+      .withTableName(tableName)
+      .withTimeToLiveSpecification(TimeToLiveSpecification()
+          .withAttributeName("deleteBy")
+          .withEnabled(true)))
 }

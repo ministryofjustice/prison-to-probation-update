@@ -12,16 +12,34 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.lang.RuntimeException
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 internal class MessageRetryServiceTest {
   private val messageProcessor: MessageProcessor = mock()
   private val messageRepository: MessageRepository = mock()
-  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor)
+  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, 168)
 
   @BeforeEach
   fun setUp() {
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
     whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf())
+  }
+
+  @Test
+  internal fun `will add a retry message that expires in 7 days`() {
+    service.retryLater(99L, "EVENT", "message")
+
+    verify(messageRepository).save<Message>(check{
+      assertThat(it.bookingId).isEqualTo(99L)
+      assertThat(it.eventType).isEqualTo("EVENT")
+      assertThat(it.message).isEqualTo("message")
+      assertThat(it.retryCount).isEqualTo(1)
+      assertThat(it.createdDate.toLocalDate()).isToday()
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(7))
+    })
+
   }
 
   @Test
