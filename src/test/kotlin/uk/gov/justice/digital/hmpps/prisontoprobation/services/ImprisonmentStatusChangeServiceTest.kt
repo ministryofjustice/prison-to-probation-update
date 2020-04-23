@@ -60,9 +60,27 @@ class ImprisonmentStatusChangeServiceTest {
       }
 
       @Test
-      fun `will send update to probation`() {
+      fun `will send bookingNumber update to probation`() {
         service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29), "38339A"))
+      }
+
+      @Test
+      fun `will send location to probation`() {
+        whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "MDI"))
+
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        verify(communityService).updateProbationCustody("A5089DY",  "38339A", UpdateCustody(nomsPrisonInstitutionCode = "MDI"))
+      }
+
+      @Test
+      fun `will send keydates to probation`() {
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29), licenceExpiryDate = LocalDate.parse("1970-01-05")))
+
+        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
+          assertThat(it.licenceExpiryDate).isEqualTo(LocalDate.parse("1970-01-05"))
+        })
       }
 
       @Test
@@ -83,25 +101,6 @@ class ImprisonmentStatusChangeServiceTest {
         assertThat(result).isInstanceOf(Done::class.java)
       }
 
-      @Nested
-      inner class WhenUpdateReecordNotFound {
-        @BeforeEach
-        fun setup() {
-          whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(null)
-        }
-
-        @Test
-        fun `will log that we have not processed an imprisonment status change`() {
-          service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-          verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusRecordNotFound"), check {
-            assertThat(it["bookingId"]).isEqualTo("12345")
-            assertThat(it["bookingNumber"]).isEqualTo("38339A")
-            assertThat(it["sentenceStartDate"]).isEqualTo("2020-02-29")
-            assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
-            assertThat(it["offenderNo"]).isEqualTo("A5089DY")
-          }, isNull())
-        }
-      }
       @Nested
       inner class WhenMatchNotFound {
         @BeforeEach

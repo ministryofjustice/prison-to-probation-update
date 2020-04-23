@@ -57,7 +57,7 @@ class SentenceDatesChangeService(
 
 }
 
-private fun SentenceDetail.asProbationKeyDates(): ReplaceCustodyKeyDates = ReplaceCustodyKeyDates(
+fun SentenceDetail.asProbationKeyDates(): ReplaceCustodyKeyDates = ReplaceCustodyKeyDates(
     conditionalReleaseDate = conditionalReleaseOverrideDate ?: this.conditionalReleaseDate,
     sentenceExpiryDate = sentenceExpiryDate,
     paroleEligibilityDate = paroleEligibilityDate,

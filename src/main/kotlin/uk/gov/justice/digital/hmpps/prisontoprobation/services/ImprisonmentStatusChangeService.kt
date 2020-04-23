@@ -39,15 +39,20 @@ class ImprisonmentStatusChangeService(
 
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return Done() to it.reason }
-    val sentenceStartDate = getSentenceStartDate(bookingId).onIgnore { return Done() to it.reason }
+    val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return Done() to it.reason }
+    val sentenceStartDate = sentenceDetail.sentenceStartDate as LocalDate
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate).onIgnore { return RetryLater(bookingId) to it.reason }
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return  Done() to it.reason.with(booking).with(sentenceStartDate) }
+    communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))
+    booking.agencyId?.let {
+      communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = it))
+    }
+    communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
 
-    return communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))?.let {
-      Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
-    } ?: Done() to TelemetryEvent("P2PImprisonmentStatusRecordNotFound").with(booking).with(sentenceStartDate)
+    return Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
+
 
   private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
   // for each sentence 3 NOMIS events are raised with different sequences, the one with sequence zero happens to be a insert of a new status
@@ -55,9 +60,9 @@ class ImprisonmentStatusChangeService(
       // for now use this to optimise our processing (else we would process a single status change 3 times per imposed sentence)
       if (statusChange.imprisonmentStatusSeq == 0L) Success(statusChange) else Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero"))
 
-  private fun getSentenceStartDate(bookingId: Long): Result<LocalDate, TelemetryEvent> {
+  private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> {
     val sentenceDetail = offenderService.getSentenceDetail(bookingId)
-    return sentenceDetail.sentenceStartDate?.let { Success(it) }
+    return sentenceDetail.sentenceStartDate?.let { Success(sentenceDetail) }
         ?: Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate"))
 
   }

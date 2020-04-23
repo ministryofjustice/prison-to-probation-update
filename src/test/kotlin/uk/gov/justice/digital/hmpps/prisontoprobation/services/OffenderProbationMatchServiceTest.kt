@@ -24,7 +24,7 @@ internal class OffenderProbationMatchServiceTest {
   private val offenderService: OffenderService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val communityService: CommunityService = mock()
-  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService, offenderService, communityService)
+  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService, offenderService, communityService, listOf("MDI"))
 
   @BeforeEach
   fun setup() {
@@ -499,6 +499,31 @@ internal class OffenderProbationMatchServiceTest {
   }
 
   @Test
+  fun `will ignore when offender found not using NOMS number but they are not in an interested prison`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "EXTERNAL_KEY",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
+        custody = Custody(institution = null, bookingNumber = null)
+    )))
+
+    service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY", agencyId = "XX"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore {
+      assertThat(it.reason.name).isEqualTo("P2PChangeIgnored")
+      return
+    }
+
+    fail("should have returned from onIgnore")
+  }
+
+
+  @Test
   fun `will send telemetry event indicating NOMS number has been updated`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
@@ -591,12 +616,13 @@ internal class OffenderProbationMatchServiceTest {
       offenderNo: String = "A12344",
       firstName: String = "Joe",
       lastName: String = "Plumb",
-      dateOfBirth: LocalDate = LocalDate.now().minusYears(20)
-  ) = Booking(
+      dateOfBirth: LocalDate = LocalDate.now().minusYears(20),
+      agencyId: String = "MDI"
+      ) = Booking(
       bookingNo = bookingNo,
       activeFlag = true,
       offenderNo = offenderNo,
-      agencyId = "MDI",
+      agencyId = agencyId,
       firstName = firstName,
       lastName = lastName,
       dateOfBirth = dateOfBirth)
