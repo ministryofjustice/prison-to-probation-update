@@ -63,26 +63,28 @@ class OffenderProbationMatchService(
       else -> {
         when (filteredCRNs.size) {
           0 -> Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())))
-          1 -> {
-            return if (isBookingInInterestedPrison(booking.agencyId)) {
-              communityService.updateProbationOffenderNo(filteredCRNs.first(), booking.offenderNo)
-              telemetryClient.trackEvent(
-                  "P2POffenderNumberSet",
-                  mapOf(
-                      "offenderNo" to booking.offenderNo,
-                      "bookingNumber" to booking.bookingNo,
-                      "crn" to filteredCRNs.first()
-                  ),
-                  null
-              )
-              Success(booking.offenderNo)
-            } else {
-              Ignore(TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")))
-            }
-          }
+          1 -> updateProbationWithOffenderNo(booking, filteredCRNs.first())
           else -> Ignore(TelemetryEvent(name = "P2POffenderTooManyMatches", attributes = mapOf("offenderNo" to booking.offenderNo, "filtered_crns" to filteredCRNs.sorted().joinToString())))
         }
       }
+    }
+  }
+
+  private fun updateProbationWithOffenderNo(booking: Booking, crn: String): Result<String, TelemetryEvent> {
+    return if (isBookingInInterestedPrison(booking.agencyId)) {
+      communityService.updateProbationOffenderNo(crn, booking.offenderNo)
+      telemetryClient.trackEvent(
+          "P2POffenderNumberSet",
+          mapOf(
+              "offenderNo" to booking.offenderNo,
+              "bookingNumber" to booking.bookingNo,
+              "crn" to crn
+          ),
+          null
+      )
+      Success(booking.offenderNo)
+    } else {
+      Ignore(TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")))
     }
   }
 
