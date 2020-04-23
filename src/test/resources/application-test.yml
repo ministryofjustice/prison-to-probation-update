@@ -10,6 +10,8 @@ sqs:
 dynamodb:
   endpoint: http://localhost:4569
   tableName: cp-message
+  schedule:
+    tableName: cp-schedule
 
 prisontoprobation:
   client:

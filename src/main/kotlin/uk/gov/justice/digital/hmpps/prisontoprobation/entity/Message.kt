@@ -22,7 +22,6 @@ data class Message(
     @DynamoDBTypeConverted(converter = LocalDateTimeConverter::class)
     var createdDate: LocalDateTime = LocalDateTime.now(),
     @DynamoDBAttribute
-    // TODO move this logic to service so we control TTL via environment
     var deleteBy: Long =  LocalDateTime.now().plusWeeks(1).toEpochSecond(ZoneOffset.UTC),
     @DynamoDBAttribute
     var eventType: String = "",

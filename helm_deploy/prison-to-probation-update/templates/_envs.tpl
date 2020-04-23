@@ -102,4 +102,35 @@ env:
       secretKeyRef:
         name: message-dynamodb-output
         key: secret_access_key
+
+  - name: DYNAMODB_SCHEDULE_TABLENAME
+    valueFrom:
+      secretKeyRef:
+        name: schedule-dynamodb-output
+        key: table_name
+
+  - name: DYNAMODB_SCHEDULE_AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: schedule-dynamodb-output
+        key: access_key_id
+
+  - name: DYNAMODB_SCHEDULE_AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: schedule-dynamodb-output
+        key: secret_access_key
+
+  - name: RETRY_SCHEDULES_SHORT_CRON
+    value: "{{ .Values.env.RETRY_SCHEDULES_SHORT_CRON }}"
+
+  - name: RETRY_SCHEDULES_MEDIUM_CRON
+    value: "{{ .Values.env.RETRY_SCHEDULES_MEDIUM_CRON }}"
+
+  - name: RETRY_SCHEDULES_LONG_CRON
+    value: "{{ .Values.env.RETRY_SCHEDULES_LONG_CRON }}"
+
+  - name: DYNAMODB_MESSAGE_EXPIRYHOURS
+    value: "{{ .Values.env.DYNAMODB_MESSAGE_EXPIRYHOURS }}"
+
 {{- end -}}

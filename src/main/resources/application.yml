@@ -104,3 +104,14 @@ sqs:
 dynamodb:
   region: ${aws.region}
   provider: ${aws.provider}
+  message.expiryHours: 168
+
+
+retry:
+  schedules:
+    short:
+      cron: "0 0 * * * *"
+    medium:
+      cron: "0 15 */4 * * *"
+    long:
+      cron: "0 30 23 * * *"
