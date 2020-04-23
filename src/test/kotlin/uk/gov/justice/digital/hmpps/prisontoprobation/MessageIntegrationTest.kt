@@ -40,6 +40,9 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { communityGetCountFor("/secure/offenders/crn/X181002/convictions") } matches { it == 2 }
     await untilCallTo { communityPutCountFor("/secure/offenders/crn/X142620/nomsNumber") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
+    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
+    await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+
   }
 
   @Test

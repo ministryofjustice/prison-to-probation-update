@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
@@ -15,7 +16,8 @@ class OffenderProbationMatchService(
     private val telemetryClient: TelemetryClient,
     private val offenderSearchService: OffenderSearchService,
     private val offenderService: OffenderService,
-    private val communityService: CommunityService
+    private val communityService: CommunityService,
+    @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -61,22 +63,28 @@ class OffenderProbationMatchService(
       else -> {
         when (filteredCRNs.size) {
           0 -> Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())))
-          1 -> {
-            communityService.updateProbationOffenderNo(filteredCRNs.first(), booking.offenderNo)
-            telemetryClient.trackEvent(
-                "P2POffenderNumberSet",
-                mapOf(
-                    "offenderNo" to booking.offenderNo,
-                    "bookingNumber" to booking.bookingNo,
-                    "crn" to filteredCRNs.first()
-                ),
-                null
-            )
-            Success(booking.offenderNo)
-          }
+          1 -> updateProbationWithOffenderNo(booking, filteredCRNs.first())
           else -> Ignore(TelemetryEvent(name = "P2POffenderTooManyMatches", attributes = mapOf("offenderNo" to booking.offenderNo, "filtered_crns" to filteredCRNs.sorted().joinToString())))
         }
       }
+    }
+  }
+
+  private fun updateProbationWithOffenderNo(booking: Booking, crn: String): Result<String, TelemetryEvent> {
+    return if (isBookingInInterestedPrison(booking.agencyId)) {
+      communityService.updateProbationOffenderNo(crn, booking.offenderNo)
+      telemetryClient.trackEvent(
+          "P2POffenderNumberSet",
+          mapOf(
+              "offenderNo" to booking.offenderNo,
+              "bookingNumber" to booking.bookingNo,
+              "crn" to crn
+          ),
+          null
+      )
+      Success(booking.offenderNo)
+    } else {
+      Ignore(TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")))
     }
   }
 
@@ -148,6 +156,11 @@ class OffenderProbationMatchService(
         .filterNotNull()
         .toList()
   }
+
+  private fun isBookingInInterestedPrison(toAgency: String?) =
+      allowAnyPrison() || allowedPrisons.contains(toAgency)
+
+  private fun allowAnyPrison() = allowedPrisons.isEmpty()
 }
 
 private fun LocalDate.closeTo(date: LocalDate, days: Int = 7): Boolean = Math.abs(DAYS.between(this, date)) <= days
