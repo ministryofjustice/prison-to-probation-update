@@ -27,6 +27,10 @@ env:
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.pre-prod.delius.probation.hmpps.dsd.io"
   OFFENDER_SEARCH_ENDPOINT_URL: "https://offender-search.pre-prod.delius.probation.hmpps.dsd.io"
   PRISONTOPROBATION_ONLY_PRISONS: ""
+  RETRY_SCHEDULES_SHORT_CRON: "0 0 * * * *"
+  RETRY_SCHEDULES_MEDIUM_CRON: "0 15 */4 * * *"
+  RETRY_SCHEDULES_LONG_CRON: "0 30 23 * * *"
+  DYNAMODB_MESSAGE_EXPIRYHOURS: 168
 
 whitelist:
   office: "217.33.148.210/32"

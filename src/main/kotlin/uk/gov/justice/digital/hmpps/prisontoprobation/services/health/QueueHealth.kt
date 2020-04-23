@@ -54,7 +54,6 @@ class QueueHealth(@Autowired @Qualifier("awsSqsClient") private val awsSqsClient
 
     val health = Builder().up().withDetails(details).addDlqHealth(queueAttributes).build()
 
-    log.info("Found health details for queue '{}': {}", queueName, health)
     return health
   }
 
