@@ -4,9 +4,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.time.LocalDate
 
@@ -23,11 +23,8 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .uri("/secure/offenders/nomsNumber/$offenderNo/custody/bookingNumber/$bookingNo")
         .bodyValue(updateCustody)
         .retrieve()
-        .onStatus({ it == HttpStatus.NOT_FOUND }, {
-          log.info("Booking $bookingNo not found for $offenderNo message is ${it.statusCode().reasonPhrase}")
-          Mono.empty()
-        })
         .bodyToMono(Custody::class.java)
+        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
         .block()
   }
 
@@ -36,11 +33,8 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .uri("/secure/offenders/nomsNumber/$offenderNo/custody/bookingNumber")
         .bodyValue(updateCustodyBookingNumber)
         .retrieve()
-        .onStatus({ it == HttpStatus.NOT_FOUND }, {
-          log.info("Booking not found for $offenderNo message is ${it.statusCode().reasonPhrase}")
-          Mono.empty()
-        })
         .bodyToMono(Custody::class.java)
+        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
         .block()
   }
 
@@ -49,13 +43,12 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .uri("/secure/offenders/nomsNumber/$offenderNo/bookingNumber/$bookingNo/custody/keyDates")
         .bodyValue(replaceCustodyKeyDates)
         .retrieve()
-        .onStatus({ it == HttpStatus.NOT_FOUND }, {
-          log.info("Booking not found for $bookingNo offender $offenderNo message is ${it.statusCode().reasonPhrase}")
-          Mono.empty()
-        })
         .bodyToMono(Custody::class.java)
+        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
         .block()
   }
+  fun emptyWhen404(exception: WebClientResponseException): Mono<Custody> =
+      if (exception.rawStatusCode == 404) Mono.empty() else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()

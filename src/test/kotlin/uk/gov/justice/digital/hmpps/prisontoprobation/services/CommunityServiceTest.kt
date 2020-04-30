@@ -52,6 +52,7 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test put custody will be null if conviction not found`() {
       communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
+          .withBody("{\"error\": \"not found\"}")
           .withStatus(HTTP_NOT_FOUND)))
 
 
@@ -100,6 +101,7 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test custody will be null if not found`() {
       communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
+          .withBody("{\"error\": \"not found\"}")
           .withStatus(HTTP_NOT_FOUND)))
 
       val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber())
@@ -142,6 +144,7 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test custody will be null if not found`() {
       communityMockServer.stubFor(post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
+          .withBody("{\"error\": \"not found\"}")
           .withStatus(HTTP_NOT_FOUND)))
 
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
