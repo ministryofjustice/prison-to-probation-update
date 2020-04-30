@@ -62,7 +62,7 @@ fun SentenceDetail.asProbationKeyDates(): ReplaceCustodyKeyDates = ReplaceCustod
     sentenceExpiryDate = sentenceExpiryDate,
     paroleEligibilityDate = paroleEligibilityDate,
     licenceExpiryDate = licenceExpiryDate,
-    expectedReleaseDate = releaseDate,
+    expectedReleaseDate = confirmedReleaseDate,
     hdcEligibilityDate = homeDetentionCurfewEligibilityDate,
     postSentenceSupervisionEndDate = topupSupervisionExpiryDate
 )

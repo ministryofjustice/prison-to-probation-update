@@ -64,8 +64,41 @@ internal class SentenceDatesChangeServiceTest {
         assertThat(it.hdcEligibilityDate).isEqualTo(LocalDate.of(1970, 1, 10))
         assertThat(it.paroleEligibilityDate).isEqualTo(LocalDate.of(1970, 1, 6))
         assertThat(it.sentenceExpiryDate).isEqualTo(LocalDate.of(1970, 1, 8))
-        assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.of(1970, 1, 7))
+        assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.of(1970, 1, 4))
         assertThat(it.postSentenceSupervisionEndDate).isEqualTo(LocalDate.of(1970, 1, 9))
+      })
+    }
+
+    @Test
+    fun `will send the confirmed release date to probation as expectedReleaseDate`() {
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(
+          bookingNo = "38339A",
+          offenderNo = "A5089DY"
+      ))
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
+          confirmedReleaseDate = LocalDate.parse("2020-06-12"),
+          releaseDate = LocalDate.parse("2020-07-14")
+      ))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+
+      verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
+        assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.parse("2020-06-12"))
+      })
+    }
+    @Test
+    fun `will only send the confirmed release date to probation if present`() {
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(
+          bookingNo = "38339A",
+          offenderNo = "A5089DY"
+      ))
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
+          confirmedReleaseDate = null,
+          releaseDate = LocalDate.parse("2020-07-14")
+      ))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+
+      verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
+        assertThat(it.expectedReleaseDate).isNull()
       })
     }
 
