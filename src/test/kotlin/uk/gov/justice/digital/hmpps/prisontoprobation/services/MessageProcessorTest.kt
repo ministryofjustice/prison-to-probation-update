@@ -51,6 +51,15 @@ class MessageProcessorTest {
   }
 
   @Test
+  fun `confirmed release date change will be checked for processing`() {
+    messageProcessor.processMessage("CONFIRMED_RELEASE_DATE-CHANGED", "{\"eventType\":\"CONFIRMED_RELEASE_DATE-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200835,\"nomisEventType\":\"CONFIRMED_RELEASE_DATE-CHANGED\"}")
+
+    verify(sentenceDatesChangeService).checkSentenceDateChangeAndUpdateProbation(check {
+      assertThat(it.bookingId).isEqualTo(1200835L)
+    })
+  }
+
+  @Test
   fun `other messages are ignored`() {
     messageProcessor.processMessage("SOME_OTHER_MESSAGE", "{\"eventType\":\"SOME_OTHER_MESSAGE\"}")
 
