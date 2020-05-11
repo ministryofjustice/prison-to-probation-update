@@ -25,7 +25,7 @@ class MessageProcessor(
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_DATES-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }
@@ -40,7 +40,7 @@ class MessageProcessor(
 data class ExternalPrisonerMovementMessage(val bookingId: Long, val movementSeq: Long)
 data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
-data class SentenceDatesChangeMessage(val bookingId: Long)
+data class SentenceKeyDateChangeMessage(val bookingId: Long)
 
 sealed class MessageResult
 class RetryLater(val bookingId: Long) : MessageResult()

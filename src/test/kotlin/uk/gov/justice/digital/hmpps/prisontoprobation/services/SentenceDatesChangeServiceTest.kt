@@ -27,14 +27,14 @@ internal class SentenceDatesChangeServiceTest {
 
     @Test
     fun `will check the state of the booking`() {
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(offenderService).getBooking(12345L)
     }
 
     @Test
     fun `will retrieve the sentence dates for the booking`() {
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(offenderService).getSentenceDetail(12345L)
     }
@@ -56,7 +56,7 @@ internal class SentenceDatesChangeServiceTest {
           topupSupervisionExpiryDate = LocalDate.of(1970, 1, 9),
           homeDetentionCurfewEligibilityDate = LocalDate.of(1970, 1, 10)
       ))
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
         assertThat(it.conditionalReleaseDate).isEqualTo(LocalDate.of(1970, 1, 3))
@@ -79,7 +79,7 @@ internal class SentenceDatesChangeServiceTest {
           confirmedReleaseDate = LocalDate.parse("2020-06-12"),
           releaseDate = LocalDate.parse("2020-07-14")
       ))
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
         assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.parse("2020-06-12"))
@@ -95,7 +95,7 @@ internal class SentenceDatesChangeServiceTest {
           confirmedReleaseDate = null,
           releaseDate = LocalDate.parse("2020-07-14")
       ))
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
         assertThat(it.expectedReleaseDate).isNull()
@@ -112,7 +112,7 @@ internal class SentenceDatesChangeServiceTest {
         ))
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
         ))
-        service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+        service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
         verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
           assertThat(it.conditionalReleaseDate).isNull()
@@ -137,7 +137,7 @@ internal class SentenceDatesChangeServiceTest {
             conditionalReleaseDate = LocalDate.of(1970, 1, 2),
             conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3)
         ))
-        service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+        service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
         verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
           assertThat(it.conditionalReleaseDate).isEqualTo(LocalDate.of(1970, 1, 3))
@@ -155,7 +155,7 @@ internal class SentenceDatesChangeServiceTest {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(
             conditionalReleaseDate = LocalDate.of(1970, 1, 2)
         ))
-        service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+        service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
         verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
           assertThat(it.conditionalReleaseDate).isEqualTo(LocalDate.of(1970, 1, 2))
@@ -183,7 +183,7 @@ internal class SentenceDatesChangeServiceTest {
           topupSupervisionExpiryDate = LocalDate.of(1970, 1, 9)
       ))
 
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(telemetryClient).trackEvent(eq("P2PSentenceDatesChanged"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")
@@ -211,7 +211,7 @@ internal class SentenceDatesChangeServiceTest {
             bookingNo = "38339A",
             offenderNo = "A5089DY"
         ))
-        service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+        service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
         verify(telemetryClient).trackEvent(eq("P2PSentenceDatesRecordNotFound"), check {
           assertThat(it["bookingId"]).isEqualTo("12345")
@@ -231,7 +231,7 @@ internal class SentenceDatesChangeServiceTest {
 
     @Test
     fun `will log that offender has no active booking and abandon update`() {
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(telemetryClient).trackEvent(eq("P2PSentenceDatesChangeIgnored"), check {
         assertThat(it["reason"]).isEqualTo("Not an active booking")
@@ -250,7 +250,7 @@ internal class SentenceDatesChangeServiceTest {
 
     @Test
     fun `will log that offender is not in an interested prison and abandon update`() {
-      service.checkSentenceDateChangeAndUpdateProbation(SentenceDatesChangeMessage(12345L))
+      service.checkSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
       verify(telemetryClient).trackEvent(eq("P2PSentenceDatesChangeIgnored"), check {
         assertThat(it["reason"]).isEqualTo("Not at an interested prison")
