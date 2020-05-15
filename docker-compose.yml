@@ -26,7 +26,7 @@ services:
       - OAUTH_CLIENT_ID=prison-to-probation-update-api-client
 
   elite2-api:
-    image: mojdigitalstudio/elite2-api:latest
+    image: quay.io/hmpps/elite2-api:latest
     container_name: elite2-api
     depends_on:
       - oauth
@@ -39,7 +39,7 @@ services:
       - SPRING_PROFILES_ACTIVE=nomis-hsqldb
 
   oauth:
-    image: mojdigitalstudio/nomis-oauth2-server:latest
+    image: quay.io/hmpps/nomis-oauth2-server:latest
     networks:
       - hmpps
     container_name: oauth
@@ -52,7 +52,7 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
 
   community-api:
-    image: mojdigitalstudio/community-api:latest
+    image: quay.io/hmpps/community-api:latest
     networks:
       - hmpps
     container_name: community-api
@@ -65,7 +65,7 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
 
   offender-search:
-    image: mojdigitalstudio/offender-search:latest
+    image: quay.io/hmpps/offender-search:latest
     networks:
       - hmpps
     container_name: offender-search
