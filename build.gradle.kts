@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.3.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "0.4.0"
   kotlin("plugin.spring") version "1.3.72"
 }
 
@@ -19,8 +19,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.9.3")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.9.3")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.11.1")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.11.1")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
@@ -31,15 +31,15 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.0")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.782"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.790"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
-  implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.782")
-  implementation("io.github.boostchicken:spring-data-dynamodb:5.2.3")
+  implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.790")
+  implementation("io.github.boostchicken:spring-data-dynamodb:5.2.4")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.17.0")
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
-  testImplementation("org.testcontainers:localstack:1.13.0")
-  testImplementation("org.awaitility:awaitility-kotlin:4.0.2")
+  testImplementation("org.testcontainers:localstack:1.14.2")
+  testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
 }
