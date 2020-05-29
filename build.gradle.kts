@@ -31,10 +31,10 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.0")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.790"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.791"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
-  implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.790")
-  implementation("io.github.boostchicken:spring-data-dynamodb:5.2.4")
+  implementation("com.amazonaws:aws-java-sdk-dynamodb:1.11.791")
+  implementation("com.github.derjust:spring-data-dynamodb:5.1.0")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.26.3")

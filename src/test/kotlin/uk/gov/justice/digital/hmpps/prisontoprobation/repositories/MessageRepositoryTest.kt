@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.repositories
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -98,6 +99,76 @@ class MessageRepositoryTest {
 
     val messageAfterRetry = repository.findAll().first()
     assertThat(messageAfterRetry.retryCount).isEqualTo(2)
+  }
+
+  @Nested
+  inner class FindByRetryCountAndCreatedDateBefore {
+    @Test
+    internal fun `will ignore messages that are too young`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+
+      assertThat(messages).isEmpty()
+    }
+    @Test
+    internal fun `will find messages that are old enough`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+
+      assertThat(messages).hasSize(1)
+    }
+
+    @Test
+    internal fun `will find all messages that are old enough`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(12), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+
+      assertThat(messages).hasSize(2)
+    }
+
+    @Test
+    internal fun `will only find messages that have not tried`() {
+      repository.save(Message(bookingId = 99L, retryCount = 1, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+
+      assertThat(messages).isEmpty()
+    }
+  }
+
+  @Nested
+  inner class FindByBookingId {
+    @Test
+    internal fun `will include messages that are young`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByBookingId(99L)
+
+      assertThat(messages).hasSize(1)
+    }
+    @Test
+    internal fun `will only include messages for the specific booking`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+      repository.save(Message(bookingId = 100L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByBookingId(99L)
+
+      assertThat(messages).hasSize(1)
+    }
+    @Test
+    internal fun `will only include messages regardless to retryCount`() {
+      repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+      repository.save(Message(bookingId = 99L, retryCount = 1, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+      repository.save(Message(bookingId = 99L, retryCount = 2, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+
+      val messages = repository.findByBookingId(99L)
+
+      assertThat(messages).hasSize(3)
+    }
   }
 
 }
