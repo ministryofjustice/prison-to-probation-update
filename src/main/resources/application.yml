@@ -81,6 +81,7 @@ prisontoprobation:
   only.prisons: ''
   message-processor:
     delay: 1000
+    enabled: true
   hold-back:
     duration: 15m
   client:
