@@ -31,6 +31,8 @@ jobs:
       - run:
           command: sudo apt-get install less
       - run:
+          command: sleep 10
+      - run:
           command: src/test/resources/localstack/setup-sns.sh
       - restore_cache:
           keys:
