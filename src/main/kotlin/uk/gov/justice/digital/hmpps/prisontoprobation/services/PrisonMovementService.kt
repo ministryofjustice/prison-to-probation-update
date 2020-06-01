@@ -19,7 +19,11 @@ class PrisonMovementService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) : MessageResult {
+  fun validateMovementAndUpdateProbation(message: ExternalPrisonerMovementMessage): MessageResult {
+    return RetryLater(message.bookingId)
+  }
+
+  fun processMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) : MessageResult {
     val (bookingId, movementSeq) = prisonerMovementMessage
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),

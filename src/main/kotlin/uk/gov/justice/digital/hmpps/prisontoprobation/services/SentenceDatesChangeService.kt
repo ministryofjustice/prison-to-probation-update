@@ -17,7 +17,12 @@ class SentenceDatesChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkSentenceDateChangeAndUpdateProbation(message: SentenceKeyDateChangeMessage) : MessageResult {
+  fun validateSentenceDateChangeAndUpdateProbation(message: SentenceKeyDateChangeMessage): MessageResult {
+    return RetryLater(message.bookingId)
+  }
+
+
+  fun processSentenceDateChangeAndUpdateProbation(message: SentenceKeyDateChangeMessage) : MessageResult {
     val (bookingId) = message
     log.info("Sentence dates for booking $bookingId have changed")
 

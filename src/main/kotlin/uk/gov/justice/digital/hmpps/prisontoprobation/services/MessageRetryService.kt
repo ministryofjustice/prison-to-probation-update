@@ -21,6 +21,17 @@ class MessageRetryService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  fun scheduleForProcessing(bookingId: Long, eventType: String, message: String) {
+    log.info("Registering an initial processing for booking $bookingId for event $eventType")
+    messageRepository.save(Message(
+        bookingId = bookingId,
+        eventType = eventType,
+        message = message,
+        retryCount = 0,
+        deleteBy = LocalDateTime.now().plusHours(expiryHours).toEpochSecond(ZoneOffset.UTC)
+    ))
+  }
+
   fun retryLater(bookingId: Long, eventType: String, message: String) {
     log.info("Registering a retry for booking $bookingId for event $eventType")
     messageRepository.save(Message(

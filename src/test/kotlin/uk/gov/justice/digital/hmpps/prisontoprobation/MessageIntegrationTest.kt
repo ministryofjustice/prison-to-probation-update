@@ -6,9 +6,16 @@ import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.internal.util.MockUtil
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.PropertySource
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import javax.inject.Inject
 
+@SpringBootTest(properties = [
+  "prisontoprobation.message-processor.enabled=true",
+  "prisontoprobation.message-processor.delay=50",
+  "prisontoprobation.hold-back.duration=0m"
+])
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageProcessor: MessageProcessor

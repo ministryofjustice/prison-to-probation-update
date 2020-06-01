@@ -23,7 +23,11 @@ class ImprisonmentStatusChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
+  fun validateImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
+    return RetryLater(message.bookingId)
+  }
+
+  fun processImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
     val (bookingId, imprisonmentStatusSeq) = message
     log.info("Imprisonment status for booking $bookingId has changed")
 
