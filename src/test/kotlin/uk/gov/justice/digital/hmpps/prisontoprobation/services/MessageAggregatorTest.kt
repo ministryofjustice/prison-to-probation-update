@@ -7,7 +7,6 @@ import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.nhaarman.mockitokotlin2.reset
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.inOrder
@@ -45,7 +44,6 @@ internal class MessageAggregatorTest {
   fun setup() {
     repository.deleteAll()
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
-    Assertions.assertThat(repository.findAll()).isEmpty()
   }
 
 

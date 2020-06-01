@@ -40,7 +40,7 @@ class MessageAggregator(
   }
 
   private fun allAggregatedMessagesForBooking(message: Message): List<Pair<Message, Boolean>> {
-    val allMessages = messageRepository.findByBookingId(message.bookingId)
+    val allMessages = messageRepository.findByBookingId(message.bookingId).sortedBy {it.toPriority }
     val uniqueMessages = allMessages.distinctBy { it.eventType }
     return allMessages.map { it to !uniqueMessages.contains(it) }
   }
@@ -59,4 +59,16 @@ class MessageAggregator(
   private fun aggregatedMessagesOrdered(messages: List<Message>): List<Pair<Message, Boolean>> =
       messages.sortedBy { it.createdDate }.flatMap { allAggregatedMessagesForBooking(it) }
 }
+
+val Message.toPriority: Int
+  get() {
+    return when (this.eventType) {
+      "IMPRISONMENT_STATUS-CHANGED" -> 0
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> 1
+      "SENTENCE_DATES-CHANGED" -> 2
+      "CONFIRMED_RELEASE_DATE-CHANGED" -> 3
+      "BOOKING_NUMBER-CHANGED" -> 4
+      else -> 99
+    }
+  }
 
