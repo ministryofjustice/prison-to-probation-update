@@ -2,15 +2,15 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
-  dps: ministryofjustice/dps@1.2.1
+  hmpps: ministryofjustice/hmpps@1.0.0
 
 executors:
   validator:
     docker:
       - image: circleci/openjdk:11-jdk
-      - image: localstack/localstack:0.10.5
+      - image: localstack/localstack:0.11.2
         environment:
-          - SERVICES=sqs,dynamodb
+          - SERVICES=sqs,sns,dynamodb
           - DEBUG=${DEBUG- }
           - DATA_DIR=/tmp/localstack/data
           - DOCKER_HOST=unix:///var/run/docker.sock
@@ -27,6 +27,13 @@ jobs:
     executor: validator
     steps:
       - checkout
+      - hmpps/install_aws_cli
+      - run:
+          command: sudo apt-get install less
+      - run:
+          command: sleep 10
+      - run:
+          command: src/test/resources/localstack/setup-sns.sh
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
@@ -57,15 +64,15 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - dps/helm_lint:
+      - hmpps/helm_lint:
           name: helm_lint
-      - dps/build_docker:
+      - hmpps/build_docker:
           name: build_docker
           filters:
             branches:
               only:
                 - master
-      - dps/deploy_env:
+      - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
           filters:
@@ -80,7 +87,7 @@ workflows:
           type: approval
           requires:
             - deploy_dev
-      - dps/deploy_env:
+      - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
           context: prison-to-probation-update-preprod
@@ -90,7 +97,7 @@ workflows:
           type: approval
           requires:
             - deploy_preprod
-      - dps/deploy_env:
+      - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
           slack_notification: true

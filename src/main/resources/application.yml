@@ -48,8 +48,9 @@ server:
     context-path: /
   forward-headers-strategy: native
   tomcat:
-    remote-ip-header: x-forwarded-for
-    protocol_header: x-forwarded-proto
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol-header: x-forwarded-proto
 
 logging:
   level:
@@ -78,6 +79,11 @@ oauth:
 
 prisontoprobation:
   only.prisons: ''
+  message-processor:
+    delay: 1000
+    enabled: true
+  hold-back:
+    duration: 15m
   client:
     client-id: ${oauth.client.id}
     client-secret: ${oauth.client.secret}

@@ -77,7 +77,7 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=localstack,dev
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:0.11.2
     networks:
       - hmpps
     container_name: localstack
@@ -97,7 +97,7 @@ services:
     volumes:
       - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - $PWD/localstack:/docker-entrypoint-initaws.d
+      - $PWD/src/test/resources/localstack:/docker-entrypoint-initaws.d
 
 networks:
   hmpps:

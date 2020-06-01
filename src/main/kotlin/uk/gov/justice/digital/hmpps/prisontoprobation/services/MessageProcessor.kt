@@ -21,6 +21,7 @@ class MessageProcessor(
   }
 
   fun processMessage(eventType: String, message: String): MessageResult {
+    log.debug("Processing message $eventType by $this")
     return when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))

@@ -18,6 +18,8 @@ prisontoprobation:
     client-id: prisontoprobation-api-client
     client-secret: clientsecret
     access-token-uri: http://localhost:8090/auth/oauth/token
+  message-processor:
+    enabled: false
 
 elite2:
   endpoint.url: http://localhost:8093

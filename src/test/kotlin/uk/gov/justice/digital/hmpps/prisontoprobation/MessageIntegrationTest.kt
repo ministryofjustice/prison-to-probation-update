@@ -3,9 +3,21 @@ package uk.gov.justice.digital.hmpps.prisontoprobation
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.internal.util.MockUtil
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
+import javax.inject.Inject
 
 class MessageIntegrationTest : QueueIntegrationTest() {
+  @Inject
+  private lateinit var messageProcessor: MessageProcessor
+
+  @BeforeEach
+  internal fun setUp() {
+    println("We should have a real MessageProcessor it is $messageProcessor and Mockito thinks isMock=${MockUtil.isMock(messageProcessor)}")
+  }
+
   @Test
   fun `will consume a prison movement message, update probation and create movement insights event`() {
     val message = "/messages/externalMovement.json".readResourceAsText()
