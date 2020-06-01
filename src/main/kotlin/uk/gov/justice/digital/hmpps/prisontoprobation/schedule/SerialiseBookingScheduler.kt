@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageAggregator
 
 
 @Service
+@ConditionalOnProperty(name = ["\${prisontoprobation.message-processor.enabled}"], havingValue = "true"  )
 class SerialiseBookingScheduler (val messageAggregator: MessageAggregator){
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -17,7 +18,6 @@ class SerialiseBookingScheduler (val messageAggregator: MessageAggregator){
 
   @Scheduled(fixedDelayString = "\${prisontoprobation.message-processor.delay}")
   @SchedulerLock(name = "scheduleLock")
-  @ConditionalOnProperty(name = ["\${prisontoprobation.message-processor.enabled}"], havingValue = "true"  )
   fun processMessages() {
     log.info("Processing messages for next booking")
     messageAggregator.processMessagesForNextBookingSets()
