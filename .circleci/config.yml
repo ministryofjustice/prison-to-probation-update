@@ -29,7 +29,7 @@ jobs:
       - checkout
       - hmpps/install_aws_cli
       - run:
-          command: curl --connect-timeout 30 --retry 20 --retry-delay 5 http://localhost:4576
+          command: curl --connect-timeout 30 -retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
       - run:
           command: src/test/resources/localstack/setup-sns.sh
       - restore_cache:
