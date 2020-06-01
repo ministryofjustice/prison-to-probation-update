@@ -43,6 +43,7 @@ internal class MessageAggregatorTest {
   @BeforeEach
   fun setup() {
     repository.deleteAll()
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
   }
 
 
