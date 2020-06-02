@@ -49,7 +49,7 @@ internal class MessageRetryServiceIntTest {
   internal fun `will retry twice on success on second attempt`() {
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     whenever(messageProcessor.processMessage(any(), any()))
-        .thenReturn(RetryLater(1200835))
+        .thenReturn(TryLater(1200835))
         .thenReturn(Done())
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
 
@@ -64,7 +64,7 @@ internal class MessageRetryServiceIntTest {
   @Test
   internal fun `will retry four times in short term retry mode on failure`() {
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(1200835))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
 
     //continually call this as if on a schedule
@@ -78,7 +78,7 @@ internal class MessageRetryServiceIntTest {
   @Test
   internal fun `will retry six times in medium term retry mode on failure`() {
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(1200835))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
     val shortTermRepeat = 4
 
@@ -95,7 +95,7 @@ internal class MessageRetryServiceIntTest {
   @Test
   internal fun `will retry until deleted in long term retry mode on failure`() {
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(1200835))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
     val shortTermRepeat = 4
     val mediumTermRepeat = 6

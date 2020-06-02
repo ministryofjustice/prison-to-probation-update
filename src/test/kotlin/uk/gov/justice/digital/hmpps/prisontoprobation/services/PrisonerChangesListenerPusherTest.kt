@@ -22,7 +22,7 @@ class PrisonerChangesListenerPusherTest {
 
   @Test
   fun `will call retry service when requested`() {
-    whenever(messageProcessor.validateMessage(any(), any())).thenReturn(RetryLater(99L))
+    whenever(messageProcessor.validateMessage(any(), any())).thenReturn(TryLater(99L))
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 

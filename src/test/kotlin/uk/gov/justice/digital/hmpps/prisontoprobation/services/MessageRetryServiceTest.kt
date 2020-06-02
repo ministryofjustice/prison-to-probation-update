@@ -78,7 +78,7 @@ internal class MessageRetryServiceTest {
   internal fun `will update retry count of failure`() {
     val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
     whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(bookingId = 99L))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
 
     service.retryShortTerm()
 

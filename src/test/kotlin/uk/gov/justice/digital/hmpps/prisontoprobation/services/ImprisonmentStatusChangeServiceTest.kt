@@ -22,7 +22,45 @@ class ImprisonmentStatusChangeServiceTest {
   private val service = ImprisonmentStatusChangeService(telemetryClient, offenderService, communityService, offenderProbationMatchService, listOf("MDI", "WII"))
 
   @Nested
-  inner class CheckImprisonmentStatusChangeAndUpdateProbation {
+  inner class Validate {
+    @Test
+    internal fun `will mark as done if status change is not significant`( ) {
+      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+
+      assertThat(result).isInstanceOf(Done::class.java)
+    }
+
+    @Test
+    internal fun `will mark as done if sentence has no start date`( ) {
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
+
+      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+      assertThat(result).isInstanceOf(Done::class.java)
+    }
+
+    @Test
+    internal fun `will mark as done if booking is not active`() {
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
+
+      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+      assertThat(result).isInstanceOf(Done::class.java)
+    }
+
+    @Test
+    internal fun `will mark as done if prisoner is not prison in roll-out list`() {
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
+
+      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+      assertThat(result).isInstanceOf(Done::class.java)
+    }
+  }
+  @Nested
+  inner class Process {
     @BeforeEach
     fun setUp() {
       whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo) }
@@ -111,7 +149,7 @@ class ImprisonmentStatusChangeServiceTest {
         @Test
         fun `will indicate we want to try again`() {
           val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-          assertThat(result).isInstanceOf(RetryLater::class.java)
+          assertThat(result).isInstanceOf(TryLater::class.java)
         }
       }
     }

@@ -81,7 +81,7 @@ class PrisonMovementServiceTest {
 
       val result = service.validateMovement(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      assertThat(result).isInstanceOf(RetryLater::class.java)
+      assertThat(result).isInstanceOf(TryLater::class.java)
     }
   }
 

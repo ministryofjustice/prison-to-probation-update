@@ -24,7 +24,7 @@ class PrisonMovementService(
     val movement = validMovementOf(bookingId, movementSeq).onIgnore { return Done(it.reason) }
     validToAgencyForPrisonTransfer(movement).onIgnore { return Done(it.reason) }
     validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
-    return RetryLater(message.bookingId)
+    return TryLater(message.bookingId)
   }
 
 

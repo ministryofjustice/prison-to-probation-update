@@ -57,5 +57,5 @@ data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmen
 data class SentenceKeyDateChangeMessage(val bookingId: Long)
 
 sealed class MessageResult
-class RetryLater(val bookingId: Long) : MessageResult()
+class TryLater(val bookingId: Long) : MessageResult()
 class Done(val message: String? = null) : MessageResult()

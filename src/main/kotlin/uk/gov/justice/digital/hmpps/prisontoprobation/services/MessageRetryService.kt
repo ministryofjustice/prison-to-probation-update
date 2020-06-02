@@ -59,7 +59,7 @@ class MessageRetryService(
     messages.forEach {
       log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
       when (val result: MessageResult = processMessage(it.eventType, it.message, it.bookingId)) {
-        is RetryLater -> {
+        is TryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry())
         }
@@ -77,7 +77,7 @@ class MessageRetryService(
       messageProcessor.processMessage(eventType, message)
     } catch (e: Exception) {
       log.error("Exception while processing $eventType for $bookingId", e)
-      RetryLater(bookingId)
+      TryLater(bookingId)
     }
   }
 }

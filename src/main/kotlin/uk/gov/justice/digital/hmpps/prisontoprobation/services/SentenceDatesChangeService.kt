@@ -22,7 +22,7 @@ class SentenceDatesChangeService(
     val (bookingId) = message
     val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
     validBookingForInterestedPrison(booking).onIgnore { return Done(it.reason) }
-    return RetryLater(message.bookingId)
+    return TryLater(message.bookingId)
   }
 
 
