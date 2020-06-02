@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.internal.util.MockUtil
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.PropertySource
+import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import javax.inject.Inject
 
@@ -19,9 +20,12 @@ import javax.inject.Inject
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageProcessor: MessageProcessor
+  @Inject
+  private lateinit var messageRepository: MessageRepository
 
   @BeforeEach
   internal fun setUp() {
+    messageRepository.deleteAll()
     println("We should have a real MessageProcessor it is $messageProcessor and Mockito thinks isMock=${MockUtil.isMock(messageProcessor)}")
   }
 
