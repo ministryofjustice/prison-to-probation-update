@@ -41,8 +41,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     awsSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/movement/1") } matches { it == 1 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 1 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/movement/1") } matches { it == 2 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/prisoners?offenderNo=A5089DY") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
   }

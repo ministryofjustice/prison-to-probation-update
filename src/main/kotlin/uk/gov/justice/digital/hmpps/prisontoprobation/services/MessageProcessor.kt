@@ -36,7 +36,7 @@ class MessageProcessor(
   fun validateMessage(eventType: String, message: String): MessageResult {
     log.debug("Validating message $eventType by $this")
     return when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovementAndUpdateProbation(fromJson(message))
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChangedAndUpdateProbation(fromJson(message))
       "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChangeAndUpdateProbation(fromJson(message))

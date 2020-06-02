@@ -19,11 +19,16 @@ class PrisonMovementService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun validateMovementAndUpdateProbation(message: ExternalPrisonerMovementMessage): MessageResult {
+  fun validateMovement(message: ExternalPrisonerMovementMessage): MessageResult {
+    val (bookingId, movementSeq) = message
+    val movement = validMovementOf(bookingId, movementSeq).onIgnore { return Done(it.reason) }
+    validToAgencyForPrisonTransfer(movement).onIgnore { return Done(it.reason) }
+    validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
     return RetryLater(message.bookingId)
   }
 
-  fun processMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage) : MessageResult {
+
+  fun processMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage): MessageResult {
     val (bookingId, movementSeq) = prisonerMovementMessage
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),
@@ -40,12 +45,11 @@ class PrisonMovementService(
   }
 
   private fun processMovement(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): TelemetryEvent {
-    var movement = movementOf(bookingId, movementSeq, trackingAttributes).onIgnore { return it.reason}
+    val movement = movementOf(bookingId, movementSeq, trackingAttributes).onIgnore { return it.reason }
 
     val movementTrackingAttributes = movementTrackingAttributesFor(bookingId, movement)
 
     val toAgency = toAgencyForPrisonTransfer(movement, movementTrackingAttributes).onIgnore { return it.reason }
-    movement = interestedPrisonMovement(movement, movementTrackingAttributes).onIgnore { return it.reason }
     val booking = activeBooking(bookingId, movementTrackingAttributes).onIgnore { return it.reason }
     val prisoner = offenderService.getOffender(movement.offenderNo)
 
@@ -57,30 +61,41 @@ class PrisonMovementService(
     } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateTrackingAttributes)
   }
 
-  private fun toAgencyForPrisonTransfer(movement: Movement, trackingAttributes: Map<String, String>): Result<String, TelemetryEvent> {
+  private fun toAgencyForPrisonTransfer(movement: Movement, trackingAttributes: Map<String, String>): Result<String, TelemetryEvent> =
+      Success(validToAgencyForPrisonTransfer(movement)
+          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason)))  })
+
+  private fun validToAgencyForPrisonTransfer(movement: Movement): Result<String, String> {
     return movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
-        ?.let { Success(it) }
-        ?: Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Not a transfer")))
+        ?.let {
+          if (isMovementToInterestedPrison(it)) {
+            Success(it)
+          } else {
+            Ignore("Not an interested prison")
+          }
+        }
+        ?: Ignore("Not a transfer")
   }
 
 
-  private fun interestedPrisonMovement(movement: Movement, trackingAttributes: Map<String, String>): Result<Movement, TelemetryEvent> =
-      if (isMovementToInterestedPrison(movement.toAgency)) {
-        Success(movement)
-      } else {
-        Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Not an interested prison")))
-      }
+  private fun movementOf(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): Result<Movement, TelemetryEvent> =
+      Success(validMovementOf(bookingId, movementSeq)
+          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) })
 
-  private fun movementOf(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): Result<Movement, TelemetryEvent> {
+  private fun validMovementOf(bookingId: Long, movementSeq: Long): Result<Movement, String> {
     val movement = offenderService.getMovement(bookingId, movementSeq)
 
     return movement?.let { Success(movement) }
-        ?: Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Movement not found")))
+        ?: Ignore("Movement not found")
   }
 
   private fun activeBooking(bookingId: Long, trackingAttributes: Map<String, String>): Result<Booking, TelemetryEvent> =
+      Success(validActiveBooking(bookingId)
+          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) })
+
+  private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
       offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
-          ?: Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to "Not an active booking")))
+          ?: Ignore("Not an active booking")
 
   private fun isMovementToInterestedPrison(toAgency: String?) =
       allowAnyPrison() || allowedPrisons.contains(toAgency)

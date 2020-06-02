@@ -28,7 +28,7 @@ class PrisonerChangesListenerPusher(
 
     when(val result: MessageResult = messageProcessor.validateMessage(eventType, message)) {
       is RetryLater -> retryService.scheduleForProcessing(result.bookingId, eventType, message)
-      is Done -> result.message?.let { log.info(it) }
+      is Done -> result.message?.let { log.info("Ignoring message due to $it") }
     }
   }
 }
