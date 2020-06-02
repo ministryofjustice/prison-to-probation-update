@@ -22,16 +22,16 @@ class PrisonerChangesListenerPusherTest {
 
   @Test
   fun `will call retry service when requested`() {
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(99L))
+    whenever(messageProcessor.validateMessage(any(), any())).thenReturn(RetryLater(99L))
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 
-    verify(messageRetryService).retryLater(bookingId = eq(99L), eventType = eq("IMPRISONMENT_STATUS-CHANGED"), message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+    verify(messageRetryService).scheduleForProcessing(bookingId = eq(99L), eventType = eq("IMPRISONMENT_STATUS-CHANGED"), message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
   }
 
   @Test
   fun `will not call retry service when done`() {
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
+    whenever(messageProcessor.validateMessage(any(), any())).thenReturn(Done())
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 

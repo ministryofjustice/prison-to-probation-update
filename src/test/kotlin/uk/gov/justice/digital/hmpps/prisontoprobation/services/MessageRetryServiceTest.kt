@@ -41,6 +41,20 @@ internal class MessageRetryServiceTest {
     })
 
   }
+  @Test
+  internal fun `will schedule a message that expires in 7 days`() {
+    service.scheduleForProcessing(99L, "EVENT", "message")
+
+    verify(messageRepository).save<Message>(check{
+      assertThat(it.bookingId).isEqualTo(99L)
+      assertThat(it.eventType).isEqualTo("EVENT")
+      assertThat(it.message).isEqualTo("message")
+      assertThat(it.retryCount).isEqualTo(0)
+      assertThat(it.createdDate.toLocalDate()).isToday()
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(7))
+    })
+
+  }
 
   @Test
   internal fun `retry short term will try one to four retry attempts`() {

@@ -13,7 +13,11 @@ class BookingChangeService(private val telemetryClient: TelemetryClient
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun checkBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) : MessageResult {
+
+  fun validateBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage): MessageResult {
+    return RetryLater(message.bookingId)
+  }
+  fun processBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) : MessageResult {
     val (bookingId: Long, offenderId: Long, bookingNumber: String, previousBookingNumber: String) = message
     val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),

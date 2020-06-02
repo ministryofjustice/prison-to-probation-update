@@ -39,13 +39,13 @@ class ImprisonmentStatusChangeServiceTest {
 
       @Test
       fun `will request the sentence start date`() {
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderService).getSentenceDetail(12345L)
       }
 
       @Test
       fun `will request the booking number`() {
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderService).getBooking(12345L)
       }
 
@@ -55,13 +55,13 @@ class ImprisonmentStatusChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(booking)
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.parse("2020-01-30")))
 
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderProbationMatchService).ensureOffenderNumberExistsInProbation(booking, LocalDate.parse("2020-01-30"))
       }
 
       @Test
       fun `will send bookingNumber update to probation`() {
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29), "38339A"))
       }
 
@@ -69,7 +69,7 @@ class ImprisonmentStatusChangeServiceTest {
       fun `will send location to probation`() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "MDI"))
 
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).updateProbationCustody("A5089DY",  "38339A", UpdateCustody(nomsPrisonInstitutionCode = "MDI"))
       }
 
@@ -77,7 +77,7 @@ class ImprisonmentStatusChangeServiceTest {
       fun `will send keydates to probation`() {
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29), licenceExpiryDate = LocalDate.parse("1970-01-05")))
 
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).replaceProbationCustodyKeyDates(eq("A5089DY"), eq("38339A"), check {
           assertThat(it.licenceExpiryDate).isEqualTo(LocalDate.parse("1970-01-05"))
         })
@@ -85,7 +85,7 @@ class ImprisonmentStatusChangeServiceTest {
 
       @Test
       fun `will log we have processed an imprisonment status change`() {
-        service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusUpdated"), check {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["bookingNumber"]).isEqualTo("38339A")
@@ -97,7 +97,7 @@ class ImprisonmentStatusChangeServiceTest {
 
       @Test
       fun `will indicate we are done with this change`() {
-        val result = service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+        val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         assertThat(result).isInstanceOf(Done::class.java)
       }
 
@@ -110,7 +110,7 @@ class ImprisonmentStatusChangeServiceTest {
 
         @Test
         fun `will indicate we want to try again`() {
-          val result = service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
           assertThat(result).isInstanceOf(RetryLater::class.java)
         }
       }
@@ -119,7 +119,7 @@ class ImprisonmentStatusChangeServiceTest {
 
     @Test
     fun `will log that status change is not significant when sequence is not zero`() {
-      service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+      service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
 
       verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusNotSequenceZero"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")
@@ -133,7 +133,7 @@ class ImprisonmentStatusChangeServiceTest {
     fun `will log that offender has no sentence date and abandon update`() {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
 
-      service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusNoSentenceStartDate"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")
@@ -148,7 +148,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
-      service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusIgnored"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")
@@ -160,7 +160,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
 
-      service.checkImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       verify(telemetryClient).trackEvent(eq("P2PImprisonmentStatusIgnored"), check {
         assertThat(it["bookingId"]).isEqualTo("12345")

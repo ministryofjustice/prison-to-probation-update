@@ -23,10 +23,23 @@ class MessageProcessor(
   fun processMessage(eventType: String, message: String): MessageResult {
     log.debug("Processing message $eventType by $this")
     return when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.checkMovementAndUpdateProbation(fromJson(message))
-      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.checkImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
-      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.checkBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.checkSentenceDateChangeAndUpdateProbation(fromJson(message))
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.processMovementAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.processImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
+      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.processBookingNumberChangedAndUpdateProbation(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.processSentenceDateChangeAndUpdateProbation(fromJson(message))
+      else -> {
+        Done("We received a message of event type $eventType which I really wasn't expecting")
+      }
+    }
+  }
+
+  fun validateMessage(eventType: String, message: String): MessageResult {
+    log.debug("Validating message $eventType by $this")
+    return when (eventType) {
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovementAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
+      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChangedAndUpdateProbation(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChangeAndUpdateProbation(fromJson(message))
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }

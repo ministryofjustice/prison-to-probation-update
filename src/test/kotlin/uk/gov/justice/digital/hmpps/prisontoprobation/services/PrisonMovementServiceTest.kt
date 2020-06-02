@@ -30,7 +30,7 @@ class PrisonMovementServiceTest {
     fun `will retrieve the associated movement`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTransferMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(offenderService).getMovement(12345L, 1L)
     }
@@ -39,7 +39,7 @@ class PrisonMovementServiceTest {
     fun `will always log movement`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTransferMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PExternalMovement"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -51,7 +51,7 @@ class PrisonMovementServiceTest {
     fun `will retrieve the associated booking when a prison admission`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(offenderService).getBooking(12345L)
     }
@@ -62,7 +62,7 @@ class PrisonMovementServiceTest {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D"))
         whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(offenderService).getOffender("AB123D")
     }
@@ -71,7 +71,7 @@ class PrisonMovementServiceTest {
     fun `will log we are ignoring event when not an admission`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTransferMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -86,7 +86,7 @@ class PrisonMovementServiceTest {
     fun `will log we are ignoring event when no from or to agency`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTemporaryAbsenceMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -101,7 +101,7 @@ class PrisonMovementServiceTest {
     fun `will log we are ignoring event when booking is not active`() {
         whenever(offenderService.getBooking(anyLong())).thenReturn(createInactiveBooking())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -119,7 +119,7 @@ class PrisonMovementServiceTest {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D", "MDI"))
         whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -135,7 +135,7 @@ class PrisonMovementServiceTest {
         service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf())
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), any(), isNull())
     }
@@ -144,7 +144,7 @@ class PrisonMovementServiceTest {
     fun `will not retrieve prison details when not an admission`() {
         whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createTransferMovement())
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(offenderService, never()).getOffender(anyString())
     }
@@ -155,7 +155,7 @@ class PrisonMovementServiceTest {
         whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
         whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(communityService).updateProbationCustody(eq("AB123D"), eq("38353A"), check {assertThat(it.nomsPrisonInstitutionCode).isEqualTo("MDI")} )
     }
@@ -166,7 +166,7 @@ class PrisonMovementServiceTest {
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
 
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")
@@ -186,7 +186,7 @@ class PrisonMovementServiceTest {
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
 
 
-        service.checkMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+        service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
         verify(telemetryClient).trackEvent(eq("P2PTransferProbationRecordNotFound"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")

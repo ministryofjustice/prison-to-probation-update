@@ -12,7 +12,7 @@ class BookingChangeServiceTest {
 
     @Test
     fun `will log we are processing a booking number changed`() {
-        service.checkBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L, 99L, "A0001", "B0002"))
+        service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L, 99L, "A0001", "B0002"))
 
         verify(telemetryClient).trackEvent(eq("P2PBookingNumberChanged"), check {
             assertThat(it["bookingId"]).isEqualTo("12345")

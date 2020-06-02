@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @Configuration
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtLeastFor = "PT10S", defaultLockAtMostFor = "PT20M")class ScheduleConfiguration {
+@EnableSchedulerLock(defaultLockAtMostFor = "PT20M")class ScheduleConfiguration {
   @Bean
   fun tableLockProvider(
                         @Qualifier("scheduleDynamoDB")
