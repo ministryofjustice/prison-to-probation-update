@@ -15,7 +15,7 @@ class BookingChangeService(private val telemetryClient: TelemetryClient
 
 
   fun validateBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage): MessageResult {
-    return RetryLater(message.bookingId)
+    return TryLater(message.bookingId)
   }
   fun processBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) : MessageResult {
     val (bookingId: Long, offenderId: Long, bookingNumber: String, previousBookingNumber: String) = message

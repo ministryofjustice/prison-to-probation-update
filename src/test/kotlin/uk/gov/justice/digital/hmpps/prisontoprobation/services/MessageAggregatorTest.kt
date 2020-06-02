@@ -220,7 +220,7 @@ internal class MessageAggregatorTest {
 
   @Test
   fun `all messages will be retried if all require to be retried`() {
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(RetryLater(99L))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(99L))
 
     repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":99,\"movementSeq\":1,\"nomisEventType\":\"M1_RESULT\"}"))
     repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":99,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}"))

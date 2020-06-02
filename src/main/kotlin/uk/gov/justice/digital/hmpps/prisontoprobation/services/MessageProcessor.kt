@@ -36,7 +36,7 @@ class MessageProcessor(
   fun validateMessage(eventType: String, message: String): MessageResult {
     log.debug("Validating message $eventType by $this")
     return when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovementAndUpdateProbation(fromJson(message))
+      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChangedAndUpdateProbation(fromJson(message))
       "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChangeAndUpdateProbation(fromJson(message))
@@ -57,5 +57,5 @@ data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmen
 data class SentenceKeyDateChangeMessage(val bookingId: Long)
 
 sealed class MessageResult
-class RetryLater(val bookingId: Long) : MessageResult()
+class TryLater(val bookingId: Long) : MessageResult()
 class Done(val message: String? = null) : MessageResult()

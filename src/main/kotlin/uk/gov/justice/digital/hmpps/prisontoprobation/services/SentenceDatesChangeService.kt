@@ -5,6 +5,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.*
 
 @Service
 class SentenceDatesChangeService(
@@ -18,7 +19,10 @@ class SentenceDatesChangeService(
   }
 
   fun validateSentenceDateChangeAndUpdateProbation(message: SentenceKeyDateChangeMessage): MessageResult {
-    return RetryLater(message.bookingId)
+    val (bookingId) = message
+    val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
+    validBookingForInterestedPrison(booking).onIgnore { return Done(it.reason) }
+    return TryLater(message.bookingId)
   }
 
 
@@ -47,13 +51,20 @@ class SentenceDatesChangeService(
   }
 
   private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
-      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Result.Success(it) }
-          ?: Result.Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to "Not an active booking")))
+      Success(validActiveBooking(bookingId)
+          .onIgnore { return Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to it.reason))) })
+
+  private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
+      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
+          ?: Ignore("Not an active booking")
+
+  private fun validBookingForInterestedPrison(booking: Booking): Result<Booking, String> =
+      if (isBookingInInterestedPrison(booking.agencyId)) {
+        Success(booking)
+      } else Ignore("Not at an interested prison")
 
   private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
-      if (isBookingInInterestedPrison(booking.agencyId)) {
-        Result.Success(booking)
-      } else Result.Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to "Not at an interested prison")))
+      Success(validBookingForInterestedPrison(booking).onIgnore { return Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to it.reason))) })
 
   private fun isBookingInInterestedPrison(toAgency: String?) =
       allowAnyPrison() || allowedPrisons.contains(toAgency)

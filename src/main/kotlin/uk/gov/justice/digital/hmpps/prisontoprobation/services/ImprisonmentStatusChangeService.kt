@@ -24,7 +24,11 @@ class ImprisonmentStatusChangeService(
   }
 
   fun validateImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
-    return RetryLater(message.bookingId)
+    val (bookingId) = validSignificantStatusChange(message).onIgnore { return Done(it.reason) }
+    val sentenceDates = validSentenceDatesWithStartDate(bookingId).onIgnore { return Done(it.reason) }
+    val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
+    validBookingForInterestedPrison(booking).onIgnore { return Done(it.reason) }
+    return TryLater(message.bookingId)
   }
 
   fun processImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
@@ -46,8 +50,9 @@ class ImprisonmentStatusChangeService(
     val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return Done() to it.reason }
     val sentenceStartDate = sentenceDetail.sentenceStartDate as LocalDate
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
-    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate).onIgnore { return RetryLater(bookingId) to it.reason }
-    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return  Done() to it.reason.with(booking).with(sentenceStartDate) }
+    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate)
+        .onIgnore { return TryLater(bookingId) to it.reason }
+    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return Done() to it.reason.with(booking).with(sentenceStartDate) }
     communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))
     booking.agencyId?.let {
       communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = it))
@@ -58,27 +63,39 @@ class ImprisonmentStatusChangeService(
   }
 
 
-  private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
+  private fun validSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, String> =
   // for each sentence 3 NOMIS events are raised with different sequences, the one with sequence zero happens to be a insert of a new status
   // a ticket (DT-568) has been raised for a trigger change to improve this so only a new single event is raised when conviction status actually changes
       // for now use this to optimise our processing (else we would process a single status change 3 times per imposed sentence)
-      if (statusChange.imprisonmentStatusSeq == 0L) Success(statusChange) else Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero"))
+      if (statusChange.imprisonmentStatusSeq == 0L) Success(statusChange) else Ignore("Non zero sequence")
 
-  private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> {
+  private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
+      Success(validSignificantStatusChange(statusChange).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero")) })
+
+  private fun validSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, String> {
     val sentenceDetail = offenderService.getSentenceDetail(bookingId)
     return sentenceDetail.sentenceStartDate?.let { Success(sentenceDetail) }
-        ?: Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate"))
+        ?: Ignore("No sentence start date")
 
   }
 
-  private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
-      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
-          ?: Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not an active booking")))
+  private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> =
+      Success(validSentenceDatesWithStartDate(bookingId).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate")) })
 
-  private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
+  private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
+      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
+          ?: Ignore("Not an active booking")
+
+  private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
+      Success(validActiveBooking(bookingId).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to it.reason))) })
+
+  private fun validBookingForInterestedPrison(booking: Booking): Result<Booking, String> =
       if (isBookingInInterestedPrison(booking.agencyId)) {
         Success(booking)
-      } else Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to "Not at an interested prison")))
+      } else Ignore("Not at an interested prison")
+
+  private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
+      Success(validBookingForInterestedPrison(booking).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to it.reason))) })
 
   private fun isBookingInInterestedPrison(toAgency: String?) =
       allowAnyPrison() || allowedPrisons.contains(toAgency)

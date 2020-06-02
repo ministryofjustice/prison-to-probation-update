@@ -32,7 +32,7 @@ class MessageAggregator(
         messageRepository.delete(message)
       } else {
         when (processMessage(message)) {
-          is RetryLater -> messageRepository.save(message.retry())
+          is TryLater -> messageRepository.save(message.retry())
           is Done -> messageRepository.delete(message)
         }
       }
@@ -52,7 +52,7 @@ class MessageAggregator(
       result
     } catch (e: Exception) {
       log.error("Unable to process message ${message.eventType} for ${message.bookingId}", e)
-      RetryLater(message.bookingId)
+      TryLater(message.bookingId)
     }
   }
 
