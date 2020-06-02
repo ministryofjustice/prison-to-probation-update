@@ -25,6 +25,7 @@ class PrisonerChangesListenerPusher(
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
     val eventType = messageAttributes.eventType.Value
     log.info("Received message $messageId type $eventType")
+    log.debug("Will hand over to messageProcessor $messageProcessor")
 
     when(val result: MessageResult = messageProcessor.validateMessage(eventType, message)) {
       is TryLater -> retryService.scheduleForProcessing(result.bookingId, eventType, message)

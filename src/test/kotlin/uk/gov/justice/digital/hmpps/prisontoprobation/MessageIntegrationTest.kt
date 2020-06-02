@@ -5,12 +5,9 @@ import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.internal.util.MockUtil
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.PropertySource
 import org.springframework.test.annotation.DirtiesContext
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import javax.inject.Inject
 
 @SpringBootTest(properties = [
@@ -21,14 +18,11 @@ import javax.inject.Inject
 @DirtiesContext
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
-  private lateinit var messageProcessor: MessageProcessor
-  @Inject
   private lateinit var messageRepository: MessageRepository
 
   @BeforeEach
   internal fun setUp() {
     messageRepository.deleteAll()
-    println("We should have a real MessageProcessor it is $messageProcessor and Mockito thinks isMock=${MockUtil.isMock(messageProcessor)}")
   }
 
   @Test
