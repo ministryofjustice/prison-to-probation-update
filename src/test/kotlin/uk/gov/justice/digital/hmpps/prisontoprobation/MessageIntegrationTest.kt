@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.internal.util.MockUtil
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.PropertySource
+import org.springframework.test.annotation.DirtiesContext
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import javax.inject.Inject
@@ -17,6 +18,7 @@ import javax.inject.Inject
   "prisontoprobation.message-processor.delay=50",
   "prisontoprobation.hold-back.duration=0m"
 ])
+@DirtiesContext
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageProcessor: MessageProcessor
