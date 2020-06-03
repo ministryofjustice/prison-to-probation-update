@@ -65,17 +65,16 @@ class PrisonMovementService(
       Success(validToAgencyForPrisonTransfer(movement)
           .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason)))  })
 
-  private fun validToAgencyForPrisonTransfer(movement: Movement): Result<String, String> {
-    return movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
-        ?.let {
-          if (isMovementToInterestedPrison(it)) {
-            Success(it)
-          } else {
-            Ignore("Not an interested prison")
+  private fun validToAgencyForPrisonTransfer(movement: Movement): Result<String, String> =
+      movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
+          ?.let {
+            if (isMovementToInterestedPrison(it)) {
+              Success(it)
+            } else {
+              Ignore("Not an interested prison")
+            }
           }
-        }
-        ?: Ignore("Not a transfer")
-  }
+          ?: Ignore("Not a transfer")
 
 
   private fun movementOf(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): Result<Movement, TelemetryEvent> =

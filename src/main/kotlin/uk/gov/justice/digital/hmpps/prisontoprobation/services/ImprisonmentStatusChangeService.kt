@@ -72,12 +72,12 @@ class ImprisonmentStatusChangeService(
   private fun getSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, TelemetryEvent> =
       Success(validSignificantStatusChange(statusChange).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNotSequenceZero")) })
 
-  private fun validSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, String> {
-    val sentenceDetail = offenderService.getSentenceDetail(bookingId)
-    return sentenceDetail.sentenceStartDate?.let { Success(sentenceDetail) }
-        ?: Ignore("No sentence start date")
-
-  }
+  private fun validSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, String> =
+      with(offenderService.getSentenceDetail(bookingId)) {
+        this.sentenceStartDate
+            ?.let { Success(this) }
+            ?: Ignore("No sentence start date")
+      }
 
   private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> =
       Success(validSentenceDatesWithStartDate(bookingId).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate")) })
