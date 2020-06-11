@@ -39,12 +39,6 @@ class MessageAggregator(
     }
   }
 
-  private fun allAggregatedMessagesForBooking(message: Message): List<Pair<Message, Boolean>> {
-    val allMessages = messageRepository.findByBookingId(message.bookingId).sortedBy {it.toPriority }
-    val uniqueMessages = allMessages.distinctBy { it.eventType }
-    return allMessages.map { it to !uniqueMessages.contains(it) }
-  }
-
   private fun processMessage(message: Message): MessageResult {
     return try {
       val result = messageProcessor.processMessage(message.eventType, message.message)
@@ -56,8 +50,17 @@ class MessageAggregator(
     }
   }
 
-  private fun aggregatedMessagesOrdered(messages: List<Message>): List<Pair<Message, Boolean>> =
-      messages.sortedBy { it.createdDate }.flatMap { allAggregatedMessagesForBooking(it) }
+  private fun aggregatedMessagesOrdered(messages: List<Message>): List<Pair<Message, Boolean>> {
+    val allBookings = messages.map { it.bookingId }.distinct()
+    val allMessagesForAllBookings = allBookings.flatMap { messageRepository.findByBookingId(it) }
+
+    val groupedByBooking = allMessagesForAllBookings.groupBy { it.bookingId }
+    val groupedFilteredAndSorted = groupedByBooking
+        .map { (bookingId, messages) -> bookingId to messages.filterDuplicates() }
+    val allMessagesAggregatedInOrder = groupedFilteredAndSorted.flatMap { it.second }
+    return allMessagesForAllBookings.map { it to !allMessagesAggregatedInOrder.contains(it) }
+  }
+
 }
 
 val Message.toPriority: Int
@@ -71,4 +74,7 @@ val Message.toPriority: Int
       else -> 99
     }
   }
+
+private fun List<Message>.filterDuplicates() = this.sortedWith(compareByPriorityDateDescending()).distinctBy { it.eventType }
+private fun compareByPriorityDateDescending() = compareBy<Message> { it.toPriority }.thenByDescending { it.createdDate }
 

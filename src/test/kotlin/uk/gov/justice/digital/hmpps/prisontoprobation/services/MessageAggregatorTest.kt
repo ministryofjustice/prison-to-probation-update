@@ -83,7 +83,7 @@ internal class MessageAggregatorTest {
   }
 
   @Test
-  fun `will process messages in date order`() {
+  fun `will process messages in any order for each booking batch`() {
     val tooYoungMessage = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":99,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(1), eventType = "IMPRISONMENT_STATUS-CHANGED", message = tooYoungMessage))
     val youngMessage = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":100,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
@@ -95,15 +95,14 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    val orderVerifier = inOrder(messageProcessor)
-    orderVerifier.verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", veryOldMessage)
-    orderVerifier.verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", oldMessage)
-    orderVerifier.verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", youngMessage)
-    orderVerifier.verify(messageProcessor, never()).processMessage("IMPRISONMENT_STATUS-CHANGED", tooYoungMessage)
+    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", veryOldMessage)
+    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", oldMessage)
+    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", youngMessage)
+    verify(messageProcessor, never()).processMessage("IMPRISONMENT_STATUS-CHANGED", tooYoungMessage)
   }
 
   @Test
-  fun `will process messages in date order grouped by booking`() {
+  fun `will process messages in date order within group of bookings`() {
     val youngSentenceChangeMessage = "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":999,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     repository.save(Message(bookingId = 999L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(1), eventType = "SENTENCE_DATES-CHANGED", message = youngSentenceChangeMessage))
     val tooYoungMessage = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":99,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
@@ -120,9 +119,9 @@ internal class MessageAggregatorTest {
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage)
     orderVerifier.verify(messageProcessor).processMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage)
-    orderVerifier.verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage)
-    orderVerifier.verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage)
-    orderVerifier.verify(messageProcessor, never()).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage)
+    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage)
+    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage)
+    verify(messageProcessor, never()).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage)
   }
 
   @Test
@@ -151,6 +150,34 @@ internal class MessageAggregatorTest {
 
     verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
     verify(messageProcessor, times(1)).processMessage(eq("SENTENCE_DATES-CHANGED"), any())
+  }
+
+  @Test
+  fun `will de-duplicate old messages prior to processing`() {
+    val sentenceDateChangeMessage1 = "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":99,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}"
+    val sentenceDateChangeMessage2 = "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:33.935401\",\"bookingId\":99,\"sentenceCalculationId\":5628784,\"nomisEventType\":\"S2_RESULT\"}"
+    repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage1))
+    repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
+
+
+    messageAggregator.processMessagesForNextBookingSets()
+
+    verify(messageProcessor, times(1)).processMessage(eq("SENTENCE_DATES-CHANGED"), any())
+  }
+
+  @Test
+  fun `will process the latest of duplicated old messages prior to processing`() {
+    val oldestPrisonLocationChangeMessage = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":99,\"movementSeq\":1,\"nomisEventType\":\"M1_RESULT\"}"
+    val latestPrisonLocationChangeMessage = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":99,\"movementSeq\":3,\"nomisEventType\":\"M1_RESULT\"}"
+    val middlePrisonLocationChangeMessage = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":99,\"movementSeq\":2,\"nomisEventType\":\"M1_RESULT\"}"
+
+    repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(15), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = oldestPrisonLocationChangeMessage))
+    repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(13), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = latestPrisonLocationChangeMessage))
+    repository.save(Message(bookingId = 99L, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(14), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = middlePrisonLocationChangeMessage))
+
+    messageAggregator.processMessagesForNextBookingSets()
+
+    verify(messageProcessor, times(1)).processMessage(eq("EXTERNAL_MOVEMENT_RECORD-INSERTED"), eq(latestPrisonLocationChangeMessage))
   }
 
   @Test
