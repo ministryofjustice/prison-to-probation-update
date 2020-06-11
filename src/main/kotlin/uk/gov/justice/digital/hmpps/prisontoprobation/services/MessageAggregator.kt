@@ -26,23 +26,18 @@ class MessageAggregator(
     val messages = messageRepository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minus(holdBackDuration))
     log.debug("${messages.size} candidate messages for initial processing")
 
-    aggregatedMessagesOrdered(messages).forEach {
-      val (message, discard) = it
-      if (discard) {
-        messageRepository.delete(message)
-      } else {
-        when (processMessage(message)) {
-          is TryLater -> messageRepository.save(message.retry())
-          is Done -> messageRepository.delete(message)
-        }
+    val (messagesToProcess, messagesToDiscard) = aggregatedMessagesOrdered(messages)
+
+    log.debug("Discarding ${messagesToDiscard.size} messages")
+    messageRepository.deleteAll(messagesToDiscard)
+
+    log.debug("Processing in this batch ${messagesToProcess.size}")
+    messagesToProcess.forEach {
+      when (processMessage(it)) {
+        is TryLater -> messageRepository.save(it.retry())
+        is Done -> messageRepository.delete(it)
       }
     }
-  }
-
-  private fun allAggregatedMessagesForBooking(message: Message): List<Pair<Message, Boolean>> {
-    val allMessages = messageRepository.findByBookingId(message.bookingId).sortedBy {it.toPriority }
-    val uniqueMessages = allMessages.distinctBy { it.eventType }
-    return allMessages.map { it to !uniqueMessages.contains(it) }
   }
 
   private fun processMessage(message: Message): MessageResult {
@@ -56,8 +51,22 @@ class MessageAggregator(
     }
   }
 
-  private fun aggregatedMessagesOrdered(messages: List<Message>): List<Pair<Message, Boolean>> =
-      messages.sortedBy { it.createdDate }.flatMap { allAggregatedMessagesForBooking(it) }
+  private fun aggregatedMessagesOrdered(messages: List<Message>): Pair<List<Message>, List<Message>> {
+    val allBookings = messages.map { it.bookingId }.distinct()
+    // now get all other messages regardless of age or number or retires that we can process as a batch
+    val allMessagesForAllBookings = allBookings.flatMap { messageRepository.findByBookingId(it) }
+
+    val groupedByBooking = allMessagesForAllBookings.groupBy { it.bookingId }
+
+    // for each booking only process one (the latest ) of each time and order by type
+    val groupedDeduplicatedAndOrdered = groupedByBooking
+        .map { (bookingId, messages) -> bookingId to messages.filterDuplicatesAndOrder() }
+    val allMessagesAggregatedInOrder = groupedDeduplicatedAndOrdered.flatMap { it.second }
+
+    // return list of messages to process along with duplicates that can be thrown away
+    return Pair(allMessagesAggregatedInOrder, allMessagesForAllBookings - allMessagesAggregatedInOrder)
+  }
+
 }
 
 val Message.toPriority: Int
@@ -71,4 +80,7 @@ val Message.toPriority: Int
       else -> 99
     }
   }
+
+private fun List<Message>.filterDuplicatesAndOrder() = this.sortedWith(compareByPriorityDateDescending()).distinctBy { it.eventType }
+private fun compareByPriorityDateDescending() = compareBy<Message> { it.toPriority }.thenByDescending { it.createdDate }
 
