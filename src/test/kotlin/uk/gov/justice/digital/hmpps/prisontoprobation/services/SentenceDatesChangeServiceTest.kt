@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyString
 import java.time.LocalDate
 
@@ -30,7 +29,7 @@ internal class SentenceDatesChangeServiceTest {
     internal fun `will mark as done if booking is not active`() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
-      val result = service.validateSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+      val result = service.validateSentenceDateChange(SentenceKeyDateChangeMessage(12345L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -39,7 +38,7 @@ internal class SentenceDatesChangeServiceTest {
     internal fun `will mark as done if prisoner is not prison in roll-out list`() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XX"))
 
-      val result = service.validateSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+      val result = service.validateSentenceDateChange(SentenceKeyDateChangeMessage(12345L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -300,20 +299,3 @@ internal class SentenceDatesChangeServiceTest {
 }
 
 
-private fun createBooking(
-    activeFlag: Boolean = true,
-    agencyId: String = "MDI",
-    bookingNo: String = "38339A",
-    offenderNo: String = "A5089DY",
-    firstName: String = "Johnny",
-    lastName: String = "Barnes",
-    dateOfBirth: LocalDate = LocalDate.of(1965, 7, 19)
-): Booking = Booking(
-    bookingNo = bookingNo,
-    activeFlag = activeFlag,
-    offenderNo = offenderNo,
-    agencyId = agencyId,
-    firstName = firstName,
-    lastName = lastName,
-    dateOfBirth = dateOfBirth
-)

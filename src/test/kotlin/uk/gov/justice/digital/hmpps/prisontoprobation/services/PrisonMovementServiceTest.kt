@@ -317,8 +317,6 @@ class PrisonMovementServiceTest {
 
   private fun createInactiveBooking() = createBooking(activeFlag = false)
 
-  private fun createBooking(activeFlag: Boolean = true, bookingNo: String = "38353A"): Booking = Booking(bookingNo = bookingNo, activeFlag = activeFlag, offenderNo = "AB123D", agencyId = "MDI", firstName = "Johnny", lastName = "Barnes", dateOfBirth = LocalDate.of(1965, 7, 19))
-
   private fun createUpdatedCustody(description: String = "Moorland") = Custody(
       institution = Institution(description),
       bookingNumber = "38353A"

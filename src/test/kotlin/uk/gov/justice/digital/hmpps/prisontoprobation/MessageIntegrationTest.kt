@@ -26,7 +26,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
   }
 
   @Test
-  fun `will consume a prison movement message, update probation and create movement insights event`() {
+  fun `will consume a prison movement message, update probation`() {
     val message = "/messages/externalMovement.json".readResourceAsText()
 
     // wait until our queue has been purged
@@ -42,7 +42,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
   }
 
   @Test
-  fun `will consume a imprisonment status change message, update probation and create movement insights event`() {
+  fun `will consume a imprisonment status change message, update probation`() {
     val message = "/messages/imprisonmentStatusChanged.json".readResourceAsText()
 
     // wait until our queue has been purged
@@ -65,7 +65,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
   }
 
   @Test
-  fun `will consume a sentence date change message, update probation and create movement insights event`() {
+  fun `will consume a sentence date change message, update probation`() {
     val message = "/messages/sentenceDatesChanged.json".readResourceAsText()
 
     // wait until our queue has been purged
@@ -92,6 +92,21 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+  }
+
+  @Test
+  fun `will consume a booking changed message, update probation`() {
+    val message = "/messages/bookingNumberChanged.json".readResourceAsText()
+
+    // wait until our queue has been purged
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+    awsSqsClient.sendMessage(queueUrl, message)
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 2 }
+    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
   }
 
 }
