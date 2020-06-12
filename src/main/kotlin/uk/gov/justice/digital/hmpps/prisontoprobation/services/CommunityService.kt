@@ -24,7 +24,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(updateCustody)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhen404(it) }
         .block()
   }
 
@@ -34,7 +34,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(updateCustodyBookingNumber)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhen404(it) }
         .block()
   }
 
@@ -44,11 +44,13 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(replaceCustodyKeyDates)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhen404(it) }
         .block()
   }
-  fun emptyWhen404(exception: WebClientResponseException): Mono<Custody> =
+  fun <T> emptyWhen404(exception: WebClientResponseException): Mono<T> =
       if (exception.rawStatusCode == 404) Mono.empty() else Mono.error(exception)
+  fun <T> emptyWhen400(exception: WebClientResponseException): Mono<T> =
+      if (exception.rawStatusCode == 400) Mono.empty() else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()
@@ -65,6 +67,17 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .retrieve()
         .bodyToMono(IDs::class.java)
         .block()!!
+  }
+
+  fun replaceProbationOffenderNo(oldOffenderNo: String, newOffenderNo: String) : IDs?{
+    return webClient.put()
+        .uri("/secure/offenders/nomsNumber/$oldOffenderNo/nomsNumber")
+        .bodyValue(UpdateOffenderNomsNumber(nomsNumber = newOffenderNo))
+        .retrieve()
+        .bodyToMono(IDs::class.java)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhen404(it) }
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhen400(it) }
+        .block()
   }
 }
 

@@ -37,9 +37,9 @@ class MessageProcessor(
     log.debug("Validating message $eventType by $this")
     return when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
-      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
-      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChangeAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChange(fromJson(message))
+      "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChange(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChange(fromJson(message))
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }
@@ -52,7 +52,7 @@ class MessageProcessor(
 }
 
 data class ExternalPrisonerMovementMessage(val bookingId: Long, val movementSeq: Long)
-data class BookingNumberChangedMessage(val bookingId: Long, val offenderId: Long, val bookingNumber: String, val previousBookingNumber: String)
+data class BookingNumberChangedMessage(val bookingId: Long)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
 data class SentenceKeyDateChangeMessage(val bookingId: Long)
 

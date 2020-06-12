@@ -23,7 +23,7 @@ class ImprisonmentStatusChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun validateImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
+  fun validateImprisonmentStatusChange(message: ImprisonmentStatusChangesMessage): MessageResult {
     val (bookingId) = validSignificantStatusChange(message).onIgnore { return Done(it.reason) }
     val sentenceDates = validSentenceDatesWithStartDate(bookingId).onIgnore { return Done(it.reason) }
     val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }

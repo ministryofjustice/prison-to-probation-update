@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/bookings/1200835/identifiers"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    [
+      {
+        "type": "MERGED",
+        "value": "A9999DY"
+      }
+    ]
+  }
+}

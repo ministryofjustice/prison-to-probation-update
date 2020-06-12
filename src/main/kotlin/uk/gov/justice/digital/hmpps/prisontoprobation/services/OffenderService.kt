@@ -47,6 +47,14 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
         .bodyToMono(Movement::class.java)
         .block()
   }
+
+  fun getMergedIdentifiers(bookingId: Long): List<BookingIdentifier> {
+    return webClient.get()
+        .uri("/api/bookings/$bookingId/identifiers?type=MERGED")
+        .retrieve()
+        .bodyToMono(object : ParameterizedTypeReference<List<BookingIdentifier>>() {})
+        .block()!!
+  }
 }
 
 data class Prisoner(
@@ -97,4 +105,9 @@ data class SentenceDetail(
     val topupSupervisionExpiryDate: LocalDate? = null,
     val releaseDate: LocalDate? = null,
     val homeDetentionCurfewEligibilityDate: LocalDate? = null
+)
+
+data class BookingIdentifier(
+    val type: String,
+    val value: String
 )

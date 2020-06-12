@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.Integratio
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OffenderServiceTest : IntegrationTest() {
@@ -110,6 +109,24 @@ class OffenderServiceTest : IntegrationTest() {
 
   }
 
+  @Test
+  fun `test get merged identifiers calls rest endpoint`() {
+      val expectedIdentifiers = listOf(BookingIdentifier(type = "MERGED", value = "A99999Y"))
+
+    elite2MockServer.stubFor(get("/api/bookings/1234/identifiers?type=MERGED").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(expectedIdentifiers.asJson())
+        .withStatus(HTTP_OK)))
+
+
+    val bookingIdentifiers = service.getMergedIdentifiers(1234L)
+
+    assertThat(bookingIdentifiers).isEqualTo(expectedIdentifiers)
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/bookings/1234/identifiers?type=MERGED"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
+
+  }
+
 
   private fun createPrisoner() = Prisoner(
       offenderNo = "AB123D",
@@ -136,14 +153,4 @@ class OffenderServiceTest : IntegrationTest() {
       directionCode = "OUT"
   )
 
-  private fun createBooking() = Booking(
-      bookingNo = "38353A",
-      activeFlag = true,
-      offenderNo = "A5089DY",
-      agencyId = "MDI",
-      firstName = "Johnny",
-      lastName = "Barnes",
-      dateOfBirth = LocalDate.of(1965, 7, 19)
-
-  )
 }
