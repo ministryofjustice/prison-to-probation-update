@@ -23,7 +23,7 @@ class BookingChangeService(private val telemetryClient: TelemetryClient,
 
     return if (isBookingInInterestedPrison(booking.agencyId)) {
       val mergedOffenders = offenderService.getMergedIdentifiers(message.bookingId)
-      return if (mergedOffenders.isEmpty()) {
+      if (mergedOffenders.isEmpty()) {
         Done("No merged offenders found for ${message.bookingId}")
       } else {
         TryLater(message.bookingId)
