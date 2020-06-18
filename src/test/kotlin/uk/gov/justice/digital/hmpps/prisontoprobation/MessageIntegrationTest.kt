@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import javax.inject.Inject
 
@@ -16,6 +17,7 @@ import javax.inject.Inject
   "prisontoprobation.hold-back.duration=0m"
 ])
 @DirtiesContext
+@ActiveProfiles(profiles = ["test-int"])
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository
