@@ -16,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.CommunityMockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.Elite2MockServer
 import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockServer
@@ -26,6 +27,9 @@ import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.SearchMockS
 abstract class IntegrationTest {
   @Value("\${token}")
   private val token: String? = null
+
+  @SpyBean
+  internal lateinit var messageProcessor: MessageProcessor
 
   @SpyBean
   @Qualifier("awsSqsClient")
