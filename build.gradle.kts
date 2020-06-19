@@ -39,3 +39,12 @@ dependencies {
   testImplementation("org.testcontainers:localstack:1.14.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
 }
+
+tasks.withType<Test> {
+  if (System.getProperty("test.profile") != "integration") {
+    exclude("**/*MessageIntegrationTest*")
+  }
+  if (System.getProperty("test.profile") == "integration") {
+    include("**/*MessageIntegrationTest*")
+  }
+}
