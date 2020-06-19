@@ -39,3 +39,22 @@ dependencies {
   testImplementation("org.testcontainers:localstack:1.14.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
 }
+
+tasks.withType<Test> {
+  if (System.getProperty("test.profile") == "unit") {
+    exclude("**/*MessageIntegrationTest*")
+  }
+  if (System.getProperty("test.profile") == "integration") {
+    include("**/*MessageIntegrationTest*")
+  }
+}
+if (System.getProperty("test.profile") == "integration") {
+  reporting.baseDir = File("$buildDir/reports/tests/integration")
+  project.setProperty("testResultsDirName", "$buildDir/test-results/integration")
+}
+
+if (System.getProperty("test.profile") == "unit") {
+  reporting.baseDir = File("$buildDir/reports/tests/unit")
+  project.setProperty("testResultsDirName", "$buildDir/test-results/unit")
+}
+

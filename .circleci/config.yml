@@ -48,7 +48,11 @@ jobs:
       - run:
           environment:
             AWS_PROVIDER: localstack
-          command: ./gradlew test
+          command: ./gradlew test -Dtest.profile=unit
+      - run:
+          environment:
+            AWS_PROVIDER: localstack
+          command: ./gradlew test -Dtest.profile=integration
       - save_cache:
           paths:
             - ~/.gradle
