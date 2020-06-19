@@ -45,6 +45,7 @@ tasks.withType<Test> {
     exclude("**/*MessageIntegrationTest*")
   }
   if (System.getProperty("test.profile") == "integration") {
+    testResultDirs("build/reports/integration-tests")
     include("**/*MessageIntegrationTest*")
   }
 }
