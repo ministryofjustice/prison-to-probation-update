@@ -49,12 +49,12 @@ tasks.withType<Test> {
   }
 }
 if (System.getProperty("test.profile") == "integration") {
-  reporting.baseDir = File("build/reports/tests/integration")
-  project.setProperty("testResultsDirName", "$buildDir/integration")
+  reporting.baseDir = File("$buildDir/reports/tests/integration")
+  project.setProperty("testResultsDirName", "$buildDir/test-results/integration")
 }
 
 if (System.getProperty("test.profile") == "unit") {
-  reporting.baseDir = File("build/reports/tests/unit")
-  project.setProperty("testResultsDirName", "$buildDir/unit")
+  reporting.baseDir = File("$buildDir/reports/tests/unit")
+  project.setProperty("testResultsDirName", "$buildDir/test-results/unit")
 }
 

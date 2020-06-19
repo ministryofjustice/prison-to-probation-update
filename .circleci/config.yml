@@ -58,9 +58,7 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle.kts" }}
       - store_test_results:
-          paths:
-            - build/unit/test-results
-            - build/integration/test-results
+          path: build/test-results
       - store_artifacts:
           path: build/reports/tests
       - persist_to_workspace:
