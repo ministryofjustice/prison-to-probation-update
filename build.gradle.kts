@@ -41,11 +41,18 @@ dependencies {
 }
 
 tasks.withType<Test> {
-  if (System.getProperty("test.profile") != "integration") {
+  if (System.getProperty("test.profile") == "unit") {
     exclude("**/*MessageIntegrationTest*")
   }
   if (System.getProperty("test.profile") == "integration") {
-    testResultDirs("build/reports/integration-tests")
     include("**/*MessageIntegrationTest*")
   }
 }
+if (System.getProperty("test.profile") == "integration") {
+  reporting.baseDir = File("build/reports/tests/integration")
+}
+
+if (System.getProperty("test.profile") == "unit") {
+  reporting.baseDir = File("build/reports/tests/unit")
+}
+
