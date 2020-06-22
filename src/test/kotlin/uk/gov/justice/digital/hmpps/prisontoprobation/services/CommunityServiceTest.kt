@@ -22,6 +22,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
 import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
+import java.net.HttpURLConnection.HTTP_CONFLICT
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
@@ -246,10 +247,10 @@ class CommunityServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `test will consume bad request error and return nothing`() {
+    fun `test will consume conflict request error and return nothing`() {
       communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_REQUEST)))
+          .withStatus(HTTP_CONFLICT)))
 
       val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
