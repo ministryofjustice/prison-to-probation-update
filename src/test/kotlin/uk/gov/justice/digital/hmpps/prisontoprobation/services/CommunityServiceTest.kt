@@ -219,7 +219,7 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test replaceProbationOffenderNo calls rest endpoint`() {
       communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(IDs(crn = "X153626").asJson())
+          .withBody(listOf(IDs(crn = "X153626")).asJson())
           .withStatus(HTTP_OK)))
 
 
@@ -235,15 +235,13 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test replaceProbationOffenderNo will return identifiers of the offender updated`() {
       communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(IDs(crn = "X153626", nomsNumber = "A99999Y").asJson())
+          .withBody(listOf(IDs(crn = "X153626", nomsNumber = "A99999Y")).asJson())
           .withStatus(HTTP_OK)))
 
 
       val ids = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
-      assertThat(ids).isNotNull
-      assertThat(ids?.crn).isEqualTo("X153626")
-      assertThat(ids?.nomsNumber).isEqualTo("A99999Y")
+      assertThat(ids).isNotNull.hasSize(1).contains(IDs(crn = "X153626", nomsNumber = "A99999Y"))
     }
 
     @Test

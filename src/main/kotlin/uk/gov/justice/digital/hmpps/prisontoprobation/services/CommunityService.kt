@@ -72,12 +72,12 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .block()!!
   }
 
-  fun replaceProbationOffenderNo(oldOffenderNo: String, newOffenderNo: String) : IDs?{
+  fun replaceProbationOffenderNo(oldOffenderNo: String, newOffenderNo: String) : List<IDs>?{
     return webClient.put()
         .uri("/secure/offenders/nomsNumber/$oldOffenderNo/nomsNumber")
         .bodyValue(UpdateOffenderNomsNumber(nomsNumber = newOffenderNo))
         .retrieve()
-        .bodyToMono(IDs::class.java)
+        .bodyToMono(object : ParameterizedTypeReference<List<IDs>>() {})
         .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
         .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
         .block()

@@ -137,7 +137,7 @@ class BookingChangeServiceTest {
     fun `will log we are processing a booking number changed`() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(offenderNo = "A11111Y"))
       whenever(offenderService.getMergedIdentifiers(any())).thenReturn(listOf(BookingIdentifier(type = "MERGED", value = "A88888Y")))
-      whenever(communityService.replaceProbationOffenderNo(any(), any())).thenReturn(IDs(crn = "X123456"))
+      whenever(communityService.replaceProbationOffenderNo(any(), any())).thenReturn(listOf(IDs(crn = "X123456")))
 
         service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
 
