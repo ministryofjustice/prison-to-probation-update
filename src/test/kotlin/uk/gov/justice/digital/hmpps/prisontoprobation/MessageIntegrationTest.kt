@@ -17,7 +17,6 @@ import javax.inject.Inject
   "prisontoprobation.hold-back.duration=0m"
 ])
 @DirtiesContext
-@ActiveProfiles(profiles = ["test-int"])
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository

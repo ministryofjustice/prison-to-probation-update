@@ -47,7 +47,9 @@ class BookingChangeService(private val telemetryClient: TelemetryClient,
       mergedOffenders.forEach {
         val maybeIds = communityService.replaceProbationOffenderNo(it.value, booking.offenderNo)
         maybeIds?.let { ids ->
-          telemetryClient.trackEvent("P2PBookingNumberChanged", trackingAttributes + ("oldOffenderNo" to it.value) + ("crn" to ids.crn), null)
+          ids.forEach { id ->
+            telemetryClient.trackEvent("P2PBookingNumberChanged", trackingAttributes + ("oldOffenderNo" to it.value) + ("crn" to id.crn), null)
+          }
         }
             ?: telemetryClient.trackEvent("P2PBookingNumberChangedOffenderNotFound", trackingAttributes + ("oldOffenderNo" to it.value), null)
       }
