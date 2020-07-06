@@ -11,6 +11,10 @@ dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  // remove when SpringBoot (possibly 2.4.0) brings this version in
+  // Fix for https://github.com/spring-projects/spring-boot/issues/21923
+  implementation("io.projectreactor.netty:reactor-netty:0.9.9.RELEASE")
+
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
