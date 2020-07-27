@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
-  hmpps: ministryofjustice/hmpps@1.0.0
+  hmpps: ministryofjustice/hmpps@1.1.1
 
 executors:
   validator:
@@ -29,10 +29,6 @@ jobs:
       - checkout
       - hmpps/install_aws_cli
       - run:
-          name: Install less
-          command: |
-            sudo apt-get install less
-      - run:
           name: Wait for SQS to be ready
           command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
       - run:
@@ -48,7 +44,11 @@ jobs:
       - run:
           environment:
             AWS_PROVIDER: localstack
-          command: ./gradlew test
+          command: ./gradlew test -Dtest.profile=unit
+      - run:
+          environment:
+            AWS_PROVIDER: localstack
+          command: ./gradlew test -Dtest.profile=integration
       - save_cache:
           paths:
             - ~/.gradle
@@ -78,14 +78,14 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
           filters:
             branches:
               only:
-                - master
+                - main
           requires:
             - validate
             - helm_lint
@@ -119,7 +119,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - owasp/gradle_owasp_dependency_check:
           executor: validator

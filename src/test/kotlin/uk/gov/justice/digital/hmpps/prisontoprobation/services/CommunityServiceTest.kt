@@ -17,9 +17,12 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
+import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
+import java.net.HttpURLConnection.HTTP_CONFLICT
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
@@ -208,6 +211,72 @@ class CommunityServiceTest : IntegrationTest() {
           .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D"))))
 
     }
+  }
+
+  @Nested
+  internal inner class ReplaceProbationOffenderNo{
+    @Test
+    fun `test replaceProbationOffenderNo calls rest endpoint`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(listOf(IDs(crn = "X153626")).asJson())
+          .withStatus(HTTP_OK)))
+
+
+      service.replaceProbationOffenderNo("A11111Y", "A99999Y")
+
+      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A11111Y/nomsNumber"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y"))))
+
+    }
+
+    @Test
+    fun `test replaceProbationOffenderNo will return identifiers of the offender updated`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(listOf(IDs(crn = "X153626", nomsNumber = "A99999Y")).asJson())
+          .withStatus(HTTP_OK)))
+
+
+      val ids = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
+
+      assertThat(ids).isNotNull.hasSize(1).contains(IDs(crn = "X153626", nomsNumber = "A99999Y"))
+    }
+
+    @Test
+    fun `test will consume conflict request error and return nothing`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(HTTP_CONFLICT)))
+
+      val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
+
+      assertThat(maybeIDs).isNull()
+
+    }
+
+    @Test
+    fun `test will consume not found request error and return nothing`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(HTTP_NOT_FOUND)))
+
+      val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
+
+      assertThat(maybeIDs).isNull()
+
+    }
+
+    @Test
+    fun `test will throw exception for other types of http responses`() {
+      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(HTTP_BAD_GATEWAY)))
+
+      assertThatThrownBy { service.replaceProbationOffenderNo("A11111Y", "A99999Y") }.isInstanceOf(BadGateway::class.java)
+    }
+
   }
   private fun createUpdatedCustody() = Custody(
       institution = Institution("Doncaster"),

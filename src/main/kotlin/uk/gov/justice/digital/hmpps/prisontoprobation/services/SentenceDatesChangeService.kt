@@ -19,7 +19,7 @@ class SentenceDatesChangeService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun validateSentenceDateChangeAndUpdateProbation(message: SentenceKeyDateChangeMessage): MessageResult {
+  fun validateSentenceDateChange(message: SentenceKeyDateChangeMessage): MessageResult {
     val (bookingId) = message
     val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
     validBookingForInterestedPrison(booking).onIgnore { return Done(it.reason) }

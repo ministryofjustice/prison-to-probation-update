@@ -18,7 +18,7 @@ services:
       - OAUTH_API_BASE_URL=http://localhost:8090/auth
       - ELITE2_ENDPOINT_URL=http://localhost:8093
       - SQS_ENDPOINT_URL=http://localhost:4576
-      - SPRING_PROFILES_ACTIVE=localstack
+      - SPRING_PROFILES_ACTIVE=stdout,localstack
       - AWS_ACCESS_KEY_ID=foobar
       - AWS_SECRET_ACCESS_KEY=foobar
       - AWS_DEFAULT_REGION=eu-west-2
@@ -26,7 +26,7 @@ services:
       - OAUTH_CLIENT_ID=prison-to-probation-update-api-client
 
   elite2-api:
-    image: quay.io/hmpps/elite2-api:latest
+    image: quay.io/hmpps/prison-api:latest
     container_name: elite2-api
     depends_on:
       - oauth
@@ -39,7 +39,7 @@ services:
       - SPRING_PROFILES_ACTIVE=nomis-hsqldb
 
   oauth:
-    image: quay.io/hmpps/nomis-oauth2-server:latest
+    image: quay.io/hmpps/hmpps-auth:latest
     networks:
       - hmpps
     container_name: oauth

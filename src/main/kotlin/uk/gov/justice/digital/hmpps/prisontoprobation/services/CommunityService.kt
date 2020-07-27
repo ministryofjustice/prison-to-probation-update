@@ -4,6 +4,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.CONFLICT
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -24,7 +27,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(updateCustody)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
         .block()
   }
 
@@ -34,7 +37,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(updateCustodyBookingNumber)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
         .block()
   }
 
@@ -44,11 +47,13 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .bodyValue(replaceCustodyKeyDates)
         .retrieve()
         .bodyToMono(Custody::class.java)
-        .onErrorResume(WebClientResponseException::class.java, ::emptyWhen404)
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
         .block()
   }
-  fun emptyWhen404(exception: WebClientResponseException): Mono<Custody> =
-      if (exception.rawStatusCode == 404) Mono.empty() else Mono.error(exception)
+  fun <T> emptyWhenConflict(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, CONFLICT)
+  fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
+  fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
+      if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()
@@ -65,6 +70,17 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
         .retrieve()
         .bodyToMono(IDs::class.java)
         .block()!!
+  }
+
+  fun replaceProbationOffenderNo(oldOffenderNo: String, newOffenderNo: String) : List<IDs>?{
+    return webClient.put()
+        .uri("/secure/offenders/nomsNumber/$oldOffenderNo/nomsNumber")
+        .bodyValue(UpdateOffenderNomsNumber(nomsNumber = newOffenderNo))
+        .retrieve()
+        .bodyToMono(object : ParameterizedTypeReference<List<IDs>>() {})
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
+        .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
+        .block()
   }
 }
 

@@ -25,7 +25,7 @@ class ImprisonmentStatusChangeServiceTest {
   inner class Validate {
     @Test
     internal fun `will mark as done if status change is not significant`( ) {
-      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+      val result = service.validateImprisonmentStatusChange(ImprisonmentStatusChangesMessage(12345L, 88L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -34,7 +34,7 @@ class ImprisonmentStatusChangeServiceTest {
     internal fun `will mark as done if sentence has no start date`( ) {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
 
-      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      val result = service.validateImprisonmentStatusChange(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -44,7 +44,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
-      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      val result = service.validateImprisonmentStatusChange(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -54,7 +54,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
 
-      val result = service.validateImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+      val result = service.validateImprisonmentStatusChange(ImprisonmentStatusChangesMessage(12345L, 0L))
 
       assertThat(result).isInstanceOf(Done::class.java)
     }
@@ -211,14 +211,3 @@ class ImprisonmentStatusChangeServiceTest {
     }
   }
 }
-
-
-private fun createBooking(activeFlag: Boolean = true, agencyId: String = "MDI") : Booking = Booking(
-    bookingNo = "38339A",
-    activeFlag = activeFlag,
-    offenderNo = "A5089DY",
-    agencyId = agencyId,
-    firstName = "Johnny",
-    lastName = "Barnes",
-    dateOfBirth = LocalDate.of(1965, 7, 19)
-)
