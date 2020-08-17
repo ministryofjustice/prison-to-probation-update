@@ -24,7 +24,7 @@ env:
   OAUTH_ENDPOINT_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
   ELITE2_ENDPOINT_URL: "https://api.prison.service.justice.gov.uk"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.probation.service.justice.gov.uk"
-  OFFENDER_SEARCH_ENDPOINT_URL: "https://offender-search.probation.service.justice.gov.uk"
+  OFFENDER_SEARCH_ENDPOINT_URL: "https://probation-offender-search.hmpps.service.justice.gov.uk"
   PRISONTOPROBATION_ONLY_PRISONS: "LEI,DNI"
   RETRY_SCHEDULES_SHORT_CRON: "0 0 * * * *"
   RETRY_SCHEDULES_MEDIUM_CRON: "0 15 */4 * * *"
