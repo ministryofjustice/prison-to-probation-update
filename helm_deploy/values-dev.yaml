@@ -24,7 +24,7 @@ env:
   OAUTH_ENDPOINT_URL: "https://sign-in-dev.hmpps.service.justice.gov.uk/auth"
   ELITE2_ENDPOINT_URL: "https://api-dev.prison.service.justice.gov.uk"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.test.delius.probation.hmpps.dsd.io"
-  OFFENDER_SEARCH_ENDPOINT_URL: "https://offender-search.test.delius.probation.hmpps.dsd.io"
+  OFFENDER_SEARCH_ENDPOINT_URL: "https://probation-offender-search-dev.hmpps.service.justice.gov.uk"
   PRISONTOPROBATION_ONLY_PRISONS: "MDI,WWI"
   RETRY_SCHEDULES_SHORT_CRON: "0 * * * * *"
   RETRY_SCHEDULES_MEDIUM_CRON: "15 */2 * * * *"
