@@ -55,9 +55,6 @@ class OffenderProbationMatchService(
         null
     )
 
-    // TODO remove this once we gathered enough data proving algorithm works
-    doMatchAnalysis(booking, prisoner, sentenceStartDate, filteredCRNs, result)
-
     return when (result.matchedBy) {
       "ALL_SUPPLIED", "HMPPS_KEY" -> Success(booking.offenderNo) // NOMS number is already set in probation
       else -> {
@@ -85,56 +82,6 @@ class OffenderProbationMatchService(
       Success(booking.offenderNo)
     } else {
       Ignore(TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")))
-    }
-  }
-
-  private fun doMatchAnalysis(booking: Booking, prisoner: Prisoner, sentenceStartDate: LocalDate, filteredCRNs: Set<String>, result: OffenderMatches) {
-    // Now do search without NOMS number to see if we would have got a match, and if so was it was the same match
-    // this is only to build up some analysis to  test how effective the matching aalgorithmis
-    val sample = offenderSearchService.matchProbationOffender(MatchRequest(
-        firstName = booking.firstName,
-        surname = booking.lastName,
-        dateOfBirth = booking.dateOfBirth,
-        nomsNumber = "",
-        croNumber = prisoner.croNumber,
-        pncNumber = prisoner.pncNumber,
-        activeSentence = true
-    ))
-
-    // filter by those with matching sentence
-    val sampleFilteredCRNs = offendersWithMatchingSentenceDates(sample, sentenceStartDate)
-
-
-    if (sampleFilteredCRNs == filteredCRNs) {
-      telemetryClient.trackEvent(
-          "P2POffenderPerfectMatch",
-          mapOf(
-              "offenderNo" to booking.offenderNo,
-              "bookingNumber" to booking.bookingNo,
-              "matchedBy" to sample.matchedBy,
-              "matches" to sample.matches.size.toString(),
-              "filtered_matches" to sampleFilteredCRNs.size.toString(),
-              "crns" to sample.CRNs(),
-              "filtered_crns" to filteredCRNs.sorted().joinToString()
-          ),
-          null
-      )
-    } else {
-      telemetryClient.trackEvent(
-          "P2POffenderImperfectMatch",
-          mapOf(
-              "offenderNo" to booking.offenderNo,
-              "bookingNumber" to booking.bookingNo,
-              "matches" to sample.matches.size.toString(),
-              "matchedBy" to sample.matchedBy,
-              "crns" to (sample.CRNList().intersect(result.CRNList())).joinToString(),
-              "extra_crns" to (sample.CRNList() - result.CRNList()).joinToString(),
-              "missing_crns" to (result.CRNList() - sample.CRNList()).joinToString(),
-              "extra_filtered_crns" to (sampleFilteredCRNs - filteredCRNs).joinToString(),
-              "missing_filtered_crns" to (filteredCRNs - sampleFilteredCRNs).joinToString()
-          ),
-          null
-      )
     }
   }
 
