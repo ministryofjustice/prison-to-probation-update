@@ -9,7 +9,6 @@ import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.never
-import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +33,7 @@ internal class OffenderProbationMatchServiceTest {
   }
 
   @Test
-  fun `will call matching service twice using booking and offender details`() {
+  fun `will call matching service using booking and offender details`() {
     whenever(offenderService.getOffender(any())).thenReturn(prisonerOf(croNumber = "SF80/655108T", pncNumber = "18/0123456X"))
     service.ensureOffenderNumberExistsInProbation(
         bookingOf(
@@ -47,7 +46,7 @@ internal class OffenderProbationMatchServiceTest {
     )
 
     val matchRequestCaptor = argumentCaptor<MatchRequest>()
-    verify(offenderSearchService, times(2)).matchProbationOffender(matchRequestCaptor.capture())
+    verify(offenderSearchService).matchProbationOffender(matchRequestCaptor.capture())
 
 
     with(matchRequestCaptor.firstValue) {
@@ -60,16 +59,6 @@ internal class OffenderProbationMatchServiceTest {
       assertThat(this.pncNumber).isEqualTo("18/0123456X")
     }
 
-    // analysis only call to check correctness of calling without NOMS number
-    with(matchRequestCaptor.secondValue) {
-      assertThat(this.activeSentence).isTrue()
-      assertThat(this.dateOfBirth).isEqualTo(LocalDate.of(1965, 7, 19))
-      assertThat(this.firstName).isEqualTo("John")
-      assertThat(this.surname).isEqualTo("Smith")
-      assertThat(this.nomsNumber).isEqualTo("")
-      assertThat(this.croNumber).isEqualTo("SF80/655108T")
-      assertThat(this.pncNumber).isEqualTo("18/0123456X")
-    }
   }
 
   @Test
@@ -444,36 +433,6 @@ internal class OffenderProbationMatchServiceTest {
       assertThat(it["extra_crns"]).isEqualTo("X00004")
       assertThat(it["crns"]).isEqualTo("X00002, X00003")
       assertThat(it["missing_crns"]).isEqualTo("X00001")
-    }, isNull())
-  }
-
-  @Test
-  fun `will log a perfect match between a NOMS number search and other id search`() {
-    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
-        OffenderMatches(
-            matchedBy = "EXTERNAL_KEY",
-            matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))))
-        )).thenReturn(
-        OffenderMatches(
-            matchedBy = "EXTERNAL_KEY",
-            matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))))
-        ))
-    whenever(communityService.getConvictions(any())).thenReturn(listOf(Conviction(
-        index = "1",
-        active = true,
-        sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-        custody = Custody(institution = null, bookingNumber = null))
-    ))
-
-    service.ensureOffenderNumberExistsInProbation(
-        bookingOf(
-            offenderNo = "A5089DY",
-            bookingNo = "38339A"),
-        LocalDate.parse("2020-01-30")
-    ).onIgnore { return }
-
-    verify(telemetryClient).trackEvent(eq("P2POffenderPerfectMatch"), check {
-      assertThat(it["crns"]).isEqualTo("X00001")
     }, isNull())
   }
 
