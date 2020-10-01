@@ -53,7 +53,7 @@ class ImprisonmentStatusChangeService(
     val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate)
         .onIgnore { return TryLater(bookingId) to it.reason }
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return Done() to it.reason.with(booking).with(sentenceStartDate) }
-    communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))
+    updateProbationCustodyBookingNumber(offenderNo, sentenceStartDate, bookingNumber).onIgnore { return TryLater(bookingId) to it.reason.with(booking).with(sentenceStartDate) }
     booking.agencyId?.let {
       communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = it))
     }
@@ -61,6 +61,11 @@ class ImprisonmentStatusChangeService(
 
     return Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
+
+  private fun updateProbationCustodyBookingNumber(offenderNo: String, sentenceStartDate: LocalDate, bookingNumber: String):  Result<Unit, TelemetryEvent> =
+    communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))
+        ?.let { Success(Unit) }
+        ?: Ignore(TelemetryEvent("P2PBookingNumberNotAssigned"))
 
 
   private fun validSignificantStatusChange(statusChange: ImprisonmentStatusChangesMessage): Result<ImprisonmentStatusChangesMessage, String> =

@@ -152,6 +152,29 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(result).isInstanceOf(TryLater::class.java)
         }
       }
+
+      @Nested
+      inner class WhenBookingNumberNotSet {
+        @BeforeEach
+        fun setup() {
+          whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(null)
+        }
+
+        @Test
+        fun `will indicate we want to try again`() {
+          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+          assertThat(result).isInstanceOf(TryLater::class.java)
+        }
+        @Test
+        fun `will log that booking number could not be set`() {
+          service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+          verify(telemetryClient).trackEvent(eq("P2PBookingNumberNotAssigned"), check {
+            assertThat(it["bookingId"]).isEqualTo("12345")
+            assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
+          }, isNull())
+        }
+      }
     }
 
 
