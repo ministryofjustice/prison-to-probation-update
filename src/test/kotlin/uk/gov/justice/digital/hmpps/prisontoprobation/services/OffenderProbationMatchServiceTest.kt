@@ -163,6 +163,26 @@ internal class OffenderProbationMatchServiceTest {
   }
 
   @Test
+  fun `will return offender number when no offenders found with matching sentence but one found with NOMS number even when alias is matched`() {
+    whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
+        matchedBy = "ALL_SUPPLIED_ALIAS",
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
+    ))
+    whenever(communityService.getConvictions("X12345")).thenReturn(listOf(Conviction(
+        index = "1",
+        active = true,
+        sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
+    )))
+
+    val offenderNo = service.ensureOffenderNumberExistsInProbation(
+        bookingOf(offenderNo = "A5089DY"),
+        LocalDate.parse("2020-01-30")
+    ).onIgnore { fail("should have got a result") }
+
+    assertThat(offenderNo).isEqualTo("A5089DY")
+  }
+
+  @Test
   fun `will return ignore with P2POffenderTooManyMatches telemetry when more than one offender found with matching sentence`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(OffenderMatches(
         matchedBy = "EXTERNAL_KEY",

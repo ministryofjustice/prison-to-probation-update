@@ -56,7 +56,7 @@ class OffenderProbationMatchService(
     )
 
     return when (result.matchedBy) {
-      "ALL_SUPPLIED", "HMPPS_KEY" -> Success(booking.offenderNo) // NOMS number is already set in probation
+      "ALL_SUPPLIED", "ALL_SUPPLIED_ALIAS", "HMPPS_KEY" -> Success(booking.offenderNo) // NOMS number is already set in probation
       else -> {
         when (filteredCRNs.size) {
           0 -> Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())))
