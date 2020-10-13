@@ -25,7 +25,7 @@ class ImprisonmentStatusChangeService(
 
   fun validateImprisonmentStatusChange(message: ImprisonmentStatusChangesMessage): MessageResult {
     val (bookingId) = validSignificantStatusChange(message).onIgnore { return Done(it.reason) }
-    val sentenceDates = validSentenceDatesWithStartDate(bookingId).onIgnore { return Done(it.reason) }
+    validSentenceDatesWithStartDate(bookingId).onIgnore { return Done(it.reason) }
     val booking = validActiveBooking(bookingId).onIgnore { return Done(it.reason) }
     validBookingForInterestedPrison(booking).onIgnore { return Done(it.reason) }
     return TryLater(message.bookingId)
@@ -54,13 +54,23 @@ class ImprisonmentStatusChangeService(
         .onIgnore { return TryLater(bookingId) to it.reason }
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return Done() to it.reason.with(booking).with(sentenceStartDate) }
     updateProbationCustodyBookingNumber(offenderNo, sentenceStartDate, bookingNumber).onIgnore { return TryLater(bookingId) to it.reason.with(booking).with(sentenceStartDate) }
-    booking.agencyId?.let {
-      communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = it))
+    booking.agencyId?.let {agencyId ->
+      updateProbationPrisonLocation(offenderNo, bookingNumber, agencyId).onIgnore { return TryLater(bookingId, sentenceDetail.sentenceExpiryDate) to it.reason.with(booking).with(sentenceStartDate) }
     }
-    communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
+    updateProbationKeyDates(offenderNo, bookingNumber, sentenceDetail).onIgnore { return TryLater(bookingId, sentenceDetail.sentenceExpiryDate) to it.reason.with(booking).with(sentenceStartDate) }
 
     return Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
+
+  private fun updateProbationKeyDates(offenderNo: String, bookingNumber: String, sentenceDetail: SentenceDetail):  Result<Unit, TelemetryEvent> =
+    communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
+        ?.let { Success(Unit) }
+        ?: Ignore(TelemetryEvent("P2PKeyDatesNotUpdated"))
+
+  private fun updateProbationPrisonLocation(offenderNo: String, bookingNumber: String, agencyId: String):  Result<Unit, TelemetryEvent> =
+      communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = agencyId))
+          ?.let { Success(Unit) }
+          ?: Ignore(TelemetryEvent("P2PLocationNotUpdated"))
 
   private fun updateProbationCustodyBookingNumber(offenderNo: String, sentenceStartDate: LocalDate, bookingNumber: String):  Result<Unit, TelemetryEvent> =
     communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))

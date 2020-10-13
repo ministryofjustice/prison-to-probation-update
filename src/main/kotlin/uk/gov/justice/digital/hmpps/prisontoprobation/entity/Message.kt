@@ -6,7 +6,9 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverter
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneOffset
 
 
@@ -22,14 +24,17 @@ data class Message(
     @DynamoDBTypeConverted(converter = LocalDateTimeConverter::class)
     var createdDate: LocalDateTime = LocalDateTime.now(),
     @DynamoDBAttribute
-    var deleteBy: Long =  LocalDateTime.now().plusWeeks(1).toEpochSecond(ZoneOffset.UTC),
+    var deleteBy: Long =  LocalDateTime.now().plusWeeks(1).plusDays(1).toEpochSecond(ZoneOffset.UTC),
     @DynamoDBAttribute
     var eventType: String = "",
     @DynamoDBAttribute
     var message: String = ""
 ) {
-  fun retry(): Message {
+  fun retry(retryUntil: LocalDate? = null): Message {
     retryCount += 1
+    retryUntil?.also {
+      this.deleteBy = retryUntil.toEpochSecond(LocalTime.now(), ZoneOffset.UTC)
+    }
     return this
   }
 }

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 
 @Service
@@ -57,5 +58,5 @@ data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmen
 data class SentenceKeyDateChangeMessage(val bookingId: Long)
 
 sealed class MessageResult
-class TryLater(val bookingId: Long) : MessageResult()
+class TryLater(val bookingId: Long, val retryUntil: LocalDate? = null) : MessageResult()
 class Done(val message: String? = null) : MessageResult()

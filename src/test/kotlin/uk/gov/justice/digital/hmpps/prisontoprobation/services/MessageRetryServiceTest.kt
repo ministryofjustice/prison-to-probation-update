@@ -19,7 +19,7 @@ import java.time.ZoneOffset
 internal class MessageRetryServiceTest {
   private val messageProcessor: MessageProcessor = mock()
   private val messageRepository: MessageRepository = mock()
-  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, 168)
+  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, 192)
 
   @BeforeEach
   fun setUp() {
@@ -28,7 +28,7 @@ internal class MessageRetryServiceTest {
   }
 
   @Test
-  internal fun `will add a retry message that expires in 7 days`() {
+  internal fun `will add a retry message that expires in 8 days`() {
     service.retryLater(99L, "EVENT", "message")
 
     verify(messageRepository).save<Message>(check{
@@ -37,12 +37,12 @@ internal class MessageRetryServiceTest {
       assertThat(it.message).isEqualTo("message")
       assertThat(it.retryCount).isEqualTo(1)
       assertThat(it.createdDate.toLocalDate()).isToday()
-      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(7))
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(8))
     })
 
   }
   @Test
-  internal fun `will schedule a message that expires in 7 days`() {
+  internal fun `will schedule a message that expires in 8 days`() {
     service.scheduleForProcessing(99L, "EVENT", "message")
 
     verify(messageRepository).save<Message>(check{
@@ -51,7 +51,7 @@ internal class MessageRetryServiceTest {
       assertThat(it.message).isEqualTo("message")
       assertThat(it.retryCount).isEqualTo(0)
       assertThat(it.createdDate.toLocalDate()).isToday()
-      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(7))
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(8))
     })
 
   }
@@ -72,6 +72,52 @@ internal class MessageRetryServiceTest {
   internal fun `retry long term will try all those above eleven`() {
     service.retryLongTerm()
     verify(messageRepository).findByRetryCountBetween(11, 2147483647)
+  }
+
+  @Test
+  internal fun `will keep deleteBy as 8 days by default when trying later`() {
+    val message = Message(
+        bookingId = 99L,
+        message = "{}",
+        id = "123",
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
+    )
+    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(
+        bookingId = 99L,
+        retryUntil = null
+    ))
+
+    service.retryShortTerm()
+
+    verify(messageRepository).save<Message>(check {
+      assertThat(it.id).isEqualTo("123")
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(6))
+    })
+  }
+
+  @Test
+  internal fun `will update deleteBy to new date if requested`() {
+    val message = Message(
+        bookingId = 99L,
+        message = "{}",
+        id = "123",
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
+    )
+    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(
+        bookingId = 99L,
+        retryUntil = LocalDate.now().plusDays(99)
+    ))
+
+    service.retryShortTerm()
+
+    verify(messageRepository).save<Message>(check {
+      assertThat(it.id).isEqualTo("123")
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(99))
+    })
   }
 
   @Test

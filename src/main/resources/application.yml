@@ -111,7 +111,7 @@ sqs:
 dynamodb:
   region: ${aws.region}
   provider: ${aws.provider}
-  message.expiryHours: 168
+  message.expiryHours: 192
 
 
 retry:
