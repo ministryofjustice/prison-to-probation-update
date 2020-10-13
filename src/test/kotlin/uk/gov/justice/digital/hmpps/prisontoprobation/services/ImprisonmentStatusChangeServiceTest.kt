@@ -5,7 +5,6 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockito_kotlin.*
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -192,10 +191,9 @@ class ImprisonmentStatusChangeServiceTest {
 
         @Test
         fun `will indicate we want to try again until sentence expires`() {
-          when (val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))) {
-            is TryLater -> assertThat(result.retryUntil).isEqualTo(sentenceExpiryDate)
-            else -> fail("Should be an TryLater")
-          }
+          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+          assertThat(result).isEqualToComparingFieldByField(TryLater(bookingId = 12345, retryUntil = sentenceExpiryDate))
         }
         @Test
         fun `will log that prison location could not be set`() {
@@ -221,10 +219,9 @@ class ImprisonmentStatusChangeServiceTest {
 
         @Test
         fun `will indicate we want to try again until sentence expires`() {
-          when (val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))) {
-            is TryLater -> assertThat(result.retryUntil).isEqualTo(sentenceExpiryDate)
-            else -> fail("Should be an TryLater")
-          }
+          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
+
+          assertThat(result).isEqualToComparingFieldByField(TryLater(bookingId = 12345, retryUntil = sentenceExpiryDate))
         }
 
         @Test

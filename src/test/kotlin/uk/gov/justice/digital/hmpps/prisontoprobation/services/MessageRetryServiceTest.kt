@@ -99,6 +99,7 @@ internal class MessageRetryServiceTest {
 
   @Test
   internal fun `will update deleteBy to new date if requested`() {
+    val expectedRetryUntilDate = LocalDate.now().plusDays(88)
     val message = Message(
         bookingId = 99L,
         message = "{}",
@@ -109,14 +110,14 @@ internal class MessageRetryServiceTest {
     whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(
         bookingId = 99L,
-        retryUntil = LocalDate.now().plusDays(99)
+        retryUntil = expectedRetryUntilDate
     ))
 
     service.retryShortTerm()
 
     verify(messageRepository).save<Message>(check {
       assertThat(it.id).isEqualTo("123")
-      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(99))
+      assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(expectedRetryUntilDate)
     })
   }
 
