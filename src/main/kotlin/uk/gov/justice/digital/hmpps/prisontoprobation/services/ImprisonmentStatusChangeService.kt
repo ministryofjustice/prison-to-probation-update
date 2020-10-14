@@ -48,7 +48,7 @@ class ImprisonmentStatusChangeService(
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return Done() to it.reason }
     val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return Done() to it.reason }
-    val sentenceStartDate = sentenceDetail.sentenceStartDate as LocalDate
+    val sentenceStartDate = getLatestPrimarySentenceStartDate(bookingId).onIgnore { return Done() to it.reason }.also { if (sentenceDetail.sentenceStartDate != it) {log.debug("Latest and original sentence dates differ for booking $bookingId -  ${sentenceDetail.sentenceStartDate} compared to $it")} }
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate)
         .onIgnore { return TryLater(bookingId) to it.reason }
@@ -96,6 +96,14 @@ class ImprisonmentStatusChangeService(
 
   private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> =
       Success(validSentenceDatesWithStartDate(bookingId).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate")) })
+
+  private fun getLatestPrimarySentenceStartDate(bookingId: Long): Result<LocalDate, TelemetryEvent> =
+      offenderService.getCurrentSentences(bookingId)
+          .filter { it.startDate != null }
+          .filter { it.consecutiveTo == null }
+          .maxByOrNull { it.startDate!! }?.also { log.debug("Will use ${it.sentenceTypeDescription} sequence ${it.sentenceSequence} with date ${it.startDate} for bookingId $bookingId") }
+          ?.let { Success(it.startDate!!) }
+          ?: Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate"))
 
   private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
       offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }

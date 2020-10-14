@@ -52,6 +52,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 2 }
+    await untilCallTo { eliteRequestCountFor("/api/offender-sentences/booking/1200835/sentenceTerms") } matches { it == 1 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 2 }
     await untilCallTo { offenderSearchPostCountFor("/match") } matches { it == 1 }
     await untilCallTo { communityGetCountFor("/secure/offenders/crn/X142620/convictions") } matches { it == 1 }

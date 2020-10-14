@@ -70,7 +70,11 @@ class ImprisonmentStatusChangeServiceTest {
     inner class StatusChange {
       @BeforeEach
       fun setup() {
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29)))
+        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2019, 4, 12)))
+        whenever(offenderService.getCurrentSentences(any())).thenReturn(listOf(
+            SentenceSummary(startDate = LocalDate.of(2020, 2, 29), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = LocalDate.of(2019, 4, 12), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence")
+        ))
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
@@ -90,19 +94,31 @@ class ImprisonmentStatusChangeServiceTest {
       }
 
       @Test
-      fun `will check offender exists in probation`() {
+      fun `will check offender exists in probation using latest primary sentence date`() {
         val booking = createBooking()
         whenever(offenderService.getBooking(any())).thenReturn(booking)
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.parse("2020-01-30")))
+        whenever(offenderService.getCurrentSentences(any())).thenReturn(listOf(
+            SentenceSummary(startDate = LocalDate.parse("2020-02-28"), consecutiveTo = 33,  sentenceSequence = 32, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = LocalDate.parse("2020-01-30"), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = LocalDate.parse("2019-06-23"), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = null, sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+        ))
 
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(offenderProbationMatchService).ensureOffenderNumberExistsInProbation(booking, LocalDate.parse("2020-01-30"))
       }
 
       @Test
-      fun `will send bookingNumber update to probation`() {
+      fun `will send bookingNumber and latest primary sentence date update to probation`() {
+        whenever(offenderService.getCurrentSentences(any())).thenReturn(listOf(
+            SentenceSummary(startDate = LocalDate.parse("2020-02-28"), consecutiveTo = 33,  sentenceSequence = 32, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = LocalDate.parse("2020-01-30"), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = LocalDate.parse("2019-06-23"), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+            SentenceSummary(startDate = null, sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+        ))
+
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.of(2020, 2, 29), "38339A"))
+        verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.parse("2020-01-30"), "38339A"))
       }
 
       @Test
@@ -265,6 +281,9 @@ class ImprisonmentStatusChangeServiceTest {
 
     @Test
     fun `will log that offender has no active booking and abandon update`() {
+      whenever(offenderService.getCurrentSentences(any())).thenReturn(listOf(
+          SentenceSummary(startDate = LocalDate.now(), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+      ))
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
 
@@ -277,6 +296,9 @@ class ImprisonmentStatusChangeServiceTest {
     }
     @Test
     fun `will log that offender has booking at prison we are not interested in and abandon update`() {
+      whenever(offenderService.getCurrentSentences(any())).thenReturn(listOf(
+          SentenceSummary(startDate = LocalDate.now(), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+      ))
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
 

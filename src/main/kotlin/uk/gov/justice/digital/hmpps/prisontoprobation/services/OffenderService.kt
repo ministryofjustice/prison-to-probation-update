@@ -39,6 +39,14 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
         .block()!!
   }
 
+  fun getCurrentSentences(bookingId: Long): List<SentenceSummary> {
+    return webClient.get()
+        .uri("/api/offender-sentences/booking/$bookingId/sentenceTerms")
+        .retrieve()
+        .bodyToMono(object : ParameterizedTypeReference<List<SentenceSummary>>() {})
+        .block()!!
+  }
+
   fun getMovement(bookingId: Long, movementSeq: Long): Movement? {
     return webClient.get()
         .uri("/api/bookings/$bookingId/movement/$movementSeq")
@@ -105,6 +113,13 @@ data class SentenceDetail(
     val topupSupervisionExpiryDate: LocalDate? = null,
     val releaseDate: LocalDate? = null,
     val homeDetentionCurfewEligibilityDate: LocalDate? = null
+)
+
+data class SentenceSummary(
+    val startDate: LocalDate? = null,
+    val sentenceTypeDescription: String? = null,
+    val sentenceSequence: Long? = null,
+    val consecutiveTo: Long? = null,
 )
 
 data class BookingIdentifier(
