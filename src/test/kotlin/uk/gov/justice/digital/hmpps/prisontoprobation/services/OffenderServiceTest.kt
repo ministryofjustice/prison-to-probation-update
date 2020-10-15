@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.Integratio
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OffenderServiceTest : IntegrationTest() {
@@ -127,6 +128,73 @@ class OffenderServiceTest : IntegrationTest() {
 
   }
 
+  @Test
+  fun `test get sentence summary calls rest endpoint`() {
+    val sentenceTerms = """
+      [
+          {
+              "bookingId": 2606990,
+              "sentenceSequence": 61,
+              "termSequence": 1,
+              "sentenceType": "ADIMP_ORA",
+              "sentenceTypeDescription": "ORA CJA03 Standard Determinate Sentence",
+              "startDate": "2020-10-10",
+              "weeks": 6,
+              "lifeSentence": false,
+              "caseId": "3032984",
+              "sentenceTermCode": "IMP",
+              "lineSeq": 2,
+              "sentenceStartDate": "2020-10-10"
+          },
+          {
+              "bookingId": 2606990,
+              "sentenceSequence": 62,
+              "termSequence": 1,
+              "consecutiveTo": 61,
+              "sentenceType": "ADIMP_ORA",
+              "sentenceTypeDescription": "ORA CJA03 Standard Determinate Sentence",
+              "startDate": "2020-11-21",
+              "weeks": 4,
+              "lifeSentence": false,
+              "caseId": "3032984",
+              "sentenceTermCode": "IMP",
+              "lineSeq": 3,
+              "sentenceStartDate": "2020-11-21"
+          },
+          {
+              "bookingId": 2606990,
+              "sentenceSequence": 69,
+              "termSequence": 1,
+              "sentenceType": "14FTR_ORA",
+              "sentenceTypeDescription": "ORA 14 Day Fixed Term Recall",
+              "startDate": "2020-01-13",
+              "weeks": 38,
+              "lifeSentence": false,
+              "caseId": "2944476",
+              "sentenceTermCode": "IMP",
+              "lineSeq": 4,
+              "sentenceStartDate": "2020-01-13"
+          }
+      ]
+    """.trimIndent()
+
+    elite2MockServer.stubFor(get("/api/offender-sentences/booking/1234/sentenceTerms").willReturn(aResponse()
+        .withHeader("Content-Type", "application/json")
+        .withBody(sentenceTerms)
+        .withStatus(HTTP_OK)))
+
+
+    val sentences = service.getCurrentSentences(1234L)
+
+    assertThat(sentences).containsExactly(
+        SentenceSummary(startDate = LocalDate.parse( "2020-10-10"), sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence", sentenceSequence = 61),
+        SentenceSummary(startDate = LocalDate.parse( "2020-11-21"), sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence", sentenceSequence = 62, consecutiveTo = 61),
+        SentenceSummary(startDate = LocalDate.parse( "2020-01-13"), sentenceTypeDescription = "ORA 14 Day Fixed Term Recall", sentenceSequence = 69),
+    )
+    elite2MockServer.verify(getRequestedFor(urlEqualTo("/api/offender-sentences/booking/1234/sentenceTerms"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")))
+
+  }
 
   private fun createPrisoner() = Prisoner(
       offenderNo = "AB123D",

@@ -1,0 +1,57 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/offender-sentences/booking/1200835/sentenceTerms"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody":
+    [
+      {
+        "bookingId": 1200835,
+        "sentenceSequence": 61,
+        "termSequence": 1,
+        "sentenceType": "ADIMP_ORA",
+        "sentenceTypeDescription": "ORA CJA03 Standard Determinate Sentence",
+        "startDate": "2020-02-11",
+        "weeks": 6,
+        "lifeSentence": false,
+        "caseId": "3032984",
+        "sentenceTermCode": "IMP",
+        "lineSeq": 2,
+        "sentenceStartDate": "2020-02-11"
+      },
+      {
+        "bookingId": 1200835,
+        "sentenceSequence": 62,
+        "termSequence": 1,
+        "consecutiveTo": 61,
+        "sentenceType": "ADIMP_ORA",
+        "sentenceTypeDescription": "ORA CJA03 Standard Determinate Sentence",
+        "startDate": "2020-11-21",
+        "weeks": 4,
+        "lifeSentence": false,
+        "caseId": "3032984",
+        "sentenceTermCode": "IMP",
+        "lineSeq": 3,
+        "sentenceStartDate": "2020-11-21"
+      },
+      {
+        "bookingId": 1200835,
+        "sentenceSequence": 69,
+        "termSequence": 1,
+        "sentenceType": "14FTR_ORA",
+        "sentenceTypeDescription": "ORA 14 Day Fixed Term Recall",
+        "startDate": "2020-01-13",
+        "weeks": 38,
+        "lifeSentence": false,
+        "caseId": "2944476",
+        "sentenceTermCode": "IMP",
+        "lineSeq": 4,
+        "sentenceStartDate": "2020-01-13"
+      }
+    ]  }
+}
