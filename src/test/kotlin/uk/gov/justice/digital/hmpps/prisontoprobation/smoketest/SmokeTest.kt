@@ -41,10 +41,21 @@ class SmokeTest {
   }
 
   @Test
+  internal fun `This will fail due to result timeout quickly`() {
+
+    runBlocking {
+      withTimeout(Duration.ofMinutes(5).toMillis()) {
+        val results = waitForResults("TIMEOUT")
+        assertThat(results.outcome).withFailMessage(results.description).isTrue
+      }
+    }
+  }
+
+  @Test
   internal fun `This will fail due to timeout failure`() {
 
     runBlocking {
-      withTimeout(Duration.ofMinutes(10).toMillis()) {
+      withTimeout(Duration.ofMinutes(15).toMillis()) {
         val results = waitForResults("TIMEOUT")
         assertThat(results.outcome).withFailMessage(results.description).isTrue
       }
