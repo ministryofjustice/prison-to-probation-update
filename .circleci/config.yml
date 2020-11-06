@@ -62,6 +62,45 @@ jobs:
           paths:
             - build/libs
             - build.gradle.kts
+  smoke-test:
+    executor: validator
+    steps:
+      - checkout
+      - hmpps/install_aws_cli
+      - run:
+          name: Wait for SQS to be ready
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
+      - run:
+          name: Wait for SNS to be ready
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4575
+      - run:
+          name: Set up queues
+          command: src/test/resources/localstack/setup-sns.sh
+      - restore_cache:
+          keys:
+            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-
+      - run:
+          environment:
+            AWS_PROVIDER: localstack
+          command: ./gradlew test -Dtest.profile=unit
+      - run:
+          environment:
+            AWS_PROVIDER: localstack
+          command: ./gradlew test -Dtest.profile=smoke
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle.kts" }}
+      - store_test_results:
+          path: build/test-results
+      - store_artifacts:
+          path: build/reports/tests
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build/libs
+            - build.gradle.kts
 
 workflows:
   version: 2
@@ -79,6 +118,7 @@ workflows:
             branches:
               only:
                 - main
+                - DT-1274-SmokeTest
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -86,10 +126,14 @@ workflows:
             branches:
               only:
                 - main
+                - DT-1274-SmokeTest
           requires:
             - validate
             - helm_lint
             - build_docker
+      - smoke-test:
+          requires:
+            - deploy_dev
       - request-preprod-approval:
           type: approval
           requires:
