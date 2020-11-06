@@ -3,10 +3,6 @@ spring:
     include: stdout
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${oauth.endpoint.url}/.well-known/jwks.json
-
       client:
         registration:
           smoketest-service:
@@ -20,7 +16,7 @@ graceful:
   shutdown.enabled: false
 
 aws:
-  provider: localstack
+  provider: embedded-localstack
 
 sqs:
   endpoint.url: http://localhost:4576
