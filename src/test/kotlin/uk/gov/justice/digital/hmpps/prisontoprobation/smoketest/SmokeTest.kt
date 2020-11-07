@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.smoketest
 
+import junit.framework.Assert.fail
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.runBlocking
@@ -26,16 +27,19 @@ class SmokeTest {
   private lateinit var smokeTestWebClient: WebClient
 
   @Test
-  internal fun `When a imprisonment status event is raised probation will be updated`() {
+  internal fun `The smoke test succeeds`() {
 
     runBlocking {
       try {
         withTimeout(Duration.ofMinutes(9).toMillis()) {
           val results = waitForResults()
-          assertThat(results.outcome).withFailMessage(results.description).isTrue
+          assertThat(results.outcome)
+              .withFailMessage("Expected outcome=true but outcome=${results.outcome}  (test results description=${results.description})")
+              .isTrue
         }
       } catch (e: Exception) {
         logException(e)
+        fail("Received exception ${e.message}, but was expecting smoke test to succeed with outcome=true")
       }
     }
   }
@@ -49,46 +53,55 @@ class SmokeTest {
   }
 
   @Test
-  internal fun `This will fail due to result failure`() {
+  internal fun `The smoke test fails`() {
 
     runBlocking {
       try {
         withTimeout(Duration.ofMinutes(9).toMillis()) {
           val results = waitForResults("FAIL")
-          assertThat(results.outcome).withFailMessage(results.description).isTrue
+          assertThat(results.outcome)
+              .withFailMessage("Expected outcome=false but outcome=${results.outcome}  (test results description=${results.description})")
+              .isFalse
         }
       } catch (e: Exception) {
         logException(e)
+        fail("Received exception ${e.message}, but was expecting smoke test to fail with outcome=fail")
       }
     }
   }
 
   @Test
-  internal fun `This will fail due to result timeout quickly`() {
+  internal fun `The test times out on the client side`() {
 
     runBlocking {
       try {
         withTimeout(Duration.ofMinutes(5).toMillis()) {
           val results = waitForResults("TIMEOUT")
-          assertThat(results.outcome).withFailMessage(results.description).isTrue
+          fail("Not expecting to receive result ${results}, the test should have timed out on the client side")
         }
       } catch (e: Exception) {
         logException(e)
+        assertThat(e)
+            .withFailMessage("Expecting test to timeout on the client side with a TimeoutCancellationException")
+            .isInstanceOf(TimeoutCancellationException::class.java)
       }
     }
   }
 
   @Test
-  internal fun `This will fail due to timeout failure`() {
+  internal fun `The test never receives an outcome from dps-smoketest`() {
 
     runBlocking {
       try {
         withTimeout(Duration.ofSeconds((9*60)+30).toMillis()) {
           val results = waitForResults("TIMEOUT")
-          assertThat(results.outcome).withFailMessage(results.description).isTrue
+          assertThat(results.outcome)
+              .withFailMessage("Expected outcome=null but outcome=${results.outcome}  (test results description=${results.description})")
+              .isNull()
         }
       } catch (e: Exception) {
         logException(e)
+        fail("Received exception ${e.message}, but was expecting no test result with outcome=null")
       }
     }
   }
