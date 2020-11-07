@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.smoketest
 
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -15,6 +17,11 @@ import java.time.Duration
 @SpringBootTest
 @ActiveProfiles("test")
 class SmokeTest {
+
+  companion object {
+    val log = LoggerFactory.getLogger(this::class.java)
+  }
+
   @Autowired
   private lateinit var smokeTestWebClient: WebClient
 
@@ -22,20 +29,36 @@ class SmokeTest {
   internal fun `When a imprisonment status event is raised probation will be updated`() {
 
     runBlocking {
-      withTimeout(Duration.ofMinutes(10).toMillis()) {
-        val results = waitForResults()
-        assertThat(results.outcome).withFailMessage(results.description).isTrue
+      try {
+        withTimeout(Duration.ofMinutes(9).toMillis()) {
+          val results = waitForResults()
+          assertThat(results.outcome).withFailMessage(results.description).isTrue
+        }
+      } catch (e: Exception) {
+        logException(e)
       }
     }
+  }
+
+  fun logException(e: Exception) {
+    when (e) {
+      is TimeoutCancellationException -> log.error("Timed out waiting for test results", e)
+      else -> log.error("Unexpected exception ", e)
+    }
+
   }
 
   @Test
   internal fun `This will fail due to result failure`() {
 
     runBlocking {
-      withTimeout(Duration.ofMinutes(10).toMillis()) {
-        val results = waitForResults("FAIL")
-        assertThat(results.outcome).withFailMessage(results.description).isTrue
+      try {
+        withTimeout(Duration.ofMinutes(9).toMillis()) {
+          val results = waitForResults("FAIL")
+          assertThat(results.outcome).withFailMessage(results.description).isTrue
+        }
+      } catch (e: Exception) {
+        logException(e)
       }
     }
   }
@@ -44,9 +67,13 @@ class SmokeTest {
   internal fun `This will fail due to result timeout quickly`() {
 
     runBlocking {
-      withTimeout(Duration.ofMinutes(5).toMillis()) {
-        val results = waitForResults("TIMEOUT")
-        assertThat(results.outcome).withFailMessage(results.description).isTrue
+      try {
+        withTimeout(Duration.ofMinutes(5).toMillis()) {
+          val results = waitForResults("TIMEOUT")
+          assertThat(results.outcome).withFailMessage(results.description).isTrue
+        }
+      } catch (e: Exception) {
+        logException(e)
       }
     }
   }
@@ -55,9 +82,13 @@ class SmokeTest {
   internal fun `This will fail due to timeout failure`() {
 
     runBlocking {
-      withTimeout(Duration.ofMinutes(15).toMillis()) {
-        val results = waitForResults("TIMEOUT")
-        assertThat(results.outcome).withFailMessage(results.description).isTrue
+      try {
+        withTimeout(Duration.ofSeconds((9*60)+30).toMillis()) {
+          val results = waitForResults("TIMEOUT")
+          assertThat(results.outcome).withFailMessage(results.description).isTrue
+        }
+      } catch (e: Exception) {
+        logException(e)
       }
     }
   }
@@ -66,6 +97,7 @@ class SmokeTest {
       .uri("smoke-test?testMode=$testMode")
       .retrieve()
       .bodyToFlux(TestResult::class.java)
+      .doOnError { log.error("Received error while waiting for results", it) }
       .onErrorStop()
       .doOnEach(this::logUpdate)
       .awaitLast()
