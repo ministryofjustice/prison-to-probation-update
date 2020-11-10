@@ -70,3 +70,8 @@ if (System.getProperty("test.profile") == "smoke") {
   project.setProperty("testResultsDirName", "$buildDir/test-results/smoke")
 }
 
+testlogger {
+  if (System.getProperty("test.profile") == "smoke") {
+      showStandardStreams = true
+  }
+}
