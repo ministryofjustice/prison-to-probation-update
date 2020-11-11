@@ -39,14 +39,20 @@ dependencies {
   testImplementation("com.nhaarman:mockito-kotlin-kt1.1:1.6.0")
   testImplementation("org.testcontainers:localstack:1.14.3")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.1")
 }
 
 tasks.withType<Test> {
   if (System.getProperty("test.profile") == "unit") {
     exclude("**/*MessageIntegrationTest*")
+    exclude("**/smoketest/**")
   }
   if (System.getProperty("test.profile") == "integration") {
     include("**/*MessageIntegrationTest*")
+    exclude("**/smoketest/**")
+  }
+  if (System.getProperty("test.profile") == "smoke") {
+    include("**/smoketest/**")
   }
 }
 if (System.getProperty("test.profile") == "integration") {
@@ -59,3 +65,13 @@ if (System.getProperty("test.profile") == "unit") {
   project.setProperty("testResultsDirName", "$buildDir/test-results/unit")
 }
 
+if (System.getProperty("test.profile") == "smoke") {
+  reporting.baseDir = File("$buildDir/reports/tests/smoke")
+  project.setProperty("testResultsDirName", "$buildDir/test-results/smoke")
+}
+
+testlogger {
+  if (System.getProperty("test.profile") == "smoke") {
+      showStandardStreams = true
+  }
+}
