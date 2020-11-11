@@ -21,6 +21,12 @@ executors:
     environment:
       _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
     working_directory: ~/app
+  smoke-test:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    environment:
+      _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
+    working_directory: ~/app
 
 jobs:
   validate:
@@ -63,7 +69,7 @@ jobs:
             - build/libs
             - build.gradle.kts
   smoke-test:
-    executor: validator
+    executor: smoke-test
     steps:
       - checkout
       - restore_cache:
