@@ -13,8 +13,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Signal
 import java.time.Duration
 
-@SpringBootTest
-@ActiveProfiles("test")
+
+@SpringBootTest(classes = [SmokeTestConfiguration::class])
+@ActiveProfiles("smoke-test")
 class SmokeTest {
 
   companion object {
@@ -25,16 +26,15 @@ class SmokeTest {
   private lateinit var smokeTestWebClient: WebClient
 
   @Test
-  internal fun `The smoke test succeeds`() {
-
-    runBlocking {
-      withTimeout(Duration.ofMinutes(15).toMillis()) {
-        val results = waitForResults()
-        assertThat(results.outcome)
-            .withFailMessage("Expected outcome=true but outcome=${results.outcome}  (test results description=${results.description})")
-            .isTrue
+  internal fun `Will update probation with new custody details when imprisonment status changes`() {
+    val results = runBlocking {
+      withTimeout(Duration.ofMinutes(5).toMillis()) {
+        waitForResults()
       }
     }
+    assertThat(results.outcome)
+        .withFailMessage(results.description)
+        .isTrue
   }
 
 
