@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Signal
+import uk.gov.justice.digital.hmpps.prisontoprobation.smoketest.SmokeTest.TestProgress.SUCCESS
 import java.time.Duration
 
 
@@ -32,24 +33,26 @@ class SmokeTest {
         waitForResults()
       }
     }
-    assertThat(results.outcome)
-        .withFailMessage(results.description)
-        .isTrue
+    assertThat(results.progress)
+        .withFailMessage(results.toString())
+        .isEqualTo(SUCCESS)
   }
 
 
-  suspend fun waitForResults(): TestResult = smokeTestWebClient.post()
-      .uri("smoke-test")
+  suspend fun waitForResults(): TestStatus = smokeTestWebClient.post()
+      .uri("smoke-test/prison-to-probation-update/PTPU_T3")
       .retrieve()
-      .bodyToFlux(TestResult::class.java)
+      .bodyToFlux(TestStatus::class.java)
       .doOnError { log.error("Received error while waiting for results", it) }
       .doOnEach(this::logUpdate)
       .awaitLast()
 
-  private fun logUpdate(signal: Signal<TestResult>) {
+  private fun logUpdate(signal: Signal<TestStatus>) {
     signal.let { it.get()?.let { result -> println(result.description) } }
   }
 
-  data class TestResult(val description: String, val outcome: Boolean? = null)
+  data class TestStatus(val description: String, val progress: TestProgress)
+  enum class TestProgress { INCOMPLETE, COMPLETE, SUCCESS, FAIL; }
+
 }
 
