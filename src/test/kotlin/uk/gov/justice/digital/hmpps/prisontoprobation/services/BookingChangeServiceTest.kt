@@ -139,14 +139,18 @@ class BookingChangeServiceTest {
       whenever(offenderService.getMergedIdentifiers(any())).thenReturn(listOf(BookingIdentifier(type = "MERGED", value = "A88888Y")))
       whenever(communityService.replaceProbationOffenderNo(any(), any())).thenReturn(listOf(IDs(crn = "X123456")))
 
-        service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
+      service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
 
-      verify(telemetryClient).trackEvent(eq("P2PBookingNumberChanged"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["offenderNo"]).isEqualTo("A11111Y")
-        assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
-        assertThat(it["crn"]).isEqualTo("X123456")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PBookingNumberChanged"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["offenderNo"]).isEqualTo("A11111Y")
+          assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
+          assertThat(it["crn"]).isEqualTo("X123456")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -155,15 +159,17 @@ class BookingChangeServiceTest {
       whenever(offenderService.getMergedIdentifiers(any())).thenReturn(listOf(BookingIdentifier(type = "MERGED", value = "A88888Y")))
       whenever(communityService.replaceProbationOffenderNo(any(), any())).thenReturn(null)
 
-        service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
+      service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
 
-      verify(telemetryClient).trackEvent(eq("P2PBookingNumberChangedOffenderNotFound"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["offenderNo"]).isEqualTo("A11111Y")
-        assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PBookingNumberChangedOffenderNotFound"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["offenderNo"]).isEqualTo("A11111Y")
+          assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
+        },
+        isNull()
+      )
     }
-
   }
 }
-

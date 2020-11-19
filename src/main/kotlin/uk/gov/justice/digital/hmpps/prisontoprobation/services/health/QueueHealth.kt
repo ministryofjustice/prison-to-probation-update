@@ -1,9 +1,13 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
 import com.amazonaws.services.sqs.AmazonSQS
-import com.amazonaws.services.sqs.model.*
+import com.amazonaws.services.sqs.model.GetQueueAttributesRequest
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult
+import com.amazonaws.services.sqs.model.GetQueueUrlResult
+import com.amazonaws.services.sqs.model.QueueAttributeName
 import com.amazonaws.services.sqs.model.QueueAttributeName.ApproximateNumberOfMessages
 import com.amazonaws.services.sqs.model.QueueAttributeName.ApproximateNumberOfMessagesNotVisible
+import com.amazonaws.services.sqs.model.QueueDoesNotExistException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,8 +17,12 @@ import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.Health.Builder
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.*
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.*
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_ATTACHED
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_AVAILABLE
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_FOUND
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.MESSAGES_IN_FLIGHT
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.MESSAGES_ON_DLQ
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.MESSAGES_ON_QUEUE
 
 enum class DlqStatus(val description: String) {
   UP("UP"),
@@ -30,10 +38,12 @@ enum class QueueAttributes(val awsName: String, val healthName: String) {
 }
 
 @Component
-class QueueHealth(@Autowired @Qualifier("awsSqsClient") private val awsSqsClient: AmazonSQS,
-                  @Autowired @Qualifier("awsSqsDlqClient") private val awsSqsDlqClient: AmazonSQS,
-                  @Value("\${sqs.queue.name}") private val queueName: String,
-                  @Value("\${sqs.dlq.name}") private val dlqName: String) : HealthIndicator {
+class QueueHealth(
+  @Autowired @Qualifier("awsSqsClient") private val awsSqsClient: AmazonSQS,
+  @Autowired @Qualifier("awsSqsDlqClient") private val awsSqsDlqClient: AmazonSQS,
+  @Value("\${sqs.queue.name}") private val queueName: String,
+  @Value("\${sqs.dlq.name}") private val dlqName: String
+) : HealthIndicator {
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -48,8 +58,8 @@ class QueueHealth(@Autowired @Qualifier("awsSqsClient") private val awsSqsClient
       return Builder().down().withException(e).build()
     }
     val details = mutableMapOf<String, Any?>(
-        MESSAGES_ON_QUEUE.healthName to queueAttributes.attributes[MESSAGES_ON_QUEUE.awsName]?.toInt(),
-        MESSAGES_IN_FLIGHT.healthName to queueAttributes.attributes[MESSAGES_IN_FLIGHT.awsName]?.toInt()
+      MESSAGES_ON_QUEUE.healthName to queueAttributes.attributes[MESSAGES_ON_QUEUE.awsName]?.toInt(),
+      MESSAGES_IN_FLIGHT.healthName to queueAttributes.attributes[MESSAGES_IN_FLIGHT.awsName]?.toInt()
     )
 
     val health = Builder().up().withDetails(details).addDlqHealth(queueAttributes).build()
@@ -75,10 +85,9 @@ class QueueHealth(@Autowired @Qualifier("awsSqsClient") private val awsSqsClient
     }
 
     return withDetail("dlqStatus", DlqStatus.UP.description)
-        .withDetail(MESSAGES_ON_DLQ.healthName, dlqAttributes.attributes[MESSAGES_ON_DLQ.awsName]?.toInt())
+      .withDetail(MESSAGES_ON_DLQ.healthName, dlqAttributes.attributes[MESSAGES_ON_DLQ.awsName]?.toInt())
   }
 
   private fun getQueueAttributesRequest(url: GetQueueUrlResult) =
-      GetQueueAttributesRequest(url.queueUrl).withAttributeNames(QueueAttributeName.All)
-
+    GetQueueAttributesRequest(url.queueUrl).withAttributeNames(QueueAttributeName.All)
 }

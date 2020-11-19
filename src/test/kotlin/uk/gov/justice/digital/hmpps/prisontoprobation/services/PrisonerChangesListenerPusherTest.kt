@@ -37,7 +37,6 @@ class PrisonerChangesListenerPusherTest {
 
     verify(messageRetryService, never()).retryLater(any(), any(), any())
   }
-
 }
 
 private fun String.readResourceAsText(): String {

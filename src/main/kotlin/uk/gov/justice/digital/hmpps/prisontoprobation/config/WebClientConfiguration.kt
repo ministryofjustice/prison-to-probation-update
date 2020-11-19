@@ -13,28 +13,31 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
-class WebClientConfiguration(@Value("\${community.endpoint.url}") private val communityRootUri: String,
-                             @Value("\${elite2.endpoint.url}") private val elite2RootUri: String,
-                             @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
-                             @Value("\${offender-search.endpoint.url}") private val searchRootUri: String,
-                             private val webClientBuilder: WebClient.Builder ) {
+class WebClientConfiguration(
+  @Value("\${community.endpoint.url}") private val communityRootUri: String,
+  @Value("\${elite2.endpoint.url}") private val elite2RootUri: String,
+  @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
+  @Value("\${offender-search.endpoint.url}") private val searchRootUri: String,
+  private val webClientBuilder: WebClient.Builder
+) {
 
   @Bean
   fun probationApiWebClient(authorizedClientManager: OAuth2AuthorizedClientManager): WebClient {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("probation-api")
 
-
     return webClientBuilder
-        .baseUrl(communityRootUri)
-        .apply(oauth2Client.oauth2Configuration())
-        .exchangeStrategies(ExchangeStrategies.builder()
-            .codecs { configurer ->
-              configurer.defaultCodecs()
-                  .maxInMemorySize(-1)
-            }
-            .build())
-        .build()
+      .baseUrl(communityRootUri)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build()
+      )
+      .build()
   }
 
   @Bean
@@ -43,15 +46,17 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
     oauth2Client.setDefaultClientRegistrationId("prison-api")
 
     return webClientBuilder
-        .baseUrl(elite2RootUri)
-        .apply(oauth2Client.oauth2Configuration())
-        .exchangeStrategies(ExchangeStrategies.builder()
-            .codecs { configurer ->
-              configurer.defaultCodecs()
-                  .maxInMemorySize(-1)
-            }
-            .build())
-        .build()
+      .baseUrl(elite2RootUri)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build()
+      )
+      .build()
   }
 
   @Bean
@@ -59,20 +64,19 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("offender-search-api")
 
-
     return webClientBuilder
-        .baseUrl(searchRootUri)
-        .apply(oauth2Client.oauth2Configuration())
-        .exchangeStrategies(ExchangeStrategies.builder()
-            .codecs { configurer ->
-              configurer.defaultCodecs()
-                  .maxInMemorySize(-1)
-            }
-            .build())
-        .build()
+      .baseUrl(searchRootUri)
+      .apply(oauth2Client.oauth2Configuration())
+      .exchangeStrategies(
+        ExchangeStrategies.builder()
+          .codecs { configurer ->
+            configurer.defaultCodecs()
+              .maxInMemorySize(-1)
+          }
+          .build()
+      )
+      .build()
   }
-
-
 
   @Bean
   fun probationApiHealthWebClient(): WebClient {
@@ -95,8 +99,10 @@ class WebClientConfiguration(@Value("\${community.endpoint.url}") private val co
   }
 
   @Bean
-  fun authorizedClientManager(clientRegistrationRepository: ClientRegistrationRepository?,
-                              oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?): OAuth2AuthorizedClientManager? {
+  fun authorizedClientManager(
+    clientRegistrationRepository: ClientRegistrationRepository?,
+    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?
+  ): OAuth2AuthorizedClientManager? {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
     val authorizedClientManager = AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository, oAuth2AuthorizedClientService)
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)

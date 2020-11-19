@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.context.annotation.*
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Condition
+import org.springframework.context.annotation.ConditionContext
+import org.springframework.context.annotation.Conditional
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.type.AnnotatedTypeMetadata
 
 /**
@@ -10,17 +14,17 @@ import org.springframework.core.type.AnnotatedTypeMetadata
  */
 @Configuration
 class ApplicationInsightsConfiguration {
-    @Bean
-    @Conditional(AppInsightKeyAbsentCondition::class)
-    fun telemetryClient(): TelemetryClient {
-        return TelemetryClient()
-    }
+  @Bean
+  @Conditional(AppInsightKeyAbsentCondition::class)
+  fun telemetryClient(): TelemetryClient {
+    return TelemetryClient()
+  }
 
-    class AppInsightKeyAbsentCondition : Condition {
+  class AppInsightKeyAbsentCondition : Condition {
 
-        override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
-            val telemetryKey: String? = context.environment.getProperty("application.insights.ikey")
-            return telemetryKey.isNullOrBlank()
-        }
+    override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
+      val telemetryKey: String? = context.environment.getProperty("application.insights.ikey")
+      return telemetryKey.isNullOrBlank()
     }
+  }
 }

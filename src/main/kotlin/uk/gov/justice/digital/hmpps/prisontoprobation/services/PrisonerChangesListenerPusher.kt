@@ -7,11 +7,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
 
-
 @Service
 class PrisonerChangesListenerPusher(
-    private val messageProcessor: MessageProcessor,
-    private val retryService: MessageRetryService
+  private val messageProcessor: MessageProcessor,
+  private val retryService: MessageRetryService
 
 ) {
   companion object {
@@ -27,7 +26,7 @@ class PrisonerChangesListenerPusher(
     log.info("Received message $messageId type $eventType")
     log.debug("Will hand over to messageProcessor $messageProcessor")
 
-    when(val result: MessageResult = messageProcessor.validateMessage(eventType, message)) {
+    when (val result: MessageResult = messageProcessor.validateMessage(eventType, message)) {
       is TryLater -> retryService.scheduleForProcessing(result.bookingId, eventType, message)
       is Done -> result.message?.let { log.info("Ignoring message due to $it") }
     }
@@ -37,4 +36,3 @@ class PrisonerChangesListenerPusher(
 data class EventType(val Value: String)
 data class MessageAttributes(val eventType: EventType)
 data class Message(val Message: String, val MessageId: String, val MessageAttributes: MessageAttributes)
-

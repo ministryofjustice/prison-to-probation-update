@@ -15,7 +15,6 @@ import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.wait.strategy.Wait
 
-
 @Configuration
 @ConditionalOnProperty(name = ["sqs.provider"], havingValue = "embedded-localstack")
 class LocalStackConfig {
@@ -28,13 +27,13 @@ class LocalStackConfig {
     log.info("Starting localstack...")
     val logConsumer = Slf4jLogConsumer(log).withPrefix("localstack")
     val localStackContainer: LocalStackContainer = LocalStackContainer("0.11.2")
-        .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.SNS, LocalStackContainer.Service.DYNAMODB)
-        .withClasspathResourceMapping("/localstack/setup-sns.sh","/docker-entrypoint-initaws.d/setup-sns.sh", BindMode.READ_WRITE)
-        .withEnv("HOSTNAME_EXTERNAL", "localhost")
-        .withEnv("DEFAULT_REGION", "eu-west-2")
-        .waitingFor(
-            Wait.forLogMessage(".*All Ready.*", 1)
-        )
+      .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.SNS, LocalStackContainer.Service.DYNAMODB)
+      .withClasspathResourceMapping("/localstack/setup-sns.sh", "/docker-entrypoint-initaws.d/setup-sns.sh", BindMode.READ_WRITE)
+      .withEnv("HOSTNAME_EXTERNAL", "localhost")
+      .withEnv("DEFAULT_REGION", "eu-west-2")
+      .waitingFor(
+        Wait.forLogMessage(".*All Ready.*", 1)
+      )
 
     log.info("Started localstack.")
 
@@ -45,15 +44,21 @@ class LocalStackConfig {
 
   @Bean
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  fun queueUrl(@Autowired awsSqsClient: AmazonSQS,
-               @Value("\${sqs.queue.name}") queueName: String,
-               @Value("\${sqs.dlq.name}") dlqName: String): String {
+  fun queueUrl(
+    @Autowired awsSqsClient: AmazonSQS,
+    @Value("\${sqs.queue.name}") queueName: String,
+    @Value("\${sqs.dlq.name}") dlqName: String
+  ): String {
     val result = awsSqsClient.createQueue(CreateQueueRequest(dlqName))
     val dlqArn = awsSqsClient.getQueueAttributes(result.queueUrl, listOf(QueueAttributeName.QueueArn.toString()))
-    awsSqsClient.createQueue(CreateQueueRequest(queueName).withAttributes(
-        mapOf(QueueAttributeName.RedrivePolicy.toString() to
-            """{"deadLetterTargetArn":"${dlqArn.attributes["QueueArn"]}","maxReceiveCount":"5"}""")
-    ))
+    awsSqsClient.createQueue(
+      CreateQueueRequest(queueName).withAttributes(
+        mapOf(
+          QueueAttributeName.RedrivePolicy.toString() to
+"""{"deadLetterTargetArn":"${dlqArn.attributes["QueueArn"]}","maxReceiveCount":"5"}"""
+        )
+      )
+    )
     return awsSqsClient.getQueueUrl(queueName).queueUrl
   }
 }

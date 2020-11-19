@@ -10,14 +10,13 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS
 
-
 @Service
 class OffenderProbationMatchService(
-    private val telemetryClient: TelemetryClient,
-    private val offenderSearchService: OffenderSearchService,
-    private val offenderService: OffenderService,
-    private val communityService: CommunityService,
-    @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  private val telemetryClient: TelemetryClient,
+  private val offenderSearchService: OffenderSearchService,
+  private val offenderService: OffenderService,
+  private val communityService: CommunityService,
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -26,7 +25,8 @@ class OffenderProbationMatchService(
   fun ensureOffenderNumberExistsInProbation(booking: Booking, sentenceStartDate: LocalDate): Result<String, TelemetryEvent> {
     val prisoner = offenderService.getOffender(booking.offenderNo)
 
-    val result = offenderSearchService.matchProbationOffender(MatchRequest(
+    val result = offenderSearchService.matchProbationOffender(
+      MatchRequest(
         firstName = booking.firstName,
         surname = booking.lastName,
         dateOfBirth = booking.dateOfBirth,
@@ -34,7 +34,8 @@ class OffenderProbationMatchService(
         croNumber = prisoner.croNumber,
         pncNumber = prisoner.pncNumber,
         activeSentence = true
-    ))
+      )
+    )
 
     log.debug("${booking.offenderNo} matched ${result.matches.size} offender(s)")
 
@@ -42,17 +43,17 @@ class OffenderProbationMatchService(
     val filteredCRNs = offendersWithMatchingSentenceDates(result, sentenceStartDate)
 
     telemetryClient.trackEvent(
-        "P2POffenderMatch",
-        mapOf(
-            "offenderNo" to booking.offenderNo,
-            "bookingNumber" to booking.bookingNo,
-            "matchedBy" to result.matchedBy,
-            "matches" to result.matches.size.toString(),
-            "filtered_matches" to filteredCRNs.size.toString(),
-            "crns" to result.CRNs(),
-            "filtered_crns" to filteredCRNs.sorted().joinToString()
-        ),
-        null
+      "P2POffenderMatch",
+      mapOf(
+        "offenderNo" to booking.offenderNo,
+        "bookingNumber" to booking.bookingNo,
+        "matchedBy" to result.matchedBy,
+        "matches" to result.matches.size.toString(),
+        "filtered_matches" to filteredCRNs.size.toString(),
+        "crns" to result.CRNs(),
+        "filtered_crns" to filteredCRNs.sorted().joinToString()
+      ),
+      null
     )
 
     return when (result.matchedBy) {
@@ -71,13 +72,13 @@ class OffenderProbationMatchService(
     return if (isBookingInInterestedPrison(booking.agencyId)) {
       communityService.updateProbationOffenderNo(crn, booking.offenderNo)
       telemetryClient.trackEvent(
-          "P2POffenderNumberSet",
-          mapOf(
-              "offenderNo" to booking.offenderNo,
-              "bookingNumber" to booking.bookingNo,
-              "crn" to crn
-          ),
-          null
+        "P2POffenderNumberSet",
+        mapOf(
+          "offenderNo" to booking.offenderNo,
+          "bookingNumber" to booking.bookingNo,
+          "crn" to crn
+        ),
+        null
       )
       Success(booking.offenderNo)
     } else {
@@ -87,25 +88,25 @@ class OffenderProbationMatchService(
 
   private fun offendersWithMatchingSentenceDates(result: OffenderMatches, sentenceStartDate: LocalDate): Set<String> {
     return result.matches
-        .map { it.offender.otherIds.crn }
-        .map { crn -> crn to custodySentenceDates(crn) }
-        .toMap()
-        .filter { (_, dates) -> dates.any { it.closeTo(sentenceStartDate) } }
-        .keys
+      .map { it.offender.otherIds.crn }
+      .map { crn -> crn to custodySentenceDates(crn) }
+      .toMap()
+      .filter { (_, dates) -> dates.any { it.closeTo(sentenceStartDate) } }
+      .keys
   }
 
   private fun custodySentenceDates(crn: String): List<LocalDate> {
     return communityService.getConvictions(crn).asSequence()
-        .filter { conviction -> conviction.custody?.let { true } ?: false }
-        .map { conviction -> conviction.sentence }
-        .filterNotNull()
-        .map { it.startDate }
-        .filterNotNull()
-        .toList()
+      .filter { conviction -> conviction.custody?.let { true } ?: false }
+      .map { conviction -> conviction.sentence }
+      .filterNotNull()
+      .map { it.startDate }
+      .filterNotNull()
+      .toList()
   }
 
   private fun isBookingInInterestedPrison(toAgency: String?) =
-      allowAnyPrison() || allowedPrisons.contains(toAgency)
+    allowAnyPrison() || allowedPrisons.contains(toAgency)
 
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
 }

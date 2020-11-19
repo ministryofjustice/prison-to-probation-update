@@ -6,17 +6,16 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
-
 @Service
-class BookingChangeService(private val telemetryClient: TelemetryClient,
-                           private val offenderService: OffenderService,
-                           private val communityService: CommunityService,
-                           @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
-                           ) {
+class BookingChangeService(
+  private val telemetryClient: TelemetryClient,
+  private val offenderService: OffenderService,
+  private val communityService: CommunityService,
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
-
 
   fun validateBookingNumberChange(message: BookingNumberChangedMessage): MessageResult {
     val booking = offenderService.getBooking(message.bookingId)
@@ -32,15 +31,16 @@ class BookingChangeService(private val telemetryClient: TelemetryClient,
       Done("Not at an interested prison")
     }
   }
-  fun processBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage) : MessageResult {
+  fun processBookingNumberChangedAndUpdateProbation(message: BookingNumberChangedMessage): MessageResult {
     val (bookingId: Long) = message
     val booking = offenderService.getBooking(bookingId)
 
     if (isBookingInInterestedPrison(booking.agencyId)) {
 
       val trackingAttributes = mapOf(
-          "bookingId" to bookingId.toString(),
-          "offenderNo" to booking.offenderNo)
+        "bookingId" to bookingId.toString(),
+        "offenderNo" to booking.offenderNo
+      )
 
       val mergedOffenders = offenderService.getMergedIdentifiers(message.bookingId)
 
@@ -51,15 +51,14 @@ class BookingChangeService(private val telemetryClient: TelemetryClient,
             telemetryClient.trackEvent("P2PBookingNumberChanged", trackingAttributes + ("oldOffenderNo" to it.value) + ("crn" to id.crn), null)
           }
         }
-            ?: telemetryClient.trackEvent("P2PBookingNumberChangedOffenderNotFound", trackingAttributes + ("oldOffenderNo" to it.value), null)
+          ?: telemetryClient.trackEvent("P2PBookingNumberChangedOffenderNotFound", trackingAttributes + ("oldOffenderNo" to it.value), null)
       }
     }
     return Done("Booking $bookingId has booking number changed")
   }
 
   private fun isBookingInInterestedPrison(agency: String?) =
-      allowAnyPrison() || allowedPrisons.contains(agency)
+    allowAnyPrison() || allowedPrisons.contains(agency)
 
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
-
 }

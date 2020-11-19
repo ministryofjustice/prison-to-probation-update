@@ -37,27 +37,36 @@ class CommunityServiceTest : IntegrationTest() {
     @Test
     fun `test put custody calls endpoint`() {
       val expectedUpdatedCustody = createUpdatedCustody()
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(expectedUpdatedCustody.asJson())
-          .withStatus(HTTP_OK)))
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(expectedUpdatedCustody.asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       val updateCustody = createUpdateCustody(nomsPrisonInstitutionCode = "MDI")
       val updatedCustody = service.updateProbationCustody("AB123D", "38353A", updateCustody)
 
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
-      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A"))
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A"))
           .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+      )
     }
 
     @Test
     fun `test put custody will be null if conviction not found`() {
-      communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody("{\"error\": \"not found\"}")
-          .withStatus(HTTP_NOT_FOUND)))
-
+      communityMockServer.stubFor(
+        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\": \"not found\"}")
+            .withStatus(HTTP_NOT_FOUND)
+        )
+      )
 
       val updatedCustody = service.updateProbationCustody("AB123D", "38353A", createUpdateCustody())
 
@@ -66,9 +75,13 @@ class CommunityServiceTest : IntegrationTest() {
 
     @Test
     fun `test put custody will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_REQUEST)))
+      communityMockServer.stubFor(
+        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_BAD_REQUEST)
+        )
+      )
 
       assertThatThrownBy { service.updateProbationCustody("AB123D", "38353A", createUpdateCustody()) }.isInstanceOf(BadRequest::class.java)
     }
@@ -81,31 +94,42 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test put custody booking number calls endpoint`() {
       val expectedUpdatedCustody = createUpdatedCustody()
 
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(expectedUpdatedCustody.asJson())
-          .withStatus(HTTP_OK)))
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(expectedUpdatedCustody.asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
-
-      val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", UpdateCustodyBookingNumber(
+      val updatedCustody = service.updateProbationCustodyBookingNumber(
+        "AB123D",
+        UpdateCustodyBookingNumber(
           sentenceStartDate = LocalDate.now(),
           bookingNumber = "38353A"
-      )
+        )
       )
 
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
-      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber"))
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withRequestBody(matchingJsonPath("bookingNumber", equalTo("38353A")))
-          .withRequestBody(matchingJsonPath("sentenceStartDate", matching(".*"))))
+          .withRequestBody(matchingJsonPath("sentenceStartDate", matching(".*")))
+      )
     }
 
     @Test
     fun `test custody will be null if not found`() {
-      communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody("{\"error\": \"not found\"}")
-          .withStatus(HTTP_NOT_FOUND)))
+      communityMockServer.stubFor(
+        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\": \"not found\"}")
+            .withStatus(HTTP_NOT_FOUND)
+        )
+      )
 
       val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber())
 
@@ -114,9 +138,13 @@ class CommunityServiceTest : IntegrationTest() {
 
     @Test
     fun `test will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_REQUEST)))
+      communityMockServer.stubFor(
+        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_BAD_REQUEST)
+        )
+      )
 
       assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber()) }.isInstanceOf(BadRequest::class.java)
     }
@@ -129,26 +157,35 @@ class CommunityServiceTest : IntegrationTest() {
     fun `test post key dates calls endpoint`() {
       val expectedUpdatedCustody = createUpdatedCustody()
 
-      communityMockServer.stubFor(post(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(expectedUpdatedCustody.asJson())
-          .withStatus(HTTP_OK)))
-
+      communityMockServer.stubFor(
+        post(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(expectedUpdatedCustody.asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       val replaceCustodyKeyDates = createReplaceCustodyKeyDates()
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", replaceCustodyKeyDates)
 
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
-      communityMockServer.verify(postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")))
+      communityMockServer.verify(
+        postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+      )
     }
 
     @Test
     fun `test custody will be null if not found`() {
-      communityMockServer.stubFor(post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody("{\"error\": \"not found\"}")
-          .withStatus(HTTP_NOT_FOUND)))
+      communityMockServer.stubFor(
+        post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\": \"not found\"}")
+            .withStatus(HTTP_NOT_FOUND)
+        )
+      )
 
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
 
@@ -157,32 +194,40 @@ class CommunityServiceTest : IntegrationTest() {
 
     @Test
     fun `test will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_REQUEST)))
-
+      communityMockServer.stubFor(
+        post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_BAD_REQUEST)
+        )
+      )
 
       assertThatThrownBy { service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates()) }.isInstanceOf(BadRequest::class.java)
     }
   }
 
   @Nested
-  internal inner class GetConvictions{
+  internal inner class GetConvictions {
     @Test
     fun `test get convictions calls rest endpoint`() {
       val expectedConvictions = listOf(Conviction(index = "1", active = true))
 
-      communityMockServer.stubFor(WireMock.get(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(expectedConvictions.asJson())
-          .withStatus(HTTP_OK)))
-
+      communityMockServer.stubFor(
+        WireMock.get(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(expectedConvictions.asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       val convictions = service.getConvictions("X153626")
 
       assertThat(convictions).isEqualTo(expectedConvictions)
-      communityMockServer.verify(WireMock.getRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/convictions"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")))
+      communityMockServer.verify(
+        WireMock.getRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/convictions"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+      )
     }
     @Test
     fun `test can read conviction`() {
@@ -195,49 +240,60 @@ class CommunityServiceTest : IntegrationTest() {
   }
 
   @Nested
-  internal inner class UpdateProbationOffenderNo{
+  internal inner class UpdateProbationOffenderNo {
     @Test
     fun `test updateProbationOffenderNo calls rest endpoint`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(IDs(crn = "X153626").asJson())
-          .withStatus(HTTP_OK)))
-
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(IDs(crn = "X153626").asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       service.updateProbationOffenderNo("X153626", "AB123D")
 
-      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/nomsNumber"))
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
-          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D"))))
-
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D")))
+      )
     }
   }
 
   @Nested
-  internal inner class ReplaceProbationOffenderNo{
+  internal inner class ReplaceProbationOffenderNo {
     @Test
     fun `test replaceProbationOffenderNo calls rest endpoint`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(listOf(IDs(crn = "X153626")).asJson())
-          .withStatus(HTTP_OK)))
-
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(listOf(IDs(crn = "X153626")).asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
-      communityMockServer.verify(putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A11111Y/nomsNumber"))
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A11111Y/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
-          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y"))))
-
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y")))
+      )
     }
 
     @Test
     fun `test replaceProbationOffenderNo will return identifiers of the offender updated`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(listOf(IDs(crn = "X153626", nomsNumber = "A99999Y")).asJson())
-          .withStatus(HTTP_OK)))
-
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(listOf(IDs(crn = "X153626", nomsNumber = "A99999Y")).asJson())
+            .withStatus(HTTP_OK)
+        )
+      )
 
       val ids = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
@@ -246,50 +302,59 @@ class CommunityServiceTest : IntegrationTest() {
 
     @Test
     fun `test will consume conflict request error and return nothing`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_CONFLICT)))
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_CONFLICT)
+        )
+      )
 
       val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
       assertThat(maybeIDs).isNull()
-
     }
 
     @Test
     fun `test will consume not found request error and return nothing`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_NOT_FOUND)))
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_NOT_FOUND)
+        )
+      )
 
       val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
 
       assertThat(maybeIDs).isNull()
-
     }
 
     @Test
     fun `test will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(put(anyUrl()).willReturn(aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_GATEWAY)))
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_BAD_GATEWAY)
+        )
+      )
 
       assertThatThrownBy { service.replaceProbationOffenderNo("A11111Y", "A99999Y") }.isInstanceOf(BadGateway::class.java)
     }
-
   }
   private fun createUpdatedCustody() = Custody(
-      institution = Institution("Doncaster"),
-      bookingNumber = "38353A"
+    institution = Institution("Doncaster"),
+    bookingNumber = "38353A"
   )
 
   private fun createUpdateCustody(nomsPrisonInstitutionCode: String = "MDI") = UpdateCustody(
-      nomsPrisonInstitutionCode = nomsPrisonInstitutionCode
+    nomsPrisonInstitutionCode = nomsPrisonInstitutionCode
   )
 
   private fun createUpdatedCustodyBookingNumber() = UpdateCustodyBookingNumber(
-      sentenceStartDate = LocalDate.now(),
-      bookingNumber = "38353A"
+    sentenceStartDate = LocalDate.now(),
+    bookingNumber = "38353A"
   )
 
   private fun createReplaceCustodyKeyDates() = ReplaceCustodyKeyDates()

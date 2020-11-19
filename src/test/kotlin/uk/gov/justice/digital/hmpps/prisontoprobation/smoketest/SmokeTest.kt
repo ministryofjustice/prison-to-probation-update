@@ -14,7 +14,6 @@ import reactor.core.publisher.Signal
 import uk.gov.justice.digital.hmpps.prisontoprobation.smoketest.SmokeTest.TestProgress.SUCCESS
 import java.time.Duration
 
-
 @SpringBootTest(classes = [SmokeTestConfiguration::class])
 @ActiveProfiles("smoke-test")
 class SmokeTest {
@@ -34,18 +33,17 @@ class SmokeTest {
       }
     }
     assertThat(results.progress)
-        .withFailMessage(results.toString())
-        .isEqualTo(SUCCESS)
+      .withFailMessage(results.toString())
+      .isEqualTo(SUCCESS)
   }
 
-
   suspend fun waitForResults(): TestStatus = smokeTestWebClient.post()
-      .uri("smoke-test/prison-to-probation-update/PTPU_T3")
-      .retrieve()
-      .bodyToFlux(TestStatus::class.java)
-      .doOnError { log.error("Received error while waiting for results", it) }
-      .doOnEach(this::logUpdate)
-      .awaitLast()
+    .uri("smoke-test/prison-to-probation-update/PTPU_T3")
+    .retrieve()
+    .bodyToFlux(TestStatus::class.java)
+    .doOnError { log.error("Received error while waiting for results", it) }
+    .doOnEach(this::logUpdate)
+    .awaitLast()
 
   private fun logUpdate(signal: Signal<TestStatus>) {
     signal.let { it.get()?.let { result -> println(result.description) } }
@@ -53,6 +51,4 @@ class SmokeTest {
 
   data class TestStatus(val description: String, val progress: TestProgress)
   enum class TestProgress { INCOMPLETE, COMPLETE, SUCCESS, FAIL; }
-
 }
-

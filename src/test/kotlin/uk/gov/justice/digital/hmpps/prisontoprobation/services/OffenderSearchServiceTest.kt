@@ -18,25 +18,29 @@ internal class OffenderSearchServiceTest : IntegrationTest() {
   @Autowired
   private lateinit var service: OffenderSearchService
 
-    @Test
-    fun `test post match calls rest endpoint`() {
-      val expectResult = OffenderMatches(matchedBy = "NOTHING",matches = listOf())
+  @Test
+  fun `test post match calls rest endpoint`() {
+    val expectResult = OffenderMatches(matchedBy = "NOTHING", matches = listOf())
 
-      searchMockServer.stubFor(post(anyUrl()).willReturn(aResponse()
+    searchMockServer.stubFor(
+      post(anyUrl()).willReturn(
+        aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectResult.asJson())
-          .withStatus(HttpURLConnection.HTTP_OK)))
+          .withStatus(HttpURLConnection.HTTP_OK)
+      )
+    )
 
-      val matches = service.matchProbationOffender(MatchRequest(firstName = "John", surname = "Smith", dateOfBirth = LocalDate.of(1965, 7, 19), nomsNumber = "A12345"))
+    val matches = service.matchProbationOffender(MatchRequest(firstName = "John", surname = "Smith", dateOfBirth = LocalDate.of(1965, 7, 19), nomsNumber = "A12345"))
 
-      assertThat(matches).isEqualTo(expectResult)
-      searchMockServer.verify(postRequestedFor(urlEqualTo("/match"))
-          .withRequestBody(matchingJsonPath("surname", equalTo("Smith")))
-          .withRequestBody(matchingJsonPath("firstName", equalTo("John")))
-          .withRequestBody(matchingJsonPath("nomsNumber", equalTo("A12345")))
-          .withRequestBody(matchingJsonPath("dateOfBirth", equalTo("1965-07-19")))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")))
-    }
-
-
+    assertThat(matches).isEqualTo(expectResult)
+    searchMockServer.verify(
+      postRequestedFor(urlEqualTo("/match"))
+        .withRequestBody(matchingJsonPath("surname", equalTo("Smith")))
+        .withRequestBody(matchingJsonPath("firstName", equalTo("John")))
+        .withRequestBody(matchingJsonPath("nomsNumber", equalTo("A12345")))
+        .withRequestBody(matchingJsonPath("dateOfBirth", equalTo("1965-07-19")))
+        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+    )
+  }
 }

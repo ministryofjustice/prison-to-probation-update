@@ -10,10 +10,10 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 
 @Service
 class PrisonMovementService(
-    private val offenderService: OffenderService,
-    private val communityService: CommunityService,
-    private val telemetryClient: TelemetryClient,
-    @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  private val offenderService: OffenderService,
+  private val communityService: CommunityService,
+  private val telemetryClient: TelemetryClient,
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -27,12 +27,12 @@ class PrisonMovementService(
     return TryLater(message.bookingId)
   }
 
-
   fun processMovementAndUpdateProbation(prisonerMovementMessage: ExternalPrisonerMovementMessage): MessageResult {
     val (bookingId, movementSeq) = prisonerMovementMessage
     val trackingAttributes = mapOf(
-        "bookingId" to bookingId.toString(),
-        "movementSeq" to movementSeq.toString())
+      "bookingId" to bookingId.toString(),
+      "movementSeq" to movementSeq.toString()
+    )
 
     log.info("External movement for booking $bookingId with sequence $movementSeq")
     telemetryClient.trackEvent("P2PExternalMovement", trackingAttributes, null)
@@ -56,66 +56,78 @@ class PrisonMovementService(
     val updateTrackingAttributes = updateTrackingAttributesFor(movementTrackingAttributes, prisoner)
 
     return communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(toAgency))?.let {
-      TelemetryEvent("P2PTransferProbationUpdated", updateTrackingAttributes + ("toAgencyDescription" to (it.institution?.description
-          ?: "Not known")))
+      TelemetryEvent(
+        "P2PTransferProbationUpdated",
+        updateTrackingAttributes + (
+          "toAgencyDescription" to (
+            it.institution?.description
+              ?: "Not known"
+            )
+          )
+      )
     } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateTrackingAttributes)
   }
 
   private fun toAgencyForPrisonTransfer(movement: Movement, trackingAttributes: Map<String, String>): Result<String, TelemetryEvent> =
-      Success(validToAgencyForPrisonTransfer(movement)
-          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason)))  })
+    Success(
+      validToAgencyForPrisonTransfer(movement)
+        .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) }
+    )
 
   private fun validToAgencyForPrisonTransfer(movement: Movement): Result<String, String> =
-      movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
-          ?.let {
-            if (isMovementToInterestedPrison(it)) {
-              Success(it)
-            } else {
-              Ignore("Not an interested prison")
-            }
-          }
-          ?: Ignore("Not a transfer")
-
+    movement.toAgency?.takeIf { isMovementTransferIntoPrison(movement) }
+      ?.let {
+        if (isMovementToInterestedPrison(it)) {
+          Success(it)
+        } else {
+          Ignore("Not an interested prison")
+        }
+      }
+      ?: Ignore("Not a transfer")
 
   private fun movementOf(bookingId: Long, movementSeq: Long, trackingAttributes: Map<String, String>): Result<Movement, TelemetryEvent> =
-      Success(validMovementOf(bookingId, movementSeq)
-          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) })
+    Success(
+      validMovementOf(bookingId, movementSeq)
+        .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) }
+    )
 
   private fun validMovementOf(bookingId: Long, movementSeq: Long): Result<Movement, String> {
     val movement = offenderService.getMovement(bookingId, movementSeq)
 
     return movement?.let { Success(movement) }
-        ?: Ignore("Movement not found")
+      ?: Ignore("Movement not found")
   }
 
   private fun activeBooking(bookingId: Long, trackingAttributes: Map<String, String>): Result<Booking, TelemetryEvent> =
-      Success(validActiveBooking(bookingId)
-          .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) })
+    Success(
+      validActiveBooking(bookingId)
+        .onIgnore { return Ignore(TelemetryEvent("P2PTransferIgnored", trackingAttributes + ("reason" to it.reason))) }
+    )
 
   private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
-      offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
-          ?: Ignore("Not an active booking")
+    offenderService.getBooking(bookingId).takeIf { it.activeFlag }?.let { Success(it) }
+      ?: Ignore("Not an active booking")
 
   private fun isMovementToInterestedPrison(toAgency: String?) =
-      allowAnyPrison() || allowedPrisons.contains(toAgency)
+    allowAnyPrison() || allowedPrisons.contains(toAgency)
 
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
-
 }
 
 private fun isMovementTransferIntoPrison(movement: Movement) =
-    movement.movementType == "ADM"
+  movement.movementType == "ADM"
 
 private fun updateTrackingAttributesFor(movementAttributes: Map<String, String>, prisoner: Prisoner) =
-    movementAttributes + mapOf(
-        "offenderNo" to prisoner.offenderNo,
-        "latestLocation" to prisoner.latestLocation,
-        "convictedStatus" to prisoner.convictedStatus
-    )
+  movementAttributes + mapOf(
+    "offenderNo" to prisoner.offenderNo,
+    "latestLocation" to prisoner.latestLocation,
+    "convictedStatus" to prisoner.convictedStatus
+  )
 
 private fun movementTrackingAttributesFor(bookingId: Long, movement: Movement) =
-    mapOf("bookingId" to bookingId.toString(),
-        "movementType" to movement.movementType,
-        "fromAgency" to (movement.fromAgency ?: "not present"),
-        "toAgency" to (movement.toAgency ?: "not present"))
-
+  mapOf(
+    "bookingId" to bookingId.toString(),
+    "movementType" to movement.movementType,
+    "fromAgency" to (movement.fromAgency ?: "not present"),
+    "toAgency" to (movement.toAgency ?: "not present")
+  )

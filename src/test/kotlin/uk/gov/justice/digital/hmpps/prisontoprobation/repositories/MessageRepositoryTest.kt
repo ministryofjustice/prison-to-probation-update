@@ -13,7 +13,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 class MessageRepositoryTest {
@@ -50,42 +49,40 @@ class MessageRepositoryTest {
 
     assertThat(repository.findAll()).hasSize(4)
     assertThat(repository.findByEventTypeAndRetryCount("IMPRISONMENT_STATUS-CHANGED", 1))
-        .hasSize(2)
-        .extracting<Long>(Message::bookingId).containsExactly(99L, 99L)
+      .hasSize(2)
+      .extracting<Long>(Message::bookingId).containsExactly(99L, 99L)
     assertThat(repository.findByEventTypeAndRetryCount("EXTERNAL_MOVEMENT_RECORD-INSERTED", 1))
-        .hasSize(0)
+      .hasSize(0)
     assertThat(repository.findByEventTypeAndRetryCount("IMPRISONMENT_STATUS-CHANGED", 2))
-        .hasSize(1).extracting<Long>(Message::bookingId)
-        .containsExactly(100L)
+      .hasSize(1).extracting<Long>(Message::bookingId)
+      .containsExactly(100L)
     assertThat(repository.findByEventTypeAndRetryCount("EXTERNAL_MOVEMENT_RECORD-INSERTED", 3))
-        .hasSize(1).extracting<Long>(Message::bookingId)
-        .containsExactly(100L)
+      .hasSize(1).extracting<Long>(Message::bookingId)
+      .containsExactly(100L)
 
     assertThat(repository.findByBookingIdAndEventType(99L, "IMPRISONMENT_STATUS-CHANGED"))
-        .hasSize(2)
-        .extracting<Long>(Message::bookingId).containsExactly(99L, 99L)
+      .hasSize(2)
+      .extracting<Long>(Message::bookingId).containsExactly(99L, 99L)
     assertThat(repository.findByBookingIdAndEventType(99L, "EXTERNAL_MOVEMENT_RECORD-INSERTED"))
-        .hasSize(0)
+      .hasSize(0)
     assertThat(repository.findByBookingIdAndEventType(100L, "IMPRISONMENT_STATUS-CHANGED"))
-        .hasSize(1)
-        .extracting<Long>(Message::bookingId).containsExactly(100L)
+      .hasSize(1)
+      .extracting<Long>(Message::bookingId).containsExactly(100L)
     assertThat(repository.findByBookingIdAndEventType(100L, "EXTERNAL_MOVEMENT_RECORD-INSERTED"))
-        .hasSize(1)
-        .extracting<Long>(Message::bookingId).containsExactly(100L)
-
+      .hasSize(1)
+      .extracting<Long>(Message::bookingId).containsExactly(100L)
 
     assertThat(repository.findByRetryCountBetween(1, 2))
-        .hasSize(3)
-        .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L)
+      .hasSize(3)
+      .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L)
 
     assertThat(repository.findByRetryCountBetween(1, 3))
-        .hasSize(4)
-        .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L, 100L)
+      .hasSize(4)
+      .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L, 100L)
 
     assertThat(repository.findByRetryCountBetween(3, Int.MAX_VALUE))
-        .hasSize(1)
-        .extracting<Long>(Message::bookingId).containsExactly(100L)
-
+      .hasSize(1)
+      .extracting<Long>(Message::bookingId).containsExactly(100L)
   }
 
   @Test
@@ -170,5 +167,4 @@ class MessageRepositoryTest {
       assertThat(messages).hasSize(3)
     }
   }
-
 }

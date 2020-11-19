@@ -20,12 +20,13 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 
-
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
-@TestPropertySource(properties = [
-  "prisontoprobation.hold-back.duration=10m"
-])
+@TestPropertySource(
+  properties = [
+    "prisontoprobation.hold-back.duration=10m"
+  ]
+)
 internal class MessageAggregatorTest {
   @Autowired
   private lateinit var repository: MessageRepository
@@ -39,13 +40,11 @@ internal class MessageAggregatorTest {
   @MockBean
   private lateinit var messageProcessor: MessageProcessor
 
-
   @BeforeEach
   fun setup() {
     repository.deleteAll()
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
   }
-
 
   @Test
   fun `will do nothing when no messages need processing`() {
@@ -173,7 +172,6 @@ internal class MessageAggregatorTest {
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage1))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
 
-
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(1)).processMessage(eq("SENTENCE_DATES-CHANGED"), any())
@@ -245,8 +243,8 @@ internal class MessageAggregatorTest {
   @Test
   fun `some messages will be retried if some fail with unexpected exceptions`() {
     whenever(messageProcessor.processMessage(any(), any()))
-        .thenThrow(RuntimeException("oops"))
-        .thenReturn(Done())
+      .thenThrow(RuntimeException("oops"))
+      .thenReturn(Done())
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
@@ -275,11 +273,11 @@ internal class MessageAggregatorTest {
   }
 
   private fun sentenceDatesChangedMessage(bookingId: Long, eventDateTime: String = "2020-02-12T15:14:24.125533"): String =
-      "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"$eventDateTime\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-  
-  private fun externalMovementInsertedMessage(bookingId: Long, movementSeq: Int = 1): String = 
-      "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":$bookingId,\"movementSeq\":$movementSeq,\"nomisEventType\":\"M1_RESULT\"}"
+    "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"$eventDateTime\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
 
-  private fun imprisonmentStatusChangedMessage(bookingId: Long) : String =
-      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+  private fun externalMovementInsertedMessage(bookingId: Long, movementSeq: Int = 1): String =
+    "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":$bookingId,\"movementSeq\":$movementSeq,\"nomisEventType\":\"M1_RESULT\"}"
+
+  private fun imprisonmentStatusChangedMessage(bookingId: Long): String =
+    "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
 }

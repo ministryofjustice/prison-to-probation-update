@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PrisonMovementServiceTest {
@@ -110,10 +109,14 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PExternalMovement"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["movementSeq"]).isEqualTo("1")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PExternalMovement"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["movementSeq"]).isEqualTo("1")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -124,7 +127,6 @@ class PrisonMovementServiceTest {
 
       verify(offenderService).getBooking(12345L)
     }
-
 
     @Test
     fun `will retrieve the prisoner when a prison admission`() {
@@ -142,13 +144,17 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["movementType"]).isEqualTo("TRN")
-        assertThat(it["fromAgency"]).isEqualTo("LEI")
-        assertThat(it["toAgency"]).isEqualTo("MDI")
-        assertThat(it["reason"]).isEqualTo("Not a transfer")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferIgnored"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["movementType"]).isEqualTo("TRN")
+          assertThat(it["fromAgency"]).isEqualTo("LEI")
+          assertThat(it["toAgency"]).isEqualTo("MDI")
+          assertThat(it["reason"]).isEqualTo("Not a transfer")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -157,13 +163,17 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["movementType"]).isEqualTo("TAP")
-        assertThat(it["fromAgency"]).isEqualTo("not present")
-        assertThat(it["toAgency"]).isEqualTo("not present")
-        assertThat(it["reason"]).isEqualTo("Not a transfer")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferIgnored"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["movementType"]).isEqualTo("TAP")
+          assertThat(it["fromAgency"]).isEqualTo("not present")
+          assertThat(it["toAgency"]).isEqualTo("not present")
+          assertThat(it["reason"]).isEqualTo("Not a transfer")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -172,13 +182,17 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["movementType"]).isEqualTo("ADM")
-        assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
-        assertThat(it["toAgency"]).isEqualTo("MDI")
-        assertThat(it["reason"]).isEqualTo("Not an active booking")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferIgnored"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["movementType"]).isEqualTo("ADM")
+          assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+          assertThat(it["toAgency"]).isEqualTo("MDI")
+          assertThat(it["reason"]).isEqualTo("Not an active booking")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -190,13 +204,17 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferIgnored"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["movementType"]).isEqualTo("ADM")
-        assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
-        assertThat(it["toAgency"]).isEqualTo("MDI")
-        assertThat(it["reason"]).isEqualTo("Not an interested prison")
-      }, isNull())
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferIgnored"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["movementType"]).isEqualTo("ADM")
+          assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+          assertThat(it["toAgency"]).isEqualTo("MDI")
+          assertThat(it["reason"]).isEqualTo("Not an interested prison")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -234,19 +252,21 @@ class PrisonMovementServiceTest {
       whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
       whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
 
-
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferProbationUpdated"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["offenderNo"]).isEqualTo("AB123D")
-        assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
-        assertThat(it["convictedStatus"]).isEqualTo("Convicted")
-        assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
-        assertThat(it["toAgency"]).isEqualTo("MDI")
-        assertThat(it["toAgencyDescription"]).isEqualTo("Moorland")
-      }, isNull())
-
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferProbationUpdated"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["offenderNo"]).isEqualTo("AB123D")
+          assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
+          assertThat(it["convictedStatus"]).isEqualTo("Convicted")
+          assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+          assertThat(it["toAgency"]).isEqualTo("MDI")
+          assertThat(it["toAgencyDescription"]).isEqualTo("Moorland")
+        },
+        isNull()
+      )
     }
 
     @Test
@@ -254,63 +274,65 @@ class PrisonMovementServiceTest {
       whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking("38353A"))
       whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
 
-
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(telemetryClient).trackEvent(eq("P2PTransferProbationRecordNotFound"), check {
-        assertThat(it["bookingId"]).isEqualTo("12345")
-        assertThat(it["offenderNo"]).isEqualTo("AB123D")
-        assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
-        assertThat(it["convictedStatus"]).isEqualTo("Convicted")
-        assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
-        assertThat(it["toAgency"]).isEqualTo("MDI")
-      }, isNull())
-
+      verify(telemetryClient).trackEvent(
+        eq("P2PTransferProbationRecordNotFound"),
+        check {
+          assertThat(it["bookingId"]).isEqualTo("12345")
+          assertThat(it["offenderNo"]).isEqualTo("AB123D")
+          assertThat(it["latestLocation"]).isEqualTo("Moorland (HMP & YOI)")
+          assertThat(it["convictedStatus"]).isEqualTo("Convicted")
+          assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
+          assertThat(it["toAgency"]).isEqualTo("MDI")
+        },
+        isNull()
+      )
     }
   }
 
-
   private fun createPrisoner() = Prisoner(
-      offenderNo = "AB123D",
-      pncNumber = "",
-      croNumber = "",
-      firstName = "Bobby",
-      middleNames = "David",
-      lastName = "Jones",
-      dateOfBirth = "1970-01-01",
-      currentlyInPrison = "Y",
-      latestBookingId = 1L,
-      latestLocationId = "MDI",
-      latestLocation = "Moorland (HMP & YOI)",
-      convictedStatus = "Convicted",
-      imprisonmentStatus = "",
-      receptionDate = "")
+    offenderNo = "AB123D",
+    pncNumber = "",
+    croNumber = "",
+    firstName = "Bobby",
+    middleNames = "David",
+    lastName = "Jones",
+    dateOfBirth = "1970-01-01",
+    currentlyInPrison = "Y",
+    latestBookingId = 1L,
+    latestLocationId = "MDI",
+    latestLocation = "Moorland (HMP & YOI)",
+    convictedStatus = "Convicted",
+    imprisonmentStatus = "",
+    receptionDate = ""
+  )
 
   private fun createPrisonAdmissionMovement(offenderNo: String = "AB123D", toAgency: String = "MDI") = Movement(
-      offenderNo = offenderNo,
-      createDateTime = LocalDateTime.now(),
-      fromAgency = "ABRYCT",
-      toAgency = toAgency,
-      movementType = "ADM",
-      directionCode = "OUT"
+    offenderNo = offenderNo,
+    createDateTime = LocalDateTime.now(),
+    fromAgency = "ABRYCT",
+    toAgency = toAgency,
+    movementType = "ADM",
+    directionCode = "OUT"
   )
 
   private fun createTransferMovement() = Movement(
-      offenderNo = "AB123D",
-      createDateTime = LocalDateTime.now(),
-      fromAgency = "LEI",
-      toAgency = "MDI",
-      movementType = "TRN",
-      directionCode = "OUT"
+    offenderNo = "AB123D",
+    createDateTime = LocalDateTime.now(),
+    fromAgency = "LEI",
+    toAgency = "MDI",
+    movementType = "TRN",
+    directionCode = "OUT"
   )
 
   private fun createTemporaryAbsenceMovement() = Movement(
-      offenderNo = "AB123D",
-      createDateTime = LocalDateTime.now(),
-      fromAgency = null,
-      toAgency = null,
-      movementType = "TAP",
-      directionCode = "OUT"
+    offenderNo = "AB123D",
+    createDateTime = LocalDateTime.now(),
+    fromAgency = null,
+    toAgency = null,
+    movementType = "TAP",
+    directionCode = "OUT"
   )
 
   private fun createCurrentBooking(bookingNo: String = "38353A") = createBooking(bookingNo = bookingNo)
@@ -318,8 +340,7 @@ class PrisonMovementServiceTest {
   private fun createInactiveBooking() = createBooking(activeFlag = false)
 
   private fun createUpdatedCustody(description: String = "Moorland") = Custody(
-      institution = Institution(description),
-      bookingNumber = "38353A"
+    institution = Institution(description),
+    bookingNumber = "38353A"
   )
 }
-

@@ -83,5 +83,4 @@ abstract class IntegrationTest {
   }
 
   internal fun Any.asJson() = objectMapper.writeValueAsBytes(this)
-
 }

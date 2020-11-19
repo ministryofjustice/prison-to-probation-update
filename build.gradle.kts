@@ -15,7 +15,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  
+
   implementation("net.javacrumbs.shedlock:shedlock-spring:4.15.1")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.15.1")
 
@@ -72,6 +72,6 @@ if (System.getProperty("test.profile") == "smoke") {
 
 testlogger {
   if (System.getProperty("test.profile") == "smoke") {
-      showStandardStreams = true
+    showStandardStreams = true
   }
 }

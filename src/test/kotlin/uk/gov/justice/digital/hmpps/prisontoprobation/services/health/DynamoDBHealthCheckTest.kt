@@ -17,9 +17,11 @@ internal class DynamoDBHealthCheckTest {
   @Test
   internal fun `will report up when can retrieve table details`() {
     whenever(dynamoDB.describeTable("my-table"))
-        .thenReturn(DescribeTableResult().apply {
+      .thenReturn(
+        DescribeTableResult().apply {
           this.table = TableDescription().withItemCount(99).withTableStatus(ACTIVE).withTableName("my-table")
-        })
+        }
+      )
 
     val result = healthCheck.health()
 
@@ -30,7 +32,7 @@ internal class DynamoDBHealthCheckTest {
   @Test
   internal fun `will report down when can't retrieve table details`() {
     whenever(dynamoDB.describeTable("my-table"))
-        .thenThrow(RuntimeException("cannot connect"))
+      .thenThrow(RuntimeException("cannot connect"))
 
     val result = healthCheck.health()
 

@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
-
-
 data class TelemetryEvent(val name: String, val attributes: Map<String, String?> = mapOf())
 
 sealed class Result<out T, out E> {
