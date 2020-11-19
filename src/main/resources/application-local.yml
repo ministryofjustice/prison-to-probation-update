@@ -4,3 +4,11 @@ spring:
       resourceserver:
         jwt:
           public-key-location: classpath:local-public-key.pub
+
+prisontoprobation:
+  client:
+    client-id: prisontoprobation-api-client
+    client-secret: clientsecret
+    access-token-uri: http://localhost:8090/auth/oauth/token
+  message-processor:
+    enabled: false

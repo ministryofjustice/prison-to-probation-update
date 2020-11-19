@@ -8,10 +8,9 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageRetryService
 
-
 @Service
-@ConditionalOnProperty(name = ["prisontoprobation.message-processor.enabled"], havingValue = "true"  )
-class RetryScheduler (val messgaeRetryService: MessageRetryService){
+@ConditionalOnProperty(name = ["prisontoprobation.message-processor.enabled"], havingValue = "true")
+class RetryScheduler(val messgaeRetryService: MessageRetryService) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }

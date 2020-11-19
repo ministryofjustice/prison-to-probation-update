@@ -12,16 +12,16 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 
-
 @Configuration
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "PT20M")class ScheduleConfiguration {
   @Bean
   fun tableLockProvider(
-                        @Qualifier("scheduleDynamoDB")
-                        scheduleDynamoDB: AmazonDynamoDB,
-                        @Value("\${dynamodb.schedule.tableName}")
-                        tableName: String): Table {
+    @Qualifier("scheduleDynamoDB")
+    scheduleDynamoDB: AmazonDynamoDB,
+    @Value("\${dynamodb.schedule.tableName}")
+    tableName: String
+  ): Table {
     return DynamoDB(scheduleDynamoDB).getTable(tableName)
   }
 
@@ -29,5 +29,4 @@ import org.springframework.scheduling.annotation.EnableScheduling
   fun lockProvider(table: Table): LockProvider {
     return DynamoDBLockProvider(table)
   }
-
 }

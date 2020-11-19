@@ -21,10 +21,8 @@ internal class MessageRetryServiceIntTest {
   @Autowired
   private lateinit var repository: MessageRepository
 
-
   @MockBean
   private lateinit var messageProcessor: MessageProcessor
-
 
   @BeforeEach
   fun setUp() {
@@ -37,7 +35,7 @@ internal class MessageRetryServiceIntTest {
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
 
-    //continually call this as if on a schedule
+    // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }
@@ -49,11 +47,11 @@ internal class MessageRetryServiceIntTest {
   internal fun `will retry twice on success on second attempt`() {
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     whenever(messageProcessor.processMessage(any(), any()))
-        .thenReturn(TryLater(1200835))
-        .thenReturn(Done())
+      .thenReturn(TryLater(1200835))
+      .thenReturn(Done())
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
 
-    //continually call this as if on a schedule
+    // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }
@@ -67,7 +65,7 @@ internal class MessageRetryServiceIntTest {
     whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
     service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
 
-    //continually call this as if on a schedule
+    // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }

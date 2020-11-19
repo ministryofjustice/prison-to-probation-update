@@ -10,11 +10,13 @@ import org.springframework.test.annotation.DirtiesContext
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import javax.inject.Inject
 
-@SpringBootTest(properties = [
-  "prisontoprobation.message-processor.enabled=true",
-  "prisontoprobation.message-processor.delay=50",
-  "prisontoprobation.hold-back.duration=0m"
-])
+@SpringBootTest(
+  properties = [
+    "prisontoprobation.message-processor.enabled=true",
+    "prisontoprobation.message-processor.delay=50",
+    "prisontoprobation.hold-back.duration=0m"
+  ]
+)
 @DirtiesContext
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
@@ -61,7 +63,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
-
   }
 
   @Test
@@ -108,7 +109,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=true") } matches { it == 2 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
   }
-
 }
 
 private fun String.readResourceAsText(): String {

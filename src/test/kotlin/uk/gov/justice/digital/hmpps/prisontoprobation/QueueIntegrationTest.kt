@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
@@ -8,21 +11,21 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.Integratio
 @ActiveProfiles(profiles = ["test", "test-queue"])
 class QueueIntegrationTest : IntegrationTest() {
 
-    @Autowired
-    lateinit var queueUrl: String
+  @Autowired
+  lateinit var queueUrl: String
 
-    fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
-        val queueAttributes = awsSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
-        return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
-    }
+  fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
+    val queueAttributes = awsSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
+    return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
+  }
 
-    fun eliteRequestCountFor(url: String) = elite2MockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
+  fun eliteRequestCountFor(url: String) = elite2MockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
-    fun communityPutCountFor(url: String)= communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
+  fun communityPutCountFor(url: String) = communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
 
-    fun communityPostCountFor(url: String)= communityMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
+  fun communityPostCountFor(url: String) = communityMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
 
-    fun communityGetCountFor(url: String)= communityMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
+  fun communityGetCountFor(url: String) = communityMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
-    fun offenderSearchPostCountFor(url: String)= searchMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
+  fun offenderSearchPostCountFor(url: String) = searchMockServer.findAll(postRequestedFor(urlEqualTo(url))).count()
 }

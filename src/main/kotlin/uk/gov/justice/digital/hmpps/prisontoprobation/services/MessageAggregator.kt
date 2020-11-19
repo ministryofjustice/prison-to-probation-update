@@ -9,13 +9,12 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageReposi
 import java.time.Duration
 import java.time.LocalDateTime
 
-
 @Service
 class MessageAggregator(
-    private val messageRepository: MessageRepository,
-    private val messageProcessor: MessageProcessor,
-    @Value("\${prisontoprobation.hold-back.duration}")
-    private val holdBackDuration: Duration
+  private val messageRepository: MessageRepository,
+  private val messageProcessor: MessageProcessor,
+  @Value("\${prisontoprobation.hold-back.duration}")
+  private val holdBackDuration: Duration
 ) {
 
   companion object {
@@ -60,13 +59,12 @@ class MessageAggregator(
 
     // for each booking only process one (the latest ) of each time and order by type
     val groupedDeduplicatedAndOrdered = groupedByBooking
-        .map { (bookingId, messages) -> bookingId to messages.filterDuplicatesAndOrder() }
+      .map { (bookingId, messages) -> bookingId to messages.filterDuplicatesAndOrder() }
     val allMessagesAggregatedInOrder = groupedDeduplicatedAndOrdered.flatMap { it.second }
 
     // return list of messages to process along with duplicates that can be thrown away
     return Pair(allMessagesAggregatedInOrder, allMessagesForAllBookings - allMessagesAggregatedInOrder)
   }
-
 }
 
 val Message.toPriority: Int
@@ -83,4 +81,3 @@ val Message.toPriority: Int
 
 private fun List<Message>.filterDuplicatesAndOrder() = this.sortedWith(compareByPriorityDateDescending()).distinctBy { it.eventType }
 private fun compareByPriorityDateDescending() = compareBy<Message> { it.toPriority }.thenByDescending { it.createdDate }
-

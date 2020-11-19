@@ -7,13 +7,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
-
 @Service
 class MessageProcessor(
-    private val prisonMovementService: PrisonMovementService,
-    private val bookingChangeService: BookingChangeService,
-    private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
-    private val sentenceDatesChangeService: SentenceDatesChangeService
+  private val prisonMovementService: PrisonMovementService,
+  private val bookingChangeService: BookingChangeService,
+  private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
+  private val sentenceDatesChangeService: SentenceDatesChangeService
 
 ) {
   companion object {

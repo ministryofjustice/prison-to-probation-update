@@ -9,13 +9,12 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageReposi
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-
 @Service
 class MessageRetryService(
-    private val messageRepository: MessageRepository,
-    private val messageProcessor: MessageProcessor,
-    @Value("\${dynamodb.message.expiryHours}")
-    private val expiryHours: Long
+  private val messageRepository: MessageRepository,
+  private val messageProcessor: MessageProcessor,
+  @Value("\${dynamodb.message.expiryHours}")
+  private val expiryHours: Long
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -23,23 +22,27 @@ class MessageRetryService(
 
   fun scheduleForProcessing(bookingId: Long, eventType: String, message: String) {
     log.info("Registering an initial processing for booking $bookingId for event $eventType")
-    messageRepository.save(Message(
+    messageRepository.save(
+      Message(
         bookingId = bookingId,
         eventType = eventType,
         message = message,
         retryCount = 0,
         deleteBy = LocalDateTime.now().plusHours(expiryHours).toEpochSecond(ZoneOffset.UTC)
-    ))
+      )
+    )
   }
 
   fun retryLater(bookingId: Long, eventType: String, message: String) {
     log.info("Registering a retry for booking $bookingId for event $eventType")
-    messageRepository.save(Message(
+    messageRepository.save(
+      Message(
         bookingId = bookingId,
         eventType = eventType,
         message = message,
         deleteBy = LocalDateTime.now().plusHours(expiryHours).toEpochSecond(ZoneOffset.UTC)
-    ))
+      )
+    )
   }
 
   fun retryShortTerm() {
