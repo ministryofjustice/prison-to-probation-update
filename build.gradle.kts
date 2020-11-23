@@ -33,6 +33,9 @@ dependencies {
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
+  implementation("io.micrometer:micrometer-registry-prometheus")
+  implementation("io.micrometer:micrometer-core")
+
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.21.0")
