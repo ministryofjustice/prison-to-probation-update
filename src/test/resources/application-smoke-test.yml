@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    include: stdout
   security:
     oauth2:
       client:

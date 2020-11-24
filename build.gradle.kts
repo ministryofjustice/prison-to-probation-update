@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "1.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.0.0"
   kotlin("plugin.spring") version "1.4.10"
 }
 
@@ -28,7 +28,7 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.3")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.904"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.907"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")

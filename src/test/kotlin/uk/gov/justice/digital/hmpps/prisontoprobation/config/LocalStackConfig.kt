@@ -14,6 +14,7 @@ import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.utility.DockerImageName
 
 @Configuration
 @ConditionalOnProperty(name = ["sqs.provider"], havingValue = "embedded-localstack")
@@ -26,7 +27,7 @@ class LocalStackConfig {
   fun localStackContainer(): LocalStackContainer {
     log.info("Starting localstack...")
     val logConsumer = Slf4jLogConsumer(log).withPrefix("localstack")
-    val localStackContainer: LocalStackContainer = LocalStackContainer("0.11.2")
+    val localStackContainer: LocalStackContainer = LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("0.11.2"))
       .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.SNS, LocalStackContainer.Service.DYNAMODB)
       .withClasspathResourceMapping("/localstack/setup-sns.sh", "/docker-entrypoint-initaws.d/setup-sns.sh", BindMode.READ_WRITE)
       .withEnv("HOSTNAME_EXTERNAL", "localhost")
