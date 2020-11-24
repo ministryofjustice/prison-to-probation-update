@@ -182,8 +182,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).sentenceDateChangeReceived()
-      verify(metricService).sentenceDateChangeSucceeded()
+      verify(metricService).retryEventSuccess("SENTENCE_DATES-CHANGED")
     }
 
     @Test
@@ -193,8 +192,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).sentenceDateChangeReceived()
-      verify(metricService).sentenceDateChangeSucceeded()
+      verify(metricService).retryEventSuccess("CONFIRMED_RELEASE_DATE-CHANGED")
     }
 
     @Test
@@ -214,8 +212,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).sentenceDateChangeReceived()
-      verify(metricService).sentenceDateChangeFailed()
+      verify(metricService).retryEventFail("SENTENCE_DATES-CHANGED")
     }
 
     private fun mockLongRetryMessage(deleteBy: LocalDateTime, eventType: String = "SENTENCE_DATES-CHANGED") {
@@ -241,8 +238,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).statusChangeReceived()
-      verify(metricService).statusChangeSucceeded()
+      verify(metricService).retryEventSuccess("IMPRISONMENT_STATUS-CHANGED")
     }
 
     @Test
@@ -262,8 +258,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).statusChangeReceived()
-      verify(metricService).statusChangeFailed()
+      verify(metricService).retryEventFail("IMPRISONMENT_STATUS-CHANGED")
     }
 
     private fun mockLongRetryMessage(deleteBy: LocalDateTime) {

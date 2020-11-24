@@ -82,32 +82,12 @@ class MessageRetryService(
 
   private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
     if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
-      when (eventType) {
-        "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-          metricService.sentenceDateChangeReceived()
-          metricService.sentenceDateChangeFailed()
-        }
-        "IMPRISONMENT_STATUS-CHANGED" -> {
-          metricService.statusChangeReceived()
-          metricService.statusChangeFailed()
-        }
-        else -> log.error("Not counting metrics for failed message $eventType - not expected to retry")
-      }
+      metricService.retryEventFail(eventType)
     }
   }
 
   private fun countSuccess(eventType: String) {
-    when (eventType) {
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-        metricService.sentenceDateChangeReceived()
-        metricService.sentenceDateChangeSucceeded()
-      }
-      "IMPRISONMENT_STATUS-CHANGED" -> {
-        metricService.statusChangeReceived()
-        metricService.statusChangeSucceeded()
-      }
-      else -> log.error("Not counting metrics for successful message $eventType - not expected to retry")
-    }
+    metricService.retryEventSuccess(eventType)
   }
 
   private fun processMessage(eventType: String, message: String, bookingId: Long): MessageResult {
