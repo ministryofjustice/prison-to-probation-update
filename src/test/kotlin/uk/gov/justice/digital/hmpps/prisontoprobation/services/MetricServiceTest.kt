@@ -83,6 +83,7 @@ class MetricServiceTest {
       verify(totalCounter).increment()
       verify(failCounter).increment()
       verifyZeroInteractions(retryDistribution)
+      verifyZeroInteractions(successTimer)
     }
   }
 
