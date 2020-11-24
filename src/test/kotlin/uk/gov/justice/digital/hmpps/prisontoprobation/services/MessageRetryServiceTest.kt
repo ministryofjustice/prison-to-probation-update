@@ -5,9 +5,11 @@ import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
@@ -18,7 +20,8 @@ import java.time.ZoneOffset
 internal class MessageRetryServiceTest {
   private val messageProcessor: MessageProcessor = mock()
   private val messageRepository: MessageRepository = mock()
-  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, 192)
+  private val metricService: MetricService = mock()
+  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, metricService, 192)
 
   @BeforeEach
   fun setUp() {
@@ -167,5 +170,112 @@ internal class MessageRetryServiceTest {
     service.retryShortTerm()
 
     verify(messageRepository).delete(message)
+  }
+
+  @Nested
+  inner class SentenceDateMetrics {
+
+    @Test
+    fun `will count successful processing of message`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
+
+      service.retryLongTerm()
+
+      verify(metricService).sentenceDateChangeReceived()
+      verify(metricService).sentenceDateChangeSucceeded()
+    }
+
+    @Test
+    fun `will count successful processing of confirmed release date message`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6), eventType = "CONFIRMED_RELEASE_DATE-CHANGED")
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
+
+      service.retryLongTerm()
+
+      verify(metricService).sentenceDateChangeReceived()
+      verify(metricService).sentenceDateChangeSucceeded()
+    }
+
+    @Test
+    fun `will ignore message if trying later`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
+
+      service.retryLongTerm()
+
+      verifyZeroInteractions(metricService)
+    }
+
+    @Test
+    fun `will count failed message if within 24 hours of expiry`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
+
+      service.retryLongTerm()
+
+      verify(metricService).sentenceDateChangeReceived()
+      verify(metricService).sentenceDateChangeFailed()
+    }
+
+    private fun mockLongRetryMessage(deleteBy: LocalDateTime, eventType: String = "SENTENCE_DATES-CHANGED") {
+      val message = Message(
+        bookingId = 99L,
+        message = "{}",
+        id = "123",
+        retryCount = 11,
+        deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
+        eventType = eventType
+      )
+      whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    }
+  }
+
+  @Nested
+  inner class ImprisonmentStatusMetrics {
+
+    @Test
+    fun `will count successful processing of message`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
+
+      service.retryLongTerm()
+
+      verify(metricService).statusChangeReceived()
+      verify(metricService).statusChangeSucceeded()
+    }
+
+    @Test
+    fun `will ignore message if trying later`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
+
+      service.retryLongTerm()
+
+      verifyZeroInteractions(metricService)
+    }
+
+    @Test
+    fun `will count failed message if within 24 hours of expiry`() {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23))
+      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
+
+      service.retryLongTerm()
+
+      verify(metricService).statusChangeReceived()
+      verify(metricService).statusChangeFailed()
+    }
+
+    private fun mockLongRetryMessage(deleteBy: LocalDateTime) {
+      val message = Message(
+        bookingId = 99L,
+        message = "{}",
+        id = "123",
+        retryCount = 11,
+        deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
+        eventType = "IMPRISONMENT_STATUS-CHANGED"
+      )
+      whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    }
   }
 }

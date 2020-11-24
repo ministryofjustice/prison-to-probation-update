@@ -6,13 +6,16 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 @Service
 class MessageRetryService(
   private val messageRepository: MessageRepository,
   private val messageProcessor: MessageProcessor,
+  private val metricService: MetricService,
   @Value("\${dynamodb.message.expiryHours}")
   private val expiryHours: Long
 ) {
@@ -65,13 +68,45 @@ class MessageRetryService(
         is TryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry(result.retryUntil))
+          countFailIfLastAttempt(it.eventType, Instant.ofEpochSecond(it.deleteBy))
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.delete(it)
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
+          countSuccess(it.eventType)
         }
       }
+    }
+  }
+
+  private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
+    if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
+      when (eventType) {
+        "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
+          metricService.sentenceDateChangeReceived()
+          metricService.sentenceDateChangeFailed()
+        }
+        "IMPRISONMENT_STATUS-CHANGED" -> {
+          metricService.statusChangeReceived()
+          metricService.statusChangeFailed()
+        }
+        else -> log.error("Not counting metrics for failed message $eventType - not expected to retry")
+      }
+    }
+  }
+
+  private fun countSuccess(eventType: String) {
+    when (eventType) {
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
+        metricService.sentenceDateChangeReceived()
+        metricService.sentenceDateChangeSucceeded()
+      }
+      "IMPRISONMENT_STATUS-CHANGED" -> {
+        metricService.statusChangeReceived()
+        metricService.statusChangeSucceeded()
+      }
+      else -> log.error("Not counting metrics for successful message $eventType - not expected to retry")
     }
   }
 

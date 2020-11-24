@@ -17,9 +17,11 @@ class MetricService(meterRegistry: MeterRegistry) {
   private val movementReceivedCounter = registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of movements received", TOTAL_TYPE)
   private val movementsFailedCounter = registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of failed movements", FAIL_TYPE)
   private val movementsSuccessCounter = registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of successful movements", SUCCESS_TYPE)
+
   private val sentenceDatesTotalCounter = registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of sentence date updates received", TOTAL_TYPE)
   private val sentenceDatesFailedCounter = registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of failed sentence date updates", FAIL_TYPE)
   private val sentenceDatesSuccessCounter = registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of successful sentence date updates ", SUCCESS_TYPE)
+
   private val statusChangesTotalCounter = registerCounter(meterRegistry, STATUS_CHANGE_METRIC, "The number of status change updates received", SUCCESS_TYPE)
   private val statusChangesFailedCounter = registerCounter(meterRegistry, STATUS_CHANGE_METRIC, "The number of failed status change updates ", FAIL_TYPE)
   private val statusChangesSuccessCounter = registerCounter(meterRegistry, STATUS_CHANGE_METRIC, "The number of successful status change updates ", SUCCESS_TYPE)
@@ -38,7 +40,7 @@ class MetricService(meterRegistry: MeterRegistry) {
   fun sentenceDateChangeFailed() = sentenceDatesFailedCounter.increment()
   fun sentenceDateChangeSucceeded() = sentenceDatesSuccessCounter.increment()
 
-  fun statusChangeReceived() = sentenceDatesTotalCounter.increment()
-  fun statusChangeFailed() = sentenceDatesFailedCounter.increment()
-  fun statusChangeSucceeded() = sentenceDatesSuccessCounter.increment()
+  fun statusChangeReceived() = statusChangesTotalCounter.increment()
+  fun statusChangeFailed() = statusChangesFailedCounter.increment()
+  fun statusChangeSucceeded() = statusChangesSuccessCounter.increment()
 }
