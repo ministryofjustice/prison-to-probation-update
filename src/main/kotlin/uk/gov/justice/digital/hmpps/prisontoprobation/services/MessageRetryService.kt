@@ -80,6 +80,15 @@ class MessageRetryService(
     }
   }
 
+  private fun processMessage(eventType: String, message: String, bookingId: Long): MessageResult {
+    return try {
+      messageProcessor.processMessage(eventType, message)
+    } catch (e: Exception) {
+      log.error("Exception while processing $eventType for $bookingId", e)
+      TryLater(bookingId)
+    }
+  }
+
   private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
     if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
       metricService.retryEventFail(eventType)
@@ -88,14 +97,5 @@ class MessageRetryService(
 
   private fun countSuccess(eventType: String) {
     metricService.retryEventSuccess(eventType)
-  }
-
-  private fun processMessage(eventType: String, message: String, bookingId: Long): MessageResult {
-    return try {
-      messageProcessor.processMessage(eventType, message)
-    } catch (e: Exception) {
-      log.error("Exception while processing $eventType for $bookingId", e)
-      TryLater(bookingId)
-    }
   }
 }
