@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -82,8 +82,8 @@ class MetricServiceTest {
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
-      verifyZeroInteractions(retryDistribution)
-      verifyZeroInteractions(successTimer)
+      verifyNoMoreInteractions(retryDistribution)
+      verifyNoMoreInteractions(successTimer)
     }
   }
 
@@ -150,8 +150,8 @@ class MetricServiceTest {
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
-      verifyZeroInteractions(retryDistribution)
-      verifyZeroInteractions(successTimer)
+      verifyNoMoreInteractions(retryDistribution)
+      verifyNoMoreInteractions(successTimer)
     }
   }
 }

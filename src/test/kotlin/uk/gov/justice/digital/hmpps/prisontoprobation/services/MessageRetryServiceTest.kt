@@ -6,7 +6,7 @@ import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -177,10 +177,10 @@ internal class MessageRetryServiceTest {
   }
 
   @Nested
-  inner class SentenceDateMetrics {
+  inner class Metrics {
 
     @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED", "IMPRISONMENT_STATUS-CHANGED")
     fun `will count successful processing of message`(eventType: String) {
       mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
@@ -195,18 +195,18 @@ internal class MessageRetryServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED", "IMPRISONMENT_STATUS-CHANGED")
     fun `will ignore message if trying later`(eventType: String) {
       mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
 
       service.retryLongTerm()
 
-      verifyZeroInteractions(metricService)
+      verifyNoMoreInteractions(metricService)
     }
 
     @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED", "IMPRISONMENT_STATUS-CHANGED")
     fun `will count failed message if within 24 hours of expiry`(eventType: String) {
       mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
@@ -225,57 +225,6 @@ internal class MessageRetryServiceTest {
         createdDate = LocalDateTime.now().minusDays(1L),
         deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
         eventType = eventType
-      )
-      whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
-    }
-  }
-
-  @Nested
-  inner class ImprisonmentStatusMetrics {
-
-    @Test
-    fun `will count successful processing of message`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6))
-      whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
-
-      service.retryLongTerm()
-
-      verify(metricService).retryEventSuccess(
-        eq("IMPRISONMENT_STATUS-CHANGED"),
-        check { it >= Duration.ofDays(1L) && it < Duration.ofDays(2L) },
-        eq(11)
-      )
-    }
-
-    @Test
-    fun `will ignore message if trying later`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25))
-      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
-
-      service.retryLongTerm()
-
-      verifyZeroInteractions(metricService)
-    }
-
-    @Test
-    fun `will count failed message if within 24 hours of expiry`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23))
-      whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
-
-      service.retryLongTerm()
-
-      verify(metricService).retryEventFail("IMPRISONMENT_STATUS-CHANGED")
-    }
-
-    private fun mockLongRetryMessage(deleteBy: LocalDateTime) {
-      val message = Message(
-        bookingId = 99L,
-        message = "{}",
-        id = "123",
-        retryCount = 11,
-        createdDate = LocalDateTime.now().minusDays(1L),
-        deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
-        eventType = "IMPRISONMENT_STATUS-CHANGED"
       )
       whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
     }

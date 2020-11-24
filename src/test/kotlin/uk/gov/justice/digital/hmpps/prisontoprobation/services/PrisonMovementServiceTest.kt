@@ -8,7 +8,7 @@ import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -309,7 +309,7 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verifyZeroInteractions(metricService)
+      verifyNoMoreInteractions(metricService)
     }
 
     @Test
