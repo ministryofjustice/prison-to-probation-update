@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -74,7 +75,11 @@ class MessageRetryService(
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.delete(it)
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
-          countSuccess(it.eventType, it.retryCount)
+          countSuccess(
+            it.eventType,
+            Duration.ofSeconds(it.createdDate.until(LocalDateTime.now(), ChronoUnit.SECONDS)),
+            it.retryCount
+          )
         }
       }
     }
@@ -95,7 +100,7 @@ class MessageRetryService(
     }
   }
 
-  private fun countSuccess(eventType: String, retries: Int) {
-    metricService.retryEventSuccess(eventType, retries)
+  private fun countSuccess(eventType: String, duration: Duration, retries: Int) {
+    metricService.retryEventSuccess(eventType, duration, retries)
   }
 }

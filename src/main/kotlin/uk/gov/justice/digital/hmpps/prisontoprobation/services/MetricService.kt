@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 internal const val MOVEMENT_METRIC = "movement"
 internal const val SENTENCE_DATES_METRIC = "sentenceDateChange"
@@ -15,6 +17,7 @@ internal const val TOTAL_TYPE = "total"
 internal const val FAIL_TYPE = "fail"
 internal const val SUCCESS_TYPE = "success"
 internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
+internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeSeconds"
 
 @Component
 class MeterFactory {
@@ -27,6 +30,12 @@ class MeterFactory {
   fun registerDistributionSummary(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
     DistributionSummary.builder(name)
       .baseUnit("retries")
+      .description(description)
+      .tag("eventType", type)
+      .register(meterRegistry)
+
+  fun registerTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
+    Timer.builder(name)
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
@@ -69,6 +78,12 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     "The number of retries before a successful update",
     SUCCESS_AFTER_RETRIES_TYPE
   )
+  private val sentenceDatesSuccessTimer = meterFactory.registerTimer(
+    meterRegistry,
+    SENTENCE_DATES_METRIC,
+    "The time in seconds before a successful update",
+    SUCCESS_AFTER_TIME_TYPE
+  )
 
   private val statusChangesTotalCounter = meterFactory.registerCounter(
     meterRegistry,
@@ -94,6 +109,12 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     "The number of retries before a successful update",
     SUCCESS_AFTER_RETRIES_TYPE
   )
+  private val statusChangeSuccessTimer = meterFactory.registerTimer(
+    meterRegistry,
+    STATUS_CHANGE_METRIC,
+    "The time in seconds before a successful update",
+    SUCCESS_AFTER_TIME_TYPE
+  )
 
   fun retryEventFail(eventType: String) {
     when (eventType) {
@@ -109,17 +130,19 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     }
   }
 
-  fun retryEventSuccess(eventType: String, retries: Int = 0) {
+  fun retryEventSuccess(eventType: String, duration: Duration = Duration.ofSeconds(0), retries: Int = 0) {
     when (eventType) {
       "IMPRISONMENT_STATUS-CHANGED" -> {
         statusChangesTotalCounter.increment()
         statusChangesSuccessCounter.increment()
         statusChangeRetriesDistribution.record(retries.toDouble())
+        statusChangeSuccessTimer.record(duration)
       }
       "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
         sentenceDatesTotalCounter.increment()
         sentenceDatesSuccessCounter.increment()
         sentenceDatesRetriesDistribution.record(retries.toDouble())
+        sentenceDatesSuccessTimer.record(duration)
       }
       else -> log.error("Not counting metrics for successful message $eventType - not expected to retry")
     }

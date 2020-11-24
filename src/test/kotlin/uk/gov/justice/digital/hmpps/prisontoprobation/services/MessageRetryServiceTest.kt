@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
@@ -11,8 +12,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -175,29 +179,25 @@ internal class MessageRetryServiceTest {
   @Nested
   inner class SentenceDateMetrics {
 
-    @Test
-    fun `will count successful processing of message`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6))
+    @ParameterizedTest
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    fun `will count successful processing of message`(eventType: String) {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess("SENTENCE_DATES-CHANGED", 11)
+      verify(metricService).retryEventSuccess(
+        eq(eventType),
+        check { it >= Duration.ofDays(1L) && it < Duration.ofDays(2L) },
+        eq(11)
+      )
     }
 
-    @Test
-    fun `will count successful processing of confirmed release date message`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusDays(6), eventType = "CONFIRMED_RELEASE_DATE-CHANGED")
-      whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
-
-      service.retryLongTerm()
-
-      verify(metricService).retryEventSuccess("CONFIRMED_RELEASE_DATE-CHANGED", 11)
-    }
-
-    @Test
-    fun `will ignore message if trying later`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25))
+    @ParameterizedTest
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    fun `will ignore message if trying later`(eventType: String) {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(25), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
 
       service.retryLongTerm()
@@ -205,22 +205,24 @@ internal class MessageRetryServiceTest {
       verifyZeroInteractions(metricService)
     }
 
-    @Test
-    fun `will count failed message if within 24 hours of expiry`() {
-      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23))
+    @ParameterizedTest
+    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
+    fun `will count failed message if within 24 hours of expiry`(eventType: String) {
+      mockLongRetryMessage(deleteBy = LocalDateTime.now().plusHours(23), eventType = eventType)
       whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(bookingId = 99L))
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventFail("SENTENCE_DATES-CHANGED")
+      verify(metricService).retryEventFail(eventType)
     }
 
-    private fun mockLongRetryMessage(deleteBy: LocalDateTime, eventType: String = "SENTENCE_DATES-CHANGED") {
+    private fun mockLongRetryMessage(deleteBy: LocalDateTime, eventType: String) {
       val message = Message(
         bookingId = 99L,
         message = "{}",
         id = "123",
         retryCount = 11,
+        createdDate = LocalDateTime.now().minusDays(1L),
         deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
         eventType = eventType
       )
@@ -238,7 +240,11 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", 11)
+      verify(metricService).retryEventSuccess(
+        eq("IMPRISONMENT_STATUS-CHANGED"),
+        check { it >= Duration.ofDays(1L) && it < Duration.ofDays(2L) },
+        eq(11)
+      )
     }
 
     @Test
@@ -267,6 +273,7 @@ internal class MessageRetryServiceTest {
         message = "{}",
         id = "123",
         retryCount = 11,
+        createdDate = LocalDateTime.now().minusDays(1L),
         deleteBy = deleteBy.toEpochSecond(ZoneOffset.UTC),
         eventType = "IMPRISONMENT_STATUS-CHANGED"
       )
