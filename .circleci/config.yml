@@ -122,16 +122,12 @@ workflows:
       - smoke-test:
           requires:
             - deploy_dev
-      - request-preprod-approval:
-          type: approval
-          requires:
-            - deploy_dev
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
           context: prison-to-probation-update-preprod
           requires:
-            - request-preprod-approval
+            - smoke-test
       - request-prod-approval:
           type: approval
           requires:

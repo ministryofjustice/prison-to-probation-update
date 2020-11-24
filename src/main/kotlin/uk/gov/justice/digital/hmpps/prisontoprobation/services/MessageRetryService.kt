@@ -6,13 +6,17 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 @Service
 class MessageRetryService(
   private val messageRepository: MessageRepository,
   private val messageProcessor: MessageProcessor,
+  private val metricService: MetricService,
   @Value("\${dynamodb.message.expiryHours}")
   private val expiryHours: Long
 ) {
@@ -65,11 +69,17 @@ class MessageRetryService(
         is TryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry(result.retryUntil))
+          countFailIfLastAttempt(it.eventType, Instant.ofEpochSecond(it.deleteBy))
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.delete(it)
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
+          countSuccess(
+            it.eventType,
+            Duration.ofSeconds(it.createdDate.until(LocalDateTime.now(), ChronoUnit.SECONDS)),
+            it.retryCount
+          )
         }
       }
     }
@@ -82,5 +92,15 @@ class MessageRetryService(
       log.error("Exception while processing $eventType for $bookingId", e)
       TryLater(bookingId)
     }
+  }
+
+  private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
+    if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
+      metricService.retryEventFail(eventType)
+    }
+  }
+
+  private fun countSuccess(eventType: String, duration: Duration, retries: Int) {
+    metricService.retryEventSuccess(eventType, duration, retries)
   }
 }

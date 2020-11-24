@@ -13,6 +13,7 @@ class PrisonMovementService(
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
   private val telemetryClient: TelemetryClient,
+  private val metricService: MetricService,
   @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
@@ -55,7 +56,10 @@ class PrisonMovementService(
 
     val updateTrackingAttributes = updateTrackingAttributesFor(movementTrackingAttributes, prisoner)
 
+    metricService.movementReceived()
+
     return communityService.updateProbationCustody(prisoner.offenderNo, booking.bookingNo, UpdateCustody(toAgency))?.let {
+      metricService.movementSucceeded()
       TelemetryEvent(
         "P2PTransferProbationUpdated",
         updateTrackingAttributes + (
@@ -65,7 +69,10 @@ class PrisonMovementService(
             )
           )
       )
-    } ?: TelemetryEvent("P2PTransferProbationRecordNotFound", updateTrackingAttributes)
+    } ?: let {
+      metricService.movementFailed()
+      TelemetryEvent("P2PTransferProbationRecordNotFound", updateTrackingAttributes)
+    }
   }
 
   private fun toAgencyForPrisonTransfer(movement: Movement, trackingAttributes: Map<String, String>): Result<String, TelemetryEvent> =

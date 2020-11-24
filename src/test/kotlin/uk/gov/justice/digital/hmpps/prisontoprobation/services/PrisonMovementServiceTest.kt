@@ -8,6 +8,7 @@ import com.nhaarman.mockito_kotlin.isNull
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -21,12 +22,13 @@ class PrisonMovementServiceTest {
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
   private val telemetryClient: TelemetryClient = mock()
+  private val metricService: MetricService = mock()
 
   private lateinit var service: PrisonMovementService
 
   @BeforeEach
   fun before() {
-    service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf("MDI", "WII"))
+    service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf("MDI", "WII"))
   }
 
   @Nested
@@ -197,7 +199,7 @@ class PrisonMovementServiceTest {
 
     @Test
     fun `will log we are ignoring event when booking in interested prison list`() {
-      service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf("HUI", "WII"))
+      service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf("HUI", "WII"))
 
       whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D", "MDI"))
       whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
@@ -219,7 +221,7 @@ class PrisonMovementServiceTest {
 
     @Test
     fun `will allow any prison when interested prison list is empty`() {
-      service = PrisonMovementService(offenderService, communityService, telemetryClient, listOf())
+      service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf())
       whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
@@ -288,6 +290,45 @@ class PrisonMovementServiceTest {
         },
         isNull()
       )
+    }
+  }
+
+  @Nested
+  inner class Metrics {
+    @BeforeEach
+    fun before() {
+      whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement())
+      whenever(offenderService.getOffender(anyString())).thenReturn(createPrisoner())
+      whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
+      whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody())
+    }
+
+    @Test
+    fun `will not count anything if movement ignored`() {
+      whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(null)
+
+      service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+      verifyNoMoreInteractions(metricService)
+    }
+
+    @Test
+    fun `will count movement request succeeded`() {
+      service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+      verify(metricService).movementReceived()
+      verify(metricService).movementSucceeded()
+    }
+
+    @Test
+    fun `will count movement request failed`() {
+      whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
+
+      service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
+
+      verify(communityService).updateProbationCustody(anyString(), anyString(), any())
+      verify(metricService).movementReceived()
+      verify(metricService).movementFailed()
     }
   }
 
