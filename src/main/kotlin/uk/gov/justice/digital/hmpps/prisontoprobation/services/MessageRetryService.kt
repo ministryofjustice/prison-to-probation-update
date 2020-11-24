@@ -74,7 +74,7 @@ class MessageRetryService(
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.delete(it)
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
-          countSuccess(it.eventType)
+          countSuccess(it.eventType, it.retryCount)
         }
       }
     }
@@ -95,7 +95,7 @@ class MessageRetryService(
     }
   }
 
-  private fun countSuccess(eventType: String) {
-    metricService.retryEventSuccess(eventType)
+  private fun countSuccess(eventType: String, retries: Int) {
+    metricService.retryEventSuccess(eventType, retries)
   }
 }

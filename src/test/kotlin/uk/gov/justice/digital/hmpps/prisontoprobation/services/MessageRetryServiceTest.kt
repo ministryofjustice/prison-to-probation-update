@@ -182,7 +182,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess("SENTENCE_DATES-CHANGED")
+      verify(metricService).retryEventSuccess("SENTENCE_DATES-CHANGED", 11)
     }
 
     @Test
@@ -192,7 +192,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess("CONFIRMED_RELEASE_DATE-CHANGED")
+      verify(metricService).retryEventSuccess("CONFIRMED_RELEASE_DATE-CHANGED", 11)
     }
 
     @Test
@@ -238,7 +238,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess("IMPRISONMENT_STATUS-CHANGED")
+      verify(metricService).retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", 11)
     }
 
     @Test
