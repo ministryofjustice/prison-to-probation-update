@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    include: stdout
 
 graceful:
   shutdown.enabled: false
