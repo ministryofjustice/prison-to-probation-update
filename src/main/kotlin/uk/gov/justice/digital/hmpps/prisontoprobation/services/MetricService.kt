@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.Duration
 
-internal const val MOVEMENT_METRIC = "movement"
-internal const val SENTENCE_DATES_METRIC = "sentenceDateChange"
-internal const val STATUS_CHANGE_METRIC = "statusChange"
+internal const val MOVEMENT_METRIC = "ptpu.movement"
+internal const val SENTENCE_DATES_METRIC = "ptpu.sentenceDateChange"
+internal const val STATUS_CHANGE_METRIC = "ptpu.statusChange"
 internal const val TOTAL_TYPE = "total"
 internal const val FAIL_TYPE = "fail"
 internal const val SUCCESS_TYPE = "success"
