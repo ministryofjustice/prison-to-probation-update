@@ -187,7 +187,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventSuccess(
+      verify(metricService).retryableEventSuccess(
         eq(eventType),
         check { it >= Duration.ofDays(1L) && it < Duration.ofDays(2L) },
         eq(11)
@@ -213,7 +213,7 @@ internal class MessageRetryServiceTest {
 
       service.retryLongTerm()
 
-      verify(metricService).retryEventFail(eventType)
+      verify(metricService).retryableEventFail(eventType)
     }
 
     private fun mockLongRetryMessage(deleteBy: LocalDateTime, eventType: String) {

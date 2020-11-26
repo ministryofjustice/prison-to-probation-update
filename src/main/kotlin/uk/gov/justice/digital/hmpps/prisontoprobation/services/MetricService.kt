@@ -116,7 +116,7 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     SUCCESS_AFTER_TIME_TYPE
   )
 
-  fun retryEventFail(eventType: String) {
+  fun retryableEventFail(eventType: String) {
     when (eventType) {
       "IMPRISONMENT_STATUS-CHANGED" -> {
         statusChangesTotalCounter.increment()
@@ -126,11 +126,10 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
         sentenceDatesTotalCounter.increment()
         sentenceDatesFailedCounter.increment()
       }
-      else -> log.error("Not counting metrics for failed message $eventType - not expected to retry")
     }
   }
 
-  fun retryEventSuccess(eventType: String, duration: Duration = Duration.ofSeconds(0), retries: Int = 0) {
+  fun retryableEventSuccess(eventType: String, duration: Duration = Duration.ofSeconds(0), retries: Int = 0) {
     when (eventType) {
       "IMPRISONMENT_STATUS-CHANGED" -> {
         statusChangesTotalCounter.increment()
@@ -144,7 +143,6 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
         sentenceDatesRetriesDistribution.record(retries.toDouble())
         sentenceDatesSuccessTimer.record(duration)
       }
-      else -> log.error("Not counting metrics for successful message $eventType - not expected to retry")
     }
   }
 

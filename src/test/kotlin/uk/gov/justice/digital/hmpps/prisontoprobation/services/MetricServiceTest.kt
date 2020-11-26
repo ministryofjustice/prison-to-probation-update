@@ -50,7 +50,7 @@ class MetricServiceTest {
     fun `Counts imprisonment status success events`() {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED")
+      metricService.retryableEventSuccess("IMPRISONMENT_STATUS-CHANGED")
 
       verify(totalCounter).increment()
       verify(successCounter).increment()
@@ -60,7 +60,7 @@ class MetricServiceTest {
     fun `Counts number of retries required to process a success event`() {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", retries = 2)
+      metricService.retryableEventSuccess("IMPRISONMENT_STATUS-CHANGED", retries = 2)
 
       verify(retryDistribution).record(2.0)
     }
@@ -69,7 +69,7 @@ class MetricServiceTest {
     fun `Counts number of seconds required to process a success event`() {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", duration = Duration.ofSeconds(12345L))
+      metricService.retryableEventSuccess("IMPRISONMENT_STATUS-CHANGED", duration = Duration.ofSeconds(12345L))
 
       verify(successTimer).record(Duration.ofSeconds(12345L))
     }
@@ -78,7 +78,7 @@ class MetricServiceTest {
     fun `Counts imprisonment status fail events`() {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventFail("IMPRISONMENT_STATUS-CHANGED")
+      metricService.retryableEventFail("IMPRISONMENT_STATUS-CHANGED")
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
@@ -115,7 +115,7 @@ class MetricServiceTest {
     fun `Counts sentence dates success events`(eventType: String) {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType)
+      metricService.retryableEventSuccess(eventType)
 
       verify(totalCounter).increment()
       verify(successCounter).increment()
@@ -126,7 +126,7 @@ class MetricServiceTest {
     fun `Counts number of retries required to process a success event`(eventType: String) {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType, retries = 3)
+      metricService.retryableEventSuccess(eventType, retries = 3)
 
       verify(retryDistribution).record(3.0)
     }
@@ -136,7 +136,7 @@ class MetricServiceTest {
     fun `Counts number of seconds required to process a success event`(eventType: String) {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType, duration = Duration.ofSeconds(12345L))
+      metricService.retryableEventSuccess(eventType, duration = Duration.ofSeconds(12345L))
 
       verify(successTimer).record(Duration.ofSeconds(12345L))
     }
@@ -146,12 +146,52 @@ class MetricServiceTest {
     fun `Counts sentence dates fail events`(eventType: String) {
       val metricService = MetricService(meterRegistry, meterFactory)
 
-      metricService.retryEventFail(eventType)
+      metricService.retryableEventFail(eventType)
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
       verifyNoMoreInteractions(retryDistribution)
       verifyNoMoreInteractions(successTimer)
+    }
+  }
+
+  @Nested
+  inner class PrisonMovement {
+
+    private val movementTotalCounter = mock<Counter>()
+    private val movementSuccessCounter = mock<Counter>()
+    private val movementFailCounter = mock<Counter>()
+
+    @BeforeEach
+    fun `mock counters`() {
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(TOTAL_TYPE)))
+        .thenReturn(movementTotalCounter)
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(SUCCESS_TYPE)))
+        .thenReturn(movementSuccessCounter)
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(FAIL_TYPE)))
+        .thenReturn(movementFailCounter)
+    }
+
+    @Test
+    fun `Does nothing on success`() {
+      val metricService = MetricService(meterRegistry, meterFactory)
+
+      metricService.retryableEventSuccess("EXTERNAL_MOVEMENT_RECORD-INSERTED")
+
+      verifyNoMoreInteractions(movementTotalCounter)
+      verifyNoMoreInteractions(movementSuccessCounter)
+      verifyNoMoreInteractions(movementFailCounter)
+    }
+
+    @Test
+    fun `Does nothing on fail`() {
+      val metricService = MetricService(meterRegistry, meterFactory)
+
+      metricService.retryableEventFail("EXTERNAL_MOVEMENT_RECORD-INSERTED")
+
+      verifyNoMoreInteractions(movementTotalCounter)
+      verifyNoMoreInteractions(movementSuccessCounter)
+      verifyNoMoreInteractions(movementFailCounter)
     }
   }
 }

@@ -96,11 +96,11 @@ class MessageRetryService(
 
   private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
     if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
-      metricService.retryEventFail(eventType)
+      metricService.retryableEventFail(eventType)
     }
   }
 
   private fun countSuccess(eventType: String, duration: Duration, retries: Int) {
-    metricService.retryEventSuccess(eventType, duration, retries)
+    metricService.retryableEventSuccess(eventType, duration, retries)
   }
 }
