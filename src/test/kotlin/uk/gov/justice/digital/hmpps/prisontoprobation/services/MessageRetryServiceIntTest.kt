@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,53 +33,72 @@ internal class MessageRetryServiceIntTest {
 
   @Test
   internal fun `will retry once on success`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
-    service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
+    whenever(messageProcessor.processMessage(any())).thenReturn(Done())
+    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
 
     // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }
 
-    verify(messageProcessor, times(1)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(1)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo(eventType)
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 
   @Test
   internal fun `will retry twice on success on second attempt`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any()))
+    whenever(messageProcessor.processMessage(any()))
       .thenReturn(TryLater(1200835))
       .thenReturn(Done())
-    service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
+    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
 
     // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }
 
-    verify(messageProcessor, times(2)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(2)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo(eventType)
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 
   @Test
   internal fun `will retry four times in short term retry mode on failure`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
-    service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
+    whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(1200835))
+    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
 
     // continually call this as if on a schedule
     repeat(33) {
       service.retryShortTerm()
     }
 
-    verify(messageProcessor, times(4)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(4)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo(eventType)
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 
   @Test
   internal fun `will retry six times in medium term retry mode on failure`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
-    service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
+    whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(1200835))
+    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
     val shortTermRepeat = 4
 
     repeat(shortTermRepeat) {
@@ -87,14 +108,20 @@ internal class MessageRetryServiceIntTest {
       service.retryMediumTerm()
     }
 
-    verify(messageProcessor, times(6 + shortTermRepeat)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(6 + shortTermRepeat)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo(eventType)
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 
   @Test
   internal fun `will retry until deleted in long term retry mode on failure`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(1200835))
-    service.retryLater(bookingId = 33L, eventType = "IMPRISONMENT_STATUS-CHANGED", message = message)
+    whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(1200835))
+    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
     val shortTermRepeat = 4
     val mediumTermRepeat = 6
 
@@ -109,6 +136,11 @@ internal class MessageRetryServiceIntTest {
       service.retryLongTerm()
     }
 
-    verify(messageProcessor, times(33 + shortTermRepeat + mediumTermRepeat)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(33 + shortTermRepeat + mediumTermRepeat)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo(eventType)
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 }

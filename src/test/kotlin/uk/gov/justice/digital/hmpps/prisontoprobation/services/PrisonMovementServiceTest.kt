@@ -22,13 +22,13 @@ class PrisonMovementServiceTest {
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val metricService: MetricService = mock()
+  private val unretryableEventMetricsService: UnretryableEventMetricsService = mock()
 
   private lateinit var service: PrisonMovementService
 
   @BeforeEach
   fun before() {
-    service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf("MDI", "WII"))
+    service = PrisonMovementService(offenderService, communityService, telemetryClient, unretryableEventMetricsService, listOf("MDI", "WII"))
   }
 
   @Nested
@@ -199,7 +199,7 @@ class PrisonMovementServiceTest {
 
     @Test
     fun `will log we are ignoring event when booking in interested prison list`() {
-      service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf("HUI", "WII"))
+      service = PrisonMovementService(offenderService, communityService, telemetryClient, unretryableEventMetricsService, listOf("HUI", "WII"))
 
       whenever(offenderService.getMovement(anyLong(), anyLong())).thenReturn(createPrisonAdmissionMovement("AB123D", "MDI"))
       whenever(offenderService.getBooking(anyLong())).thenReturn(createCurrentBooking())
@@ -221,7 +221,7 @@ class PrisonMovementServiceTest {
 
     @Test
     fun `will allow any prison when interested prison list is empty`() {
-      service = PrisonMovementService(offenderService, communityService, telemetryClient, metricService, listOf())
+      service = PrisonMovementService(offenderService, communityService, telemetryClient, unretryableEventMetricsService, listOf())
       whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(createUpdatedCustody("Moorland"))
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
@@ -309,15 +309,15 @@ class PrisonMovementServiceTest {
 
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verifyNoMoreInteractions(metricService)
+      verifyNoMoreInteractions(unretryableEventMetricsService)
     }
 
     @Test
     fun `will count movement request succeeded`() {
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
-      verify(metricService).movementReceived()
-      verify(metricService).movementSucceeded()
+      verify(unretryableEventMetricsService).movementReceived()
+      verify(unretryableEventMetricsService).movementSucceeded()
     }
 
     @Test
@@ -327,8 +327,8 @@ class PrisonMovementServiceTest {
       service.processMovementAndUpdateProbation(ExternalPrisonerMovementMessage(12345L, 1L))
 
       verify(communityService).updateProbationCustody(anyString(), anyString(), any())
-      verify(metricService).movementReceived()
-      verify(metricService).movementFailed()
+      verify(unretryableEventMetricsService).movementReceived()
+      verify(unretryableEventMetricsService).movementFailed()
     }
   }
 

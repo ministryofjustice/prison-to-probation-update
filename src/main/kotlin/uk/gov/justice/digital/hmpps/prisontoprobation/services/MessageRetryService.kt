@@ -6,17 +6,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
-import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 
 @Service
 class MessageRetryService(
   private val messageRepository: MessageRepository,
   private val messageProcessor: MessageProcessor,
-  private val metricService: MetricService,
   @Value("\${dynamodb.message.expiryHours}")
   private val expiryHours: Long
 ) {
@@ -49,58 +45,33 @@ class MessageRetryService(
     )
   }
 
-  fun retryShortTerm() {
-    retryForAttemptsMade(1..4)
-  }
+  fun retryShortTerm() = retryForAttemptsMade(1..4)
 
-  fun retryMediumTerm() {
-    retryForAttemptsMade(5..10)
-  }
+  fun retryMediumTerm() = retryForAttemptsMade(5..10)
 
-  fun retryLongTerm() {
-    retryForAttemptsMade(11..Int.MAX_VALUE)
-  }
+  fun retryLongTerm() = retryForAttemptsMade(11..Int.MAX_VALUE)
 
-  private fun retryForAttemptsMade(range: IntRange) {
-    val messages = messageRepository.findByRetryCountBetween(range.first, range.last)
-    messages.forEach {
+  private fun retryForAttemptsMade(range: IntRange) =
+    messageRepository.findByRetryCountBetween(range.first, range.last).forEach {
       log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
-      when (val result: MessageResult = processMessage(it.eventType, it.message, it.bookingId)) {
+      when (val result: MessageResult = processMessage(it)) {
         is TryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry(result.retryUntil))
-          countFailIfLastAttempt(it.eventType, Instant.ofEpochSecond(it.deleteBy))
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.delete(it)
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
-          countSuccess(
-            it.eventType,
-            Duration.ofSeconds(it.createdDate.until(LocalDateTime.now(), ChronoUnit.SECONDS)),
-            it.retryCount
-          )
         }
       }
     }
-  }
 
-  private fun processMessage(eventType: String, message: String, bookingId: Long): MessageResult {
-    return try {
-      messageProcessor.processMessage(eventType, message)
+  private fun processMessage(message: Message): MessageResult =
+    try {
+      messageProcessor.processMessage(message)
     } catch (e: Exception) {
-      log.error("Exception while processing $eventType for $bookingId", e)
-      TryLater(bookingId)
+      log.error("Exception while processing ${message.eventType} for ${message.bookingId}", e)
+      TryLater(message.bookingId)
     }
-  }
-
-  private fun countFailIfLastAttempt(eventType: String, deleteBy: Instant) {
-    if (deleteBy.minus(24, ChronoUnit.HOURS) < Instant.now()) {
-      metricService.retryableEventFail(eventType)
-    }
-  }
-
-  private fun countSuccess(eventType: String, duration: Duration, retries: Int) {
-    metricService.retryableEventSuccess(eventType, duration, retries)
-  }
 }

@@ -1,15 +1,17 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.argThat
+import com.nhaarman.mockito_kotlin.check
+import com.nhaarman.mockito_kotlin.inOrder
 import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.nhaarman.mockitokotlin2.reset
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.inOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -43,42 +45,47 @@ internal class MessageAggregatorTest {
   @BeforeEach
   fun setup() {
     repository.deleteAll()
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(Done())
+    whenever(messageProcessor.processMessage(any())).thenReturn(Done())
   }
 
   @Test
   fun `will do nothing when no messages need processing`() {
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, never()).processMessage(any(), any())
+    verify(messageProcessor, never()).processMessage(any())
   }
 
   @Test
-  fun `will do nothing when no "first time" messages need processing`() {
+  fun `will do nothing when no first-time messages need processing`() {
     repository.save(Message(bookingId = 99, retryCount = 1, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = imprisonmentStatusChangedMessage(1200835)))
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, never()).processMessage(any(), any())
+    verify(messageProcessor, never()).processMessage(any())
   }
 
   @Test
-  fun `will do nothing when no recent "first time" messages need processing`() {
+  fun `will do nothing when no recent first-time messages need processing`() {
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "IMPRISONMENT_STATUS-CHANGED", message = imprisonmentStatusChangedMessage(1200835)))
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, never()).processMessage(any(), any())
+    verify(messageProcessor, never()).processMessage(any())
   }
 
   @Test
-  fun `will process when a single old "first time" messages need processing`() {
+  fun `will process when a single old first-time messages need processing`() {
     val message = imprisonmentStatusChangedMessage(1200835)
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "IMPRISONMENT_STATUS-CHANGED", message = message))
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, times(1)).processMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    verify(messageProcessor, times(1)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
+        assertThat(it.message).isEqualTo(message)
+      }
+    )
   }
 
   @Test
@@ -94,10 +101,11 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", oldMessage)
-    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", youngMessage)
-    verify(messageProcessor).processMessage("IMPRISONMENT_STATUS-CHANGED", veryOldMessage)
-    verify(messageProcessor, never()).processMessage("IMPRISONMENT_STATUS-CHANGED", tooYoungMessage)
+    verify(messageProcessor, times(3)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
+      }
+    )
   }
 
   @Test
@@ -116,11 +124,36 @@ internal class MessageAggregatorTest {
     messageAggregator.processMessagesForNextBookingSets()
 
     val orderVerifier = inOrder(messageProcessor)
-    orderVerifier.verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage)
-    orderVerifier.verify(messageProcessor).processMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage)
-    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage)
-    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage)
-    verify(messageProcessor, never()).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage)
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == veryOldMessage
+      }
+    )
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "SENTENCE_DATES-CHANGED" &&
+          this.message == youngSentenceChangeMessage
+      }
+    )
+    verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == oldMessage
+      }
+    )
+    verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == youngMessage
+      }
+    )
+    verify(messageProcessor, never()).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == tooYoungMessage
+      }
+    )
   }
 
   @Test
@@ -133,12 +166,22 @@ internal class MessageAggregatorTest {
     messageAggregator.processMessagesForNextBookingSets()
 
     val orderVerifier = inOrder(messageProcessor)
-    orderVerifier.verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementMessage)
-    orderVerifier.verify(messageProcessor).processMessage("SENTENCE_DATES-CHANGED", sentenceChangeMessage)
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == externalMovementMessage
+      }
+    )
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "SENTENCE_DATES-CHANGED" &&
+          this.message == sentenceChangeMessage
+      }
+    )
   }
 
   @Test
-  fun `will process all other messages for a booking when old "first time" messages need processing regardless of age`() {
+  fun `will process all other messages for a booking when old first-time messages need processing regardless of age`() {
     val prisonLocationChangeMessage = externalMovementInsertedMessage(99)
     val sentenceDateChangeMessage = sentenceDatesChangedMessage(99)
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = prisonLocationChangeMessage))
@@ -146,8 +189,19 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
-    verify(messageProcessor).processMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage)
+    val orderVerifier = inOrder(messageProcessor)
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == prisonLocationChangeMessage
+      }
+    )
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "SENTENCE_DATES-CHANGED" &&
+          this.message == sentenceDateChangeMessage
+      }
+    )
   }
 
   @Test
@@ -161,8 +215,18 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor).processMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
-    verify(messageProcessor, times(1)).processMessage(eq("SENTENCE_DATES-CHANGED"), any())
+    val orderVerifier = inOrder(messageProcessor)
+    orderVerifier.verify(messageProcessor).processMessage(
+      argThat {
+        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
+          this.message == prisonLocationChangeMessage
+      }
+    )
+    orderVerifier.verify(messageProcessor, times(1)).processMessage(
+      argThat {
+        this.eventType == "SENTENCE_DATES-CHANGED"
+      }
+    )
   }
 
   @Test
@@ -174,7 +238,11 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, times(1)).processMessage(eq("SENTENCE_DATES-CHANGED"), any())
+    verify(messageProcessor, times(1)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo("SENTENCE_DATES-CHANGED")
+      }
+    )
   }
 
   @Test
@@ -189,7 +257,12 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, times(1)).processMessage(eq("EXTERNAL_MOVEMENT_RECORD-INSERTED"), eq(latestPrisonLocationChangeMessage))
+    verify(messageProcessor, times(1)).processMessage(
+      check {
+        assertThat(it.eventType).isEqualTo("EXTERNAL_MOVEMENT_RECORD-INSERTED")
+        assertThat(it.message).isEqualTo(latestPrisonLocationChangeMessage)
+      }
+    )
   }
 
   @Test
@@ -202,11 +275,11 @@ internal class MessageAggregatorTest {
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
     reset(messageProcessor)
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, never()).processMessage(any(), any())
+    verify(messageProcessor, never()).processMessage(any())
   }
 
   @Test
@@ -215,34 +288,34 @@ internal class MessageAggregatorTest {
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
     reset(messageProcessor)
 
     retryService.retryShortTerm()
     retryService.retryMediumTerm()
     retryService.retryLongTerm()
 
-    verify(messageProcessor, never()).processMessage(any(), any())
+    verify(messageProcessor, never()).processMessage(any())
   }
 
   @Test
   fun `all messages will be retried if all fail with unexpected exceptions`() {
-    whenever(messageProcessor.processMessage(any(), any())).thenThrow(RuntimeException("oops"))
+    whenever(messageProcessor.processMessage(any())).thenThrow(RuntimeException("oops"))
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
     reset(messageProcessor)
 
     retryService.retryShortTerm()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
   }
 
   @Test
   fun `some messages will be retried if some fail with unexpected exceptions`() {
-    whenever(messageProcessor.processMessage(any(), any()))
+    whenever(messageProcessor.processMessage(any()))
       .thenThrow(RuntimeException("oops"))
       .thenReturn(Done())
 
@@ -250,26 +323,26 @@ internal class MessageAggregatorTest {
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
     reset(messageProcessor)
 
     retryService.retryShortTerm()
-    verify(messageProcessor, times(1)).processMessage(any(), any())
+    verify(messageProcessor, times(1)).processMessage(any())
   }
 
   @Test
   fun `all messages will be retried if all require to be retried`() {
-    whenever(messageProcessor.processMessage(any(), any())).thenReturn(TryLater(99))
+    whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(99))
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
     reset(messageProcessor)
 
     retryService.retryShortTerm()
-    verify(messageProcessor, times(2)).processMessage(any(), any())
+    verify(messageProcessor, times(2)).processMessage(any())
   }
 
   private fun sentenceDatesChangedMessage(bookingId: Long, eventDateTime: String = "2020-02-12T15:14:24.125533"): String =
