@@ -41,7 +41,7 @@ class MessageAggregator(
 
   private fun processMessage(message: Message): MessageResult {
     return try {
-      val result = messageProcessor.processMessage(message.eventType, message.message)
+      val result = messageProcessor.processMessage(message)
       messageRepository.delete(message)
       result
     } catch (e: Exception) {

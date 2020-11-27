@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 internal const val MOVEMENT_METRIC = "ptpu.movement"
 internal const val SENTENCE_DATES_METRIC = "ptpu.sentenceDateChange"
@@ -18,6 +20,7 @@ internal const val FAIL_TYPE = "fail"
 internal const val SUCCESS_TYPE = "success"
 internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
 internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeSeconds"
+internal const val LAST_RETRY_WINDOW_HOURS = 24L
 
 @Component
 class MeterFactory {
@@ -41,11 +44,11 @@ class MeterFactory {
       .register(meterRegistry)
 }
 
+/**
+ * Unretryable events must handle their own metrics in the service that processes the events
+ */
 @Service
-class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
-  companion object {
-    val log: Logger = LoggerFactory.getLogger(this::class.java)
-  }
+class UnretryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
 
   private val movementReceivedCounter =
     meterFactory.registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of movements received", TOTAL_TYPE)
@@ -53,6 +56,24 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     meterFactory.registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of failed movements", FAIL_TYPE)
   private val movementsSuccessCounter =
     meterFactory.registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of successful movements", SUCCESS_TYPE)
+
+  fun movementReceived() = movementReceivedCounter.increment()
+  fun movementFailed() = movementsFailedCounter.increment()
+  fun movementSucceeded() = movementsSuccessCounter.increment()
+
+}
+
+/**
+ * Retryable events' metrics are handled by the MessageProcessor which delegates to this class.
+ * It is this class's responsibility to:
+ *  1. Ignore unretryable events
+ *  2. Decide when a retryable event will not be retried again
+ */
+@Service
+class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
 
   private val sentenceDatesTotalCounter = meterFactory.registerCounter(
     meterRegistry,
@@ -116,39 +137,39 @@ class MetricService(meterRegistry: MeterRegistry, meterFactory: MeterFactory) {
     SUCCESS_AFTER_TIME_TYPE
   )
 
-  fun retryEventFail(eventType: String) {
-    when (eventType) {
-      "IMPRISONMENT_STATUS-CHANGED" -> {
-        statusChangesTotalCounter.increment()
-        statusChangesFailedCounter.increment()
+  fun eventFailed(eventType: String, deleteBy: LocalDateTime) =
+    takeIf { readyForDelete(deleteBy) }
+      ?.also {
+        when (eventType) {
+          "IMPRISONMENT_STATUS-CHANGED" -> {
+            statusChangesTotalCounter.increment()
+            statusChangesFailedCounter.increment()
+          }
+          "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
+            sentenceDatesTotalCounter.increment()
+            sentenceDatesFailedCounter.increment()
+          }
+        }
       }
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-        sentenceDatesTotalCounter.increment()
-        sentenceDatesFailedCounter.increment()
-      }
-      else -> log.error("Not counting metrics for failed message $eventType - not expected to retry")
-    }
-  }
 
-  fun retryEventSuccess(eventType: String, duration: Duration = Duration.ofSeconds(0), retries: Int = 0) {
-    when (eventType) {
-      "IMPRISONMENT_STATUS-CHANGED" -> {
-        statusChangesTotalCounter.increment()
-        statusChangesSuccessCounter.increment()
-        statusChangeRetriesDistribution.record(retries.toDouble())
-        statusChangeSuccessTimer.record(duration)
-      }
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-        sentenceDatesTotalCounter.increment()
-        sentenceDatesSuccessCounter.increment()
-        sentenceDatesRetriesDistribution.record(retries.toDouble())
-        sentenceDatesSuccessTimer.record(duration)
-      }
-      else -> log.error("Not counting metrics for successful message $eventType - not expected to retry")
-    }
-  }
+  private fun readyForDelete(deleteBy: LocalDateTime) = deleteBy.minus(LAST_RETRY_WINDOW_HOURS, ChronoUnit.HOURS) < LocalDateTime.now()
 
-  fun movementReceived() = movementReceivedCounter.increment()
-  fun movementFailed() = movementsFailedCounter.increment()
-  fun movementSucceeded() = movementsSuccessCounter.increment()
+  fun eventSucceeded(eventType: String, createdDate: LocalDateTime, retries: Int = 0) =
+    Duration.ofSeconds(createdDate.until(LocalDateTime.now(), ChronoUnit.SECONDS))!!
+      .also { duration ->
+        when (eventType) {
+          "IMPRISONMENT_STATUS-CHANGED" -> {
+            statusChangesTotalCounter.increment()
+            statusChangesSuccessCounter.increment()
+            statusChangeRetriesDistribution.record(retries.toDouble())
+            statusChangeSuccessTimer.record(duration)
+          }
+          "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
+            sentenceDatesTotalCounter.increment()
+            sentenceDatesSuccessCounter.increment()
+            sentenceDatesRetriesDistribution.record(retries.toDouble())
+            sentenceDatesSuccessTimer.record(duration)
+          }
+        }
+      }
 }

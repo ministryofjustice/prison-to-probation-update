@@ -17,8 +17,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyString
 import java.time.Duration
+import java.time.LocalDateTime
 
-class MetricServiceTest {
+class RetryableEventMetricsServiceTest {
 
   private val meterFactory = mock<MeterFactory>()
   private val meterRegistry = mock<MeterRegistry>()
@@ -48,9 +49,9 @@ class MetricServiceTest {
 
     @Test
     fun `Counts imprisonment status success events`() {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED")
+      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now())
 
       verify(totalCounter).increment()
       verify(successCounter).increment()
@@ -58,27 +59,27 @@ class MetricServiceTest {
 
     @Test
     fun `Counts number of retries required to process a success event`() {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", retries = 2)
+      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now(), retries = 2)
 
       verify(retryDistribution).record(2.0)
     }
 
     @Test
     fun `Counts number of seconds required to process a success event`() {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess("IMPRISONMENT_STATUS-CHANGED", duration = Duration.ofSeconds(12345L))
+      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusSeconds(12345L))
 
       verify(successTimer).record(Duration.ofSeconds(12345L))
     }
 
     @Test
     fun `Counts imprisonment status fail events`() {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventFail("IMPRISONMENT_STATUS-CHANGED")
+      metricService.eventFailed("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now())
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
@@ -113,9 +114,9 @@ class MetricServiceTest {
     @ParameterizedTest
     @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
     fun `Counts sentence dates success events`(eventType: String) {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType)
+      metricService.eventSucceeded(eventType, LocalDateTime.now())
 
       verify(totalCounter).increment()
       verify(successCounter).increment()
@@ -124,9 +125,9 @@ class MetricServiceTest {
     @ParameterizedTest
     @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
     fun `Counts number of retries required to process a success event`(eventType: String) {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType, retries = 3)
+      metricService.eventSucceeded(eventType, LocalDateTime.now(), retries = 3)
 
       verify(retryDistribution).record(3.0)
     }
@@ -134,9 +135,9 @@ class MetricServiceTest {
     @ParameterizedTest
     @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
     fun `Counts number of seconds required to process a success event`(eventType: String) {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventSuccess(eventType, duration = Duration.ofSeconds(12345L))
+      metricService.eventSucceeded(eventType, LocalDateTime.now().minusSeconds(12345L))
 
       verify(successTimer).record(Duration.ofSeconds(12345L))
     }
@@ -144,14 +145,54 @@ class MetricServiceTest {
     @ParameterizedTest
     @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
     fun `Counts sentence dates fail events`(eventType: String) {
-      val metricService = MetricService(meterRegistry, meterFactory)
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.retryEventFail(eventType)
+      metricService.eventFailed(eventType, LocalDateTime.now())
 
       verify(totalCounter).increment()
       verify(failCounter).increment()
       verifyNoMoreInteractions(retryDistribution)
       verifyNoMoreInteractions(successTimer)
+    }
+  }
+
+  @Nested
+  inner class PrisonMovement {
+
+    private val movementTotalCounter = mock<Counter>()
+    private val movementSuccessCounter = mock<Counter>()
+    private val movementFailCounter = mock<Counter>()
+
+    @BeforeEach
+    fun `mock counters`() {
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(TOTAL_TYPE)))
+        .thenReturn(movementTotalCounter)
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(SUCCESS_TYPE)))
+        .thenReturn(movementSuccessCounter)
+      whenever(meterFactory.registerCounter(any(), eq(MOVEMENT_METRIC), anyString(), eq(FAIL_TYPE)))
+        .thenReturn(movementFailCounter)
+    }
+
+    @Test
+    fun `Does nothing on success`() {
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
+
+      metricService.eventSucceeded("EXTERNAL_MOVEMENT_RECORD-INSERTED", LocalDateTime.now())
+
+      verifyNoMoreInteractions(movementTotalCounter)
+      verifyNoMoreInteractions(movementSuccessCounter)
+      verifyNoMoreInteractions(movementFailCounter)
+    }
+
+    @Test
+    fun `Does nothing on fail`() {
+      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
+
+      metricService.eventFailed("EXTERNAL_MOVEMENT_RECORD-INSERTED", LocalDateTime.now())
+
+      verifyNoMoreInteractions(movementTotalCounter)
+      verifyNoMoreInteractions(movementSuccessCounter)
+      verifyNoMoreInteractions(movementFailCounter)
     }
   }
 }
