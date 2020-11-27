@@ -1,17 +1,16 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
-import com.nhaarman.mockito_kotlin.check
 import com.nhaarman.mockito_kotlin.inOrder
 import com.nhaarman.mockito_kotlin.never
 import com.nhaarman.mockito_kotlin.times
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockitokotlin2.argThat
 import com.nhaarman.mockitokotlin2.reset
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatcher
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -80,11 +79,8 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, times(1)).processMessage(
-      check {
-        assertThat(it.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
-        assertThat(it.message).isEqualTo(message)
-      }
+    verify(messageProcessor).processMessage(
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message)
     )
   }
 
@@ -102,9 +98,7 @@ internal class MessageAggregatorTest {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(3)).processMessage(
-      check {
-        assertThat(it.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
-      }
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED")
     )
   }
 
@@ -125,34 +119,19 @@ internal class MessageAggregatorTest {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == veryOldMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage)
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "SENTENCE_DATES-CHANGED" &&
-          this.message == youngSentenceChangeMessage
-      }
+      matchesMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage)
     )
     verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == oldMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage)
     )
     verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == youngMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage)
     )
     verify(messageProcessor, never()).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == tooYoungMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage)
     )
   }
 
@@ -167,16 +146,10 @@ internal class MessageAggregatorTest {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == externalMovementMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementMessage)
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "SENTENCE_DATES-CHANGED" &&
-          this.message == sentenceChangeMessage
-      }
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceChangeMessage)
     )
   }
 
@@ -191,16 +164,10 @@ internal class MessageAggregatorTest {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == prisonLocationChangeMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "SENTENCE_DATES-CHANGED" &&
-          this.message == sentenceDateChangeMessage
-      }
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage)
     )
   }
 
@@ -217,15 +184,10 @@ internal class MessageAggregatorTest {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      argThat {
-        this.eventType == "EXTERNAL_MOVEMENT_RECORD-INSERTED" &&
-          this.message == prisonLocationChangeMessage
-      }
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
     )
     orderVerifier.verify(messageProcessor, times(1)).processMessage(
-      argThat {
-        this.eventType == "SENTENCE_DATES-CHANGED"
-      }
+      matchesMessage("SENTENCE_DATES-CHANGED")
     )
   }
 
@@ -239,9 +201,7 @@ internal class MessageAggregatorTest {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(1)).processMessage(
-      check {
-        assertThat(it.eventType).isEqualTo("SENTENCE_DATES-CHANGED")
-      }
+      matchesMessage("SENTENCE_DATES-CHANGED")
     )
   }
 
@@ -257,11 +217,8 @@ internal class MessageAggregatorTest {
 
     messageAggregator.processMessagesForNextBookingSets()
 
-    verify(messageProcessor, times(1)).processMessage(
-      check {
-        assertThat(it.eventType).isEqualTo("EXTERNAL_MOVEMENT_RECORD-INSERTED")
-        assertThat(it.message).isEqualTo(latestPrisonLocationChangeMessage)
-      }
+    verify(messageProcessor).processMessage(
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", latestPrisonLocationChangeMessage)
     )
   }
 
@@ -353,4 +310,22 @@ internal class MessageAggregatorTest {
 
   private fun imprisonmentStatusChangedMessage(bookingId: Long): String =
     "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+
+  private fun matchesMessage(eventType: String, message: String? = null): Message =
+    argThat(MessageMatcher(eventType = eventType, message = message))
+
+  private class MessageMatcher(private val eventType: String, private val message: String?) : ArgumentMatcher<Message> {
+    override fun matches(argument: Message?): Boolean {
+      return eventType == argument?.eventType &&
+        (message == null || message == argument.message)
+    }
+
+    override fun toString(): String = buildString {
+      this.append("Message(eventType=$eventType")
+      message?.let {
+        this.append(", message=$message")
+      }
+      this.append(")")
+    }
+  }
 }
