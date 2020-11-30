@@ -31,11 +31,11 @@ env:
   - name: PRISONTOPROBATION_ONLY_PRISONS
     value: "{{ .Values.env.PRISONTOPROBATION_ONLY_PRISONS }}"
 
-  - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+  - name: APPINSIGHTS_INSTRUMENTATIONKEY
     valueFrom:
       secretKeyRef:
         name: {{ template "app.name" . }}
-        key: APPLICATIONINSIGHTS_CONNECTION_STRING
+        key: APPINSIGHTS_INSTRUMENTATIONKEY
 
   - name: OAUTH_CLIENT_ID
     valueFrom:
