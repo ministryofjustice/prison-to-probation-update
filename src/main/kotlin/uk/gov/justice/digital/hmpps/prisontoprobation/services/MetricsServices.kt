@@ -60,7 +60,6 @@ class UnretryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory:
   fun movementReceived() = movementReceivedCounter.increment()
   fun movementFailed() = movementsFailedCounter.increment()
   fun movementSucceeded() = movementsSuccessCounter.increment()
-
 }
 
 /**
