@@ -162,7 +162,7 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private fun readyForDelete(deleteBy: LocalDateTime) = deleteBy.minus(LAST_RETRY_WINDOW_HOURS, ChronoUnit.HOURS) < LocalDateTime.now()
 
   fun eventSucceeded(eventType: String, createdDate: LocalDateTime, retries: Int = 0) =
-    Duration.ofSeconds(createdDate.until(LocalDateTime.now(), ChronoUnit.MINUTES))!!
+    Duration.ofMinutes(createdDate.until(LocalDateTime.now(), ChronoUnit.MINUTES))!!
       .also { duration ->
         when (eventType) {
           "IMPRISONMENT_STATUS-CHANGED" -> {

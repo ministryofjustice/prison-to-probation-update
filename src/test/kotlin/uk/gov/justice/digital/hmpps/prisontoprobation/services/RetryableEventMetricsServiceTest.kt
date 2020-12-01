@@ -70,9 +70,9 @@ class RetryableEventMetricsServiceTest {
     fun `Counts number of seconds required to process a success event`() {
       val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusSeconds(12345L))
+      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusMinutes(123L))
 
-      verify(successTimer).record(Duration.ofSeconds(12345L))
+      verify(successTimer).record(Duration.ofMinutes(123L))
     }
 
     @Test
@@ -137,9 +137,9 @@ class RetryableEventMetricsServiceTest {
     fun `Counts number of seconds required to process a success event`(eventType: String) {
       val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.eventSucceeded(eventType, LocalDateTime.now().minusSeconds(12345L))
+      metricService.eventSucceeded(eventType, LocalDateTime.now().minusMinutes(123L))
 
-      verify(successTimer).record(Duration.ofSeconds(12345L))
+      verify(successTimer).record(Duration.ofMinutes(123L))
     }
 
     @ParameterizedTest
