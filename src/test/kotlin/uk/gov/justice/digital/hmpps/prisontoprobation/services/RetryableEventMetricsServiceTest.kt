@@ -41,9 +41,9 @@ class RetryableEventMetricsServiceTest {
       whenever(meterFactory.registerCounter(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(FAIL_TYPE)))
         .thenReturn(failCounter)
       whenever(
-        meterFactory.registerDistributionSummary(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
+        meterFactory.registerRetryDistribution(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
       ).thenReturn(retryDistribution)
-      whenever(meterFactory.registerTimer(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
+      whenever(meterFactory.registerMessageAgeTimer(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
         .thenReturn(successTimer)
     }
 
@@ -105,9 +105,9 @@ class RetryableEventMetricsServiceTest {
       whenever(meterFactory.registerCounter(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(FAIL_TYPE)))
         .thenReturn(failCounter)
       whenever(
-        meterFactory.registerDistributionSummary(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
+        meterFactory.registerRetryDistribution(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
       ).thenReturn(retryDistribution)
-      whenever(meterFactory.registerTimer(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
+      whenever(meterFactory.registerMessageAgeTimer(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
         .thenReturn(successTimer)
     }
 
