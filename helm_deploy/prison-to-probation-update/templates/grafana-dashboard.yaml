@@ -26,8 +26,8 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 1,
-      "id": 32,
-      "links": [ ],
+      "id": 82,
+      "links": [],
       "panels": [
         {
           "collapsed": false,
@@ -39,7 +39,7 @@ data:
             "y": 0
           },
           "id": 12,
-          "panels": [ ],
+          "panels": [],
           "title": "Offender Update Counts",
           "type": "row"
         },
@@ -47,8 +47,8 @@ data:
           "datasource": null,
           "fieldConfig": {
             "defaults": {
-              "custom": { },
-              "mappings": [ ],
+              "custom": {},
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -63,7 +63,7 @@ data:
                 ]
               }
             },
-            "overrides": [ ]
+            "overrides": []
           },
           "gridPos": {
             "h": 9,
@@ -77,7 +77,7 @@ data:
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
-                  "mean"
+                  "last"
               ],
               "values": false
             },
@@ -106,13 +106,141 @@ data:
           "timeShift": null,
           "title": "Movements / 24h",
           "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "id": 13,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Status Changes / 24h",
+          "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 10
+          },
+          "id": 14,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Sentence Date Changes / 24h",
+          "type": "bargauge"
         }
       ],
       "schemaVersion": 25,
       "style": "dark",
-      "tags": [ ],
+      "tags": [],
       "templating": {
-        "list": [ ]
+        "list": []
       },
       "time": {
         "from": "now-6h",
