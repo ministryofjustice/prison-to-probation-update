@@ -144,7 +144,7 @@ data:
         ]
       },
       "timezone": "browser",
-      "title": "Blank Dashboard",
-      "uid": "X3_BLTAGz",
+      "title": "Prison To Probation Update ({{ .Release.Namespace }})",
+      "uid": "ptpu-{{ .Release.Namespace }}",
       "version": 1
     }
