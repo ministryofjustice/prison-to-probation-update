@@ -35,7 +35,7 @@ class MeterFactory {
   fun registerRetryDistribution(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
     DistributionSummary.builder(name)
       .publishPercentileHistogram()
-      .minimumExpectedValue(0.0)
+      .minimumExpectedValue(0.1)
       .maximumExpectedValue(RETRIES_EXPECTED_MAX)
       .baseUnit("retries")
       .description(description)
@@ -45,7 +45,7 @@ class MeterFactory {
   fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
     Timer.builder(name)
       .publishPercentileHistogram()
-      .minimumExpectedValue(Duration.ofMinutes(0))
+      .minimumExpectedValue(Duration.ofMinutes(1))
       .maximumExpectedValue(Duration.ofMinutes(AGE_EXPECTED_MAX_MINUTES))
       .description(description)
       .tag("eventType", type)
