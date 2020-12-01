@@ -108,6 +108,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1260-grafana-dashboard
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -115,6 +116,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1260-grafana-dashboard
           requires:
             - validate
             - helm_lint
