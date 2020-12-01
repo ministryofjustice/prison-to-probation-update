@@ -32,6 +32,7 @@ class MeterFactory {
 
   fun registerDistributionSummary(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
     DistributionSummary.builder(name)
+      .publishPercentileHistogram()
       .baseUnit("retries")
       .description(description)
       .tag("eventType", type)
@@ -39,6 +40,7 @@ class MeterFactory {
 
   fun registerTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
     Timer.builder(name)
+      .publishPercentileHistogram()
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
