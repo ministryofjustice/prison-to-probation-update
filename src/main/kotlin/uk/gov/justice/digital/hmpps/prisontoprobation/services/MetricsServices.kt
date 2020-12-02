@@ -21,6 +21,8 @@ internal const val SUCCESS_TYPE = "success"
 internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
 internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeSeconds"
 internal const val LAST_RETRY_WINDOW_HOURS = 24L
+internal const val RETRIES_EXPECTED_MAX = 50.0
+internal const val AGE_EXPECTED_MAX_MINUTES = 57600L // 40 days
 
 @Component
 class MeterFactory {
@@ -30,17 +32,21 @@ class MeterFactory {
       .tag("type", type)
       .register(meterRegistry)
 
-  fun registerDistributionSummary(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
+  fun registerRetryDistribution(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
     DistributionSummary.builder(name)
       .publishPercentileHistogram()
+      .minimumExpectedValue(0.1)
+      .maximumExpectedValue(RETRIES_EXPECTED_MAX)
       .baseUnit("retries")
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
 
-  fun registerTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
+  fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
     Timer.builder(name)
       .publishPercentileHistogram()
+      .minimumExpectedValue(Duration.ofMinutes(1))
+      .maximumExpectedValue(Duration.ofMinutes(AGE_EXPECTED_MAX_MINUTES))
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
@@ -94,16 +100,16 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
     "The number of successful sentence date updates ",
     SUCCESS_TYPE
   )
-  private val sentenceDatesRetriesDistribution = meterFactory.registerDistributionSummary(
+  private val sentenceDatesRetriesDistribution = meterFactory.registerRetryDistribution(
     meterRegistry,
     SENTENCE_DATES_METRIC,
     "The number of retries before a successful update",
     SUCCESS_AFTER_RETRIES_TYPE
   )
-  private val sentenceDatesSuccessTimer = meterFactory.registerTimer(
+  private val sentenceDatesSuccessTimer = meterFactory.registerMessageAgeTimer(
     meterRegistry,
     SENTENCE_DATES_METRIC,
-    "The time in seconds before a successful update",
+    "The time in minutes before a successful update",
     SUCCESS_AFTER_TIME_TYPE
   )
 
@@ -125,16 +131,16 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
     "The number of successful status change updates ",
     SUCCESS_TYPE
   )
-  private val statusChangeRetriesDistribution = meterFactory.registerDistributionSummary(
+  private val statusChangeRetriesDistribution = meterFactory.registerRetryDistribution(
     meterRegistry,
     STATUS_CHANGE_METRIC,
     "The number of retries before a successful update",
     SUCCESS_AFTER_RETRIES_TYPE
   )
-  private val statusChangeSuccessTimer = meterFactory.registerTimer(
+  private val statusChangeSuccessTimer = meterFactory.registerMessageAgeTimer(
     meterRegistry,
     STATUS_CHANGE_METRIC,
-    "The time in seconds before a successful update",
+    "The time in minutes before a successful update",
     SUCCESS_AFTER_TIME_TYPE
   )
 
@@ -156,7 +162,7 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private fun readyForDelete(deleteBy: LocalDateTime) = deleteBy.minus(LAST_RETRY_WINDOW_HOURS, ChronoUnit.HOURS) < LocalDateTime.now()
 
   fun eventSucceeded(eventType: String, createdDate: LocalDateTime, retries: Int = 0) =
-    Duration.ofSeconds(createdDate.until(LocalDateTime.now(), ChronoUnit.SECONDS))!!
+    Duration.ofMinutes(createdDate.until(LocalDateTime.now(), ChronoUnit.MINUTES))!!
       .also { duration ->
         when (eventType) {
           "IMPRISONMENT_STATUS-CHANGED" -> {
