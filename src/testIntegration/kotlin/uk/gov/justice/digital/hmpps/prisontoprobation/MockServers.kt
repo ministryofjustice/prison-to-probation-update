@@ -1,18 +1,27 @@
-package uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock
+package uk.gov.justice.digital.hmpps.prisontoprobation
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.http.HttpHeader
 import com.github.tomakehurst.wiremock.http.HttpHeaders
 import com.google.gson.GsonBuilder
 
-class Elite2MockServer : WireMockServer(8093)
+private const val MAPPINGS_DIRECTORY = "src/testIntegration/resources"
 
-class CommunityMockServer : WireMockServer(8096)
+open class MockServer(port: Int) : WireMockServer(
+  WireMockConfiguration.wireMockConfig()
+    .port(port)
+    .usingFilesUnderDirectory(MAPPINGS_DIRECTORY)
+)
 
-class SearchMockServer : WireMockServer(8097)
+class PrisonMockServer : MockServer(8093)
 
-class OAuthMockServer : WireMockServer(8090) {
+class CommunityMockServer : MockServer(8096)
+
+class SearchMockServer : MockServer(8097)
+
+class OAuthMockServer : MockServer(8090) {
   private val gson = GsonBuilder().create()
 
   fun stubGrantToken() {

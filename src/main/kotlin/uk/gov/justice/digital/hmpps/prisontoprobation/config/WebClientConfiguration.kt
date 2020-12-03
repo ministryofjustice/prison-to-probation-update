@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfiguration(
   @Value("\${community.endpoint.url}") private val communityRootUri: String,
-  @Value("\${elite2.endpoint.url}") private val elite2RootUri: String,
+  @Value("\${prison.endpoint.url}") private val prisonRootUri: String,
   @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
   @Value("\${offender-search.endpoint.url}") private val searchRootUri: String,
   private val webClientBuilder: WebClient.Builder
@@ -46,7 +46,7 @@ class WebClientConfiguration(
     oauth2Client.setDefaultClientRegistrationId("prison-api")
 
     return webClientBuilder
-      .baseUrl(elite2RootUri)
+      .baseUrl(prisonRootUri)
       .apply(oauth2Client.oauth2Configuration())
       .exchangeStrategies(
         ExchangeStrategies.builder()
@@ -90,7 +90,7 @@ class WebClientConfiguration(
 
   @Bean
   fun prisonApiHealthWebClient(): WebClient {
-    return webClientBuilder.baseUrl(elite2RootUri).build()
+    return webClientBuilder.baseUrl(prisonRootUri).build()
   }
 
   @Bean

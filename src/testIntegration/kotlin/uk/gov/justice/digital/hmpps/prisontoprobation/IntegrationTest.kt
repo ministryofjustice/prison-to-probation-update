@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
+package uk.gov.justice.digital.hmpps.prisontoprobation
 
 import com.amazonaws.services.sqs.AmazonSQS
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -16,10 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.CommunityMockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.Elite2MockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.SearchMockServer
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -31,11 +28,14 @@ abstract class IntegrationTest {
   @Qualifier("awsSqsClient")
   internal lateinit var awsSqsClient: AmazonSQS
 
+  @SpyBean
+  internal lateinit var messageProcessor: MessageProcessor
+
   @Autowired
   private lateinit var objectMapper: ObjectMapper
 
   companion object {
-    internal val elite2MockServer = Elite2MockServer()
+    internal val prisonMockServer = PrisonMockServer()
     internal val oauthMockServer = OAuthMockServer()
     internal val communityMockServer = CommunityMockServer()
     internal val searchMockServer = SearchMockServer()
@@ -43,7 +43,7 @@ abstract class IntegrationTest {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
-      elite2MockServer.start()
+      prisonMockServer.start()
       oauthMockServer.start()
       communityMockServer.start()
       searchMockServer.start()
@@ -52,7 +52,7 @@ abstract class IntegrationTest {
     @AfterAll
     @JvmStatic
     fun stopMocks() {
-      elite2MockServer.stop()
+      prisonMockServer.stop()
       oauthMockServer.stop()
       communityMockServer.stop()
       searchMockServer.stop()
@@ -68,7 +68,7 @@ abstract class IntegrationTest {
   @BeforeEach
   fun resetStubs() {
     oauthMockServer.resetAll()
-    elite2MockServer.resetAll()
+    prisonMockServer.resetAll()
     communityMockServer.resetAll()
     searchMockServer.resetAll()
 

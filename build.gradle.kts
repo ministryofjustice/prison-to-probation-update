@@ -1,10 +1,17 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.0.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.0.2"
   kotlin("plugin.spring") version "1.4.10"
+  id("org.unbroken-dome.test-sets") version "3.0.1"
+  idea
 }
 
 configurations {
   implementation { exclude(group = "tomcat-jdbc") }
+}
+
+testSets {
+  "testIntegration"()
+  "testSmoke"()
 }
 
 dependencies {
@@ -42,38 +49,4 @@ dependencies {
   testImplementation("org.testcontainers:localstack:1.15.0")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.1")
-}
-
-tasks.withType<Test> {
-  if (System.getProperty("test.profile") == "unit") {
-    exclude("**/*MessageIntegrationTest*")
-    exclude("**/smoketest/**")
-  }
-  if (System.getProperty("test.profile") == "integration") {
-    include("**/*MessageIntegrationTest*")
-    exclude("**/smoketest/**")
-  }
-  if (System.getProperty("test.profile") == "smoke") {
-    include("**/smoketest/**")
-  }
-}
-if (System.getProperty("test.profile") == "integration") {
-  reporting.baseDir = File("$buildDir/reports/tests/integration")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/integration")
-}
-
-if (System.getProperty("test.profile") == "unit") {
-  reporting.baseDir = File("$buildDir/reports/tests/unit")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/unit")
-}
-
-if (System.getProperty("test.profile") == "smoke") {
-  reporting.baseDir = File("$buildDir/reports/tests/smoke")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/smoke")
-}
-
-testlogger {
-  if (System.getProperty("test.profile") == "smoke") {
-    showStandardStreams = true
-  }
 }

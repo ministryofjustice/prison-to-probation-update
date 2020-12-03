@@ -23,7 +23,7 @@ prisontoprobation:
   message-processor:
     enabled: false
 
-elite2:
+prison:
   endpoint.url: http://localhost:8093
 
 oauth:

@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation.config
+package uk.gov.justice.digital.hmpps.prisontoprobation.services.config
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.testcontainers.containers.localstack.LocalStackContainer
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.createTable
 
 @Configuration
 @ConditionalOnProperty(name = ["dynamodb.provider"], havingValue = "embedded-localstack")

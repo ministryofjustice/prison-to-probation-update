@@ -10,7 +10,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import java.net.HttpURLConnection
 import java.time.LocalDate
 

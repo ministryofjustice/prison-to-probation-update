@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
 
 @ActiveProfiles(profiles = ["test", "test-queue"])
 class QueueIntegrationTest : IntegrationTest() {
@@ -19,7 +18,7 @@ class QueueIntegrationTest : IntegrationTest() {
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
-  fun eliteRequestCountFor(url: String) = elite2MockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
+  fun eliteRequestCountFor(url: String) = prisonMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
   fun communityPutCountFor(url: String) = communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
 

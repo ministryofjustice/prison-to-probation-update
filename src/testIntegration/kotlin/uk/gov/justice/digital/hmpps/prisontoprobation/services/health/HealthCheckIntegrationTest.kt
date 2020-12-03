@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 
 @ExtendWith(SpringExtension::class)
 class HealthCheckIntegrationTest : IntegrationTest() {
@@ -51,7 +52,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
       .isOk()
       .expectBody()
       .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("OK")
-      .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("OK")
+      .jsonPath("components.prisonApiHealth.details.HttpStatus").isEqualTo("OK")
       .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("OK")
       .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("OK")
       .jsonPath("status").isEqualTo("UP")
@@ -82,7 +83,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
       .expectBody()
       .jsonPath("status").isEqualTo("DOWN")
       .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
-      .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
+      .jsonPath("components.prisonApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
       .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
       .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("NOT_FOUND")
   }
@@ -98,7 +99,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
       .is5xxServerError
       .expectBody()
       .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
-      .jsonPath("components.elite2ApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
+      .jsonPath("components.prisonApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
       .jsonPath("components.communityApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
       .jsonPath("components.searchApiHealth.details.HttpStatus").isEqualTo("I_AM_A_TEAPOT")
       .jsonPath("status").isEqualTo("DOWN")
@@ -227,7 +228,7 @@ class HealthCheckIntegrationTest : IntegrationTest() {
       )
     )
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/health/ping").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")

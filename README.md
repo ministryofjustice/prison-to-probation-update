@@ -53,3 +53,29 @@ local test data:
 ./create-prison-movements-messages-local.bash 
 ```
 
+### Testing
+
+There are 3 source sets to handle the unit, integration and smoke tests.  Note that `check` only runs the unit tests and you have to run the integration tests manually.
+
+#### Unit Tests
+
+The source set `test` contains the unit tests.  These are run with the command `./gradlew test` and are also included in the check when running command `./gradlew check`.
+
+#### Integration Tests
+
+The source set `testIntegration` contains the integration tests.  These are run with the command `./gradlew testIntegration` but are NOT included in the check when running command `./gradlew check` and so must be run manually.
+
+Note that the integration tests currently use TestContainers to start localstack and so you do not need to start localstack manually.
+
+If you DO wish to run localstack manually (as is done in the Circle build) then you must:
+* start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
+* run the tests with command `AWS_PROVIDER=localstack ./gradlew testIntegration`
+
+#### Smoke Tests
+
+The source set `testSmoke` contains the smoke tests.
+
+These tests are not intended to be run locally, but instead are run against a deployed application (as happens in the Circle build).
+
+For more information on the smoke tests see the project `dps-smoketest`.
+
