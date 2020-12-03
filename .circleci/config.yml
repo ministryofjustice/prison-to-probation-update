@@ -91,7 +91,7 @@ jobs:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
       - run:
-          command: ./gradlew testSmoke
+          command: ./gradlew testSmoke -Dtestlogger.showStandardStreams=true
       - save_cache:
           paths:
             - ~/.gradle
