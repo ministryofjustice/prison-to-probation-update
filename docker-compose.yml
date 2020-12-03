@@ -6,7 +6,7 @@ services:
     container_name: prison-to-probation-update
     depends_on:
       - localstack
-      - elite2-api
+      - prison-api
       - community-api
     ports:
       - "8084:8080"
@@ -16,7 +16,7 @@ services:
       - SERVER_PORT=8080
       - COMMUNITY_ENDPOINT_URL=http://localhost:8096
       - OAUTH_API_BASE_URL=http://localhost:8090/auth
-      - ELITE2_ENDPOINT_URL=http://localhost:8093
+      - PRISON_ENDPOINT_URL=http://localhost:8093
       - SQS_ENDPOINT_URL=http://localhost:4576
       - SPRING_PROFILES_ACTIVE=stdout,localstack
       - AWS_ACCESS_KEY_ID=foobar
@@ -25,9 +25,9 @@ services:
       - OAUTH_CLIENT_SECRET=clientsecret
       - OAUTH_CLIENT_ID=prison-to-probation-update-api-client
 
-  elite2-api:
+  prison-api:
     image: quay.io/hmpps/prison-api:latest
-    container_name: elite2-api
+    container_name: prison-api
     depends_on:
       - oauth
     ports:

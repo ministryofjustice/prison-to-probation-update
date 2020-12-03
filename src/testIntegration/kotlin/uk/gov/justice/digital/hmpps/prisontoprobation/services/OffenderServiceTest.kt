@@ -28,7 +28,7 @@ class OffenderServiceTest : IntegrationTest() {
   fun `test get offender calls rest endpoint`() {
     val expectedPrisoner = createPrisoner()
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get(anyUrl()).willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -40,7 +40,7 @@ class OffenderServiceTest : IntegrationTest() {
     val offender = service.getOffender("AB123D")
 
     assertThat(offender).isEqualTo(expectedPrisoner)
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/prisoners?offenderNo=AB123D"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
@@ -50,7 +50,7 @@ class OffenderServiceTest : IntegrationTest() {
   fun `test get movement calls rest endpoint`() {
     val expectedMovement = createMovement()
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get(anyUrl()).willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -62,7 +62,7 @@ class OffenderServiceTest : IntegrationTest() {
     val movement = service.getMovement(1234L, 1L)
 
     assertThat(movement).isEqualTo(expectedMovement)
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/movement/1"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
@@ -70,7 +70,7 @@ class OffenderServiceTest : IntegrationTest() {
 
   @Test
   fun `test get movement will be null if not found`() {
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/api/bookings/1234/movement/1").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -85,7 +85,7 @@ class OffenderServiceTest : IntegrationTest() {
 
   @Test
   fun `test get movement will throw exception for other types of http responses`() {
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/api/bookings/1234/movement/1").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -99,7 +99,7 @@ class OffenderServiceTest : IntegrationTest() {
   @Test
   fun `test get booking calls rest endpoint`() {
     val expectedBooking = createBooking()
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get(anyUrl()).willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -111,7 +111,7 @@ class OffenderServiceTest : IntegrationTest() {
     val booking = service.getBooking(1234L)
 
     assertThat(booking).isEqualTo(expectedBooking)
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234?basicInfo=true"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
@@ -121,7 +121,7 @@ class OffenderServiceTest : IntegrationTest() {
   fun `test get sentence detail calls rest endpoint`() {
     val expectedSentenceDetails = SentenceDetail()
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/api/bookings/1234/sentenceDetail").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -133,7 +133,7 @@ class OffenderServiceTest : IntegrationTest() {
     val movement = service.getSentenceDetail(1234L)
 
     assertThat(movement).isEqualTo(expectedSentenceDetails)
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/sentenceDetail"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
@@ -143,7 +143,7 @@ class OffenderServiceTest : IntegrationTest() {
   fun `test get merged identifiers calls rest endpoint`() {
     val expectedIdentifiers = listOf(BookingIdentifier(type = "MERGED", value = "A99999Y"))
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/api/bookings/1234/identifiers?type=MERGED").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -155,7 +155,7 @@ class OffenderServiceTest : IntegrationTest() {
     val bookingIdentifiers = service.getMergedIdentifiers(1234L)
 
     assertThat(bookingIdentifiers).isEqualTo(expectedIdentifiers)
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/identifiers?type=MERGED"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
@@ -212,7 +212,7 @@ class OffenderServiceTest : IntegrationTest() {
       ]
       """.trimIndent()
 
-    elite2MockServer.stubFor(
+    prisonMockServer.stubFor(
       get("/api/offender-sentences/booking/1234/sentenceTerms").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -228,7 +228,7 @@ class OffenderServiceTest : IntegrationTest() {
       SentenceSummary(startDate = LocalDate.parse("2020-11-21"), sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence", sentenceSequence = 62, consecutiveTo = 61),
       SentenceSummary(startDate = LocalDate.parse("2020-01-13"), sentenceTypeDescription = "ORA 14 Day Fixed Term Recall", sentenceSequence = 69),
     )
-    elite2MockServer.verify(
+    prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/offender-sentences/booking/1234/sentenceTerms"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )

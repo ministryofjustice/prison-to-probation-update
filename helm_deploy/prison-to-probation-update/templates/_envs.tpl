@@ -19,8 +19,8 @@ env:
   - name: OAUTH_ENDPOINT_URL
     value: "{{ .Values.env.OAUTH_ENDPOINT_URL }}"
 
-  - name: ELITE2_ENDPOINT_URL
-    value: "{{ .Values.env.ELITE2_ENDPOINT_URL }}"
+  - name: PRISON_ENDPOINT_URL
+    value: "{{ .Values.env.PRISON_ENDPOINT_URL }}"
 
   - name: COMMUNITY_ENDPOINT_URL
     value: "{{ .Values.env.COMMUNITY_ENDPOINT_URL }}"

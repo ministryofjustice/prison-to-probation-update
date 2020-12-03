@@ -18,7 +18,7 @@ class QueueIntegrationTest : IntegrationTest() {
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
-  fun eliteRequestCountFor(url: String) = elite2MockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
+  fun eliteRequestCountFor(url: String) = prisonMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
   fun communityPutCountFor(url: String) = communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
 

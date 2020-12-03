@@ -15,7 +15,7 @@ open class MockServer(port: Int) : WireMockServer(
     .usingFilesUnderDirectory(MAPPINGS_DIRECTORY)
 )
 
-class Elite2MockServer : MockServer(8093)
+class PrisonMockServer : MockServer(8093)
 
 class CommunityMockServer : MockServer(8096)
 

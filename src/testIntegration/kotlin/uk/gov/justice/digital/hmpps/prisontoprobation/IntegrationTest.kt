@@ -35,7 +35,7 @@ abstract class IntegrationTest {
   private lateinit var objectMapper: ObjectMapper
 
   companion object {
-    internal val elite2MockServer = Elite2MockServer()
+    internal val prisonMockServer = PrisonMockServer()
     internal val oauthMockServer = OAuthMockServer()
     internal val communityMockServer = CommunityMockServer()
     internal val searchMockServer = SearchMockServer()
@@ -43,7 +43,7 @@ abstract class IntegrationTest {
     @BeforeAll
     @JvmStatic
     fun startMocks() {
-      elite2MockServer.start()
+      prisonMockServer.start()
       oauthMockServer.start()
       communityMockServer.start()
       searchMockServer.start()
@@ -52,7 +52,7 @@ abstract class IntegrationTest {
     @AfterAll
     @JvmStatic
     fun stopMocks() {
-      elite2MockServer.stop()
+      prisonMockServer.stop()
       oauthMockServer.stop()
       communityMockServer.stop()
       searchMockServer.stop()
@@ -68,7 +68,7 @@ abstract class IntegrationTest {
   @BeforeEach
   fun resetStubs() {
     oauthMockServer.resetAll()
-    elite2MockServer.resetAll()
+    prisonMockServer.resetAll()
     communityMockServer.resetAll()
     searchMockServer.resetAll()
 

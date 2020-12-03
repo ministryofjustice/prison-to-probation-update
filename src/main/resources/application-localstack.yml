@@ -7,7 +7,7 @@ sqs:
 oauth:
   endpoint.url: http://localhost:8090/auth
 
-elite2:
+prison:
   endpoint.url: http://localhost:8093
 
 community:
