@@ -121,6 +121,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1301-source-sets
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -128,6 +129,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1301-source-sets
           requires:
             - validate
             - test-integration
@@ -146,6 +148,10 @@ workflows:
           type: approval
           requires:
             - deploy_preprod
+          filters:
+            branches:
+              only:
+                - main # TODO remove this filter once the build and deploy dev have been removed for branch mh-DT-1301-source-sets
       - hmpps/deploy_env:
           name: deploy_prod
           env: "prod"
