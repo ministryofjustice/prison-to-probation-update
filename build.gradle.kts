@@ -49,37 +49,3 @@ dependencies {
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.1")
 }
-
-tasks.withType<Test> {
-  if (System.getProperty("test.profile") == "unit") {
-    exclude("**/*MessageIntegrationTest*")
-    exclude("**/smoketest/**")
-  }
-  if (System.getProperty("test.profile") == "integration") {
-    include("**/*MessageIntegrationTest*")
-    exclude("**/smoketest/**")
-  }
-  if (System.getProperty("test.profile") == "smoke") {
-    include("**/smoketest/**")
-  }
-}
-if (System.getProperty("test.profile") == "integration") {
-  reporting.baseDir = File("$buildDir/reports/tests/integration")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/integration")
-}
-
-if (System.getProperty("test.profile") == "unit") {
-  reporting.baseDir = File("$buildDir/reports/tests/unit")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/unit")
-}
-
-if (System.getProperty("test.profile") == "smoke") {
-  reporting.baseDir = File("$buildDir/reports/tests/smoke")
-  project.setProperty("testResultsDirName", "$buildDir/test-results/smoke")
-}
-
-testlogger {
-  if (System.getProperty("test.profile") == "smoke") {
-    showStandardStreams = true
-  }
-}
