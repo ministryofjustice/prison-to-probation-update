@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 
 @ExtendWith(SpringExtension::class)
 class HealthCheckIntegrationTest : IntegrationTest() {

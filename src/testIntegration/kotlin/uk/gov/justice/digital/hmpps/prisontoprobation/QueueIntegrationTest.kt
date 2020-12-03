@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
 
 @ActiveProfiles(profiles = ["test", "test-queue"])
 class QueueIntegrationTest : IntegrationTest() {

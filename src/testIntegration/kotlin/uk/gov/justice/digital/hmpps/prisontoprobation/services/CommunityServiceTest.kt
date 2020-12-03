@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_CONFLICT

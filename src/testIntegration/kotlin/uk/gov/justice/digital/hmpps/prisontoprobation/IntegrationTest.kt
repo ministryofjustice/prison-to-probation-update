@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
+package uk.gov.justice.digital.hmpps.prisontoprobation
 
 import com.amazonaws.services.sqs.AmazonSQS
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -16,10 +16,6 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.CommunityMockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.Elite2MockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.OAuthMockServer
-import uk.gov.justice.digital.hmpps.whereabouts.integration.wiremock.SearchMockServer
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")

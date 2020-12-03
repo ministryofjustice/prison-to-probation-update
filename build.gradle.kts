@@ -1,10 +1,16 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.0.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.0.1"
   kotlin("plugin.spring") version "1.4.10"
+  id("org.unbroken-dome.test-sets") version "3.0.1"
 }
 
 configurations {
   implementation { exclude(group = "tomcat-jdbc") }
+}
+
+testSets {
+  "testIntegration"()
+  "testSmoke"()
 }
 
 dependencies {
