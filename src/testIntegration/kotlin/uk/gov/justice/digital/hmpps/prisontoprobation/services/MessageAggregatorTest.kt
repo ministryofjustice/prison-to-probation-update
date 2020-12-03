@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argThat
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.doThrow
 import com.nhaarman.mockitokotlin2.inOrder
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.reset
@@ -12,23 +14,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatcher
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("test")
 @TestPropertySource(
   properties = [
     "prisontoprobation.hold-back.duration=10m"
   ]
 )
-internal class MessageAggregatorTest {
+internal class MessageAggregatorTest : IntegrationTest() {
   @Autowired
   private lateinit var repository: MessageRepository
 
@@ -38,13 +35,10 @@ internal class MessageAggregatorTest {
   @Autowired
   private lateinit var retryService: MessageRetryService
 
-  @MockBean
-  private lateinit var messageProcessor: MessageProcessor
-
   @BeforeEach
   fun setup() {
     repository.deleteAll()
-    whenever(messageProcessor.processMessage(any())).thenReturn(Done())
+    doReturn(Done()).whenever(messageProcessor).processMessage(any())
   }
 
   @Test
@@ -257,7 +251,7 @@ internal class MessageAggregatorTest {
 
   @Test
   fun `all messages will be retried if all fail with unexpected exceptions`() {
-    whenever(messageProcessor.processMessage(any())).thenThrow(RuntimeException("oops"))
+    doThrow(RuntimeException("oops")).whenever(messageProcessor).processMessage(any())
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
@@ -272,9 +266,9 @@ internal class MessageAggregatorTest {
 
   @Test
   fun `some messages will be retried if some fail with unexpected exceptions`() {
-    whenever(messageProcessor.processMessage(any()))
-      .thenThrow(RuntimeException("oops"))
-      .thenReturn(Done())
+    doThrow(RuntimeException("oops"))
+      .doReturn(Done())
+      .whenever(messageProcessor).processMessage(any())
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
@@ -289,7 +283,7 @@ internal class MessageAggregatorTest {
 
   @Test
   fun `all messages will be retried if all require to be retried`() {
-    whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(99))
+    doReturn(TryLater(99)).whenever(messageProcessor).processMessage(any())
 
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))

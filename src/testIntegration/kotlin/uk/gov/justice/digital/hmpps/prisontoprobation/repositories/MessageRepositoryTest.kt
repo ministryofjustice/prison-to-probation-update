@@ -5,17 +5,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("test")
-class MessageRepositoryTest {
+class MessageRepositoryTest : IntegrationTest() {
 
   @Autowired
   private lateinit var repository: MessageRepository
