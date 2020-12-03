@@ -5,7 +5,7 @@ orbs:
   hmpps: ministryofjustice/hmpps@1.1.1
 
 executors:
-  test-integration:
+  validator-integration:
     docker:
       - image: circleci/openjdk:11-jdk
       - image: localstack/localstack:0.11.2
@@ -21,7 +21,7 @@ executors:
     environment:
       _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
     working_directory: ~/app
-  test:
+  validator:
     docker:
       - image: circleci/openjdk:11-jdk
     environment:
@@ -30,7 +30,7 @@ executors:
 
 jobs:
   validate:
-    executor: test
+    executor: validator
     steps:
       - checkout
       - restore_cache:
@@ -53,7 +53,7 @@ jobs:
             - build/libs
             - build.gradle.kts
   test-integration:
-    executor: test-integration
+    executor: validator-integration
     steps:
       - checkout
       - hmpps/install_aws_cli
@@ -88,7 +88,7 @@ jobs:
             - build/libs
             - build.gradle.kts
   smoke-test:
-    executor: test
+    executor: validator
     steps:
       - checkout
       - restore_cache:
