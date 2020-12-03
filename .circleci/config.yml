@@ -121,7 +121,6 @@ workflows:
             branches:
               only:
                 - main
-                - mh-DT-1301-source-sets
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -129,7 +128,6 @@ workflows:
             branches:
               only:
                 - main
-                - mh-DT-1301-source-sets
           requires:
             - validate
             - test-integration
@@ -141,10 +139,6 @@ workflows:
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
-          filters:
-            branches:
-              only:
-                - main # TODO this can be removed once finished testing deploy dev / smoke test from branch mh-DT-1301-source-sets
           context: prison-to-probation-update-preprod
           requires:
             - smoke-test
