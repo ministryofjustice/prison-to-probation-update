@@ -140,7 +140,7 @@ workflows:
                 - main
           requires:
             - validate
-`            - test-integration
+            - test-integration
             - helm_lint
             - build_docker
       - smoke-test:
