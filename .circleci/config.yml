@@ -121,6 +121,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1259-histograms
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -128,6 +129,7 @@ workflows:
             branches:
               only:
                 - main
+                - mh-DT-1259-histograms
           requires:
             - validate
             - test-integration
@@ -136,6 +138,10 @@ workflows:
       - smoke-test:
           requires:
             - deploy_dev
+          filters:
+            branches:
+              only:
+                - main
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"

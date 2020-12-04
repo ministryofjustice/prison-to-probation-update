@@ -234,6 +234,262 @@ data:
           "timeShift": null,
           "title": "Sentence Date Changes / 24h",
           "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 20
+          },
+          "id": 15,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Empty 1",
+          "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 30
+          },
+          "id": 16,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Empty 2",
+          "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 40
+          },
+          "id": 17,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Empty 3",
+          "type": "bargauge"
+        },
+        {
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 50
+          },
+          "id": 18,
+          "options": {
+            "displayMode": "lcd",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                  "last"
+              ],
+              "values": false
+            },
+            "showUnfilled": true
+          },
+          "pluginVersion": "7.0.2",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Total",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Success",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "legendFormat": "Fail",
+              "refId": "C"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Empty 4",
+          "type": "bargauge"
         }
       ],
       "schemaVersion": 25,
