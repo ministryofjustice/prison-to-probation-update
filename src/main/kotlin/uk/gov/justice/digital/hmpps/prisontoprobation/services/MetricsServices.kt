@@ -19,10 +19,10 @@ internal const val TOTAL_TYPE = "total"
 internal const val FAIL_TYPE = "fail"
 internal const val SUCCESS_TYPE = "success"
 internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
-internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeSeconds"
+internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeDays"
 internal const val LAST_RETRY_WINDOW_HOURS = 24L
 internal const val RETRIES_EXPECTED_MAX = 50.0
-internal const val AGE_EXPECTED_MAX_MINUTES = 57600L // 40 days
+internal const val AGE_EXPECTED_MAX_DAYS = 40L
 
 @Component
 class MeterFactory {
@@ -45,8 +45,8 @@ class MeterFactory {
   fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
     Timer.builder(name)
       .publishPercentileHistogram()
-      .minimumExpectedValue(Duration.ofMinutes(1))
-      .maximumExpectedValue(Duration.ofMinutes(AGE_EXPECTED_MAX_MINUTES))
+      .minimumExpectedValue(Duration.ofDays(1))
+      .maximumExpectedValue(Duration.ofDays(AGE_EXPECTED_MAX_DAYS))
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
@@ -109,7 +109,7 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private val sentenceDatesSuccessTimer = meterFactory.registerMessageAgeTimer(
     meterRegistry,
     SENTENCE_DATES_METRIC,
-    "The time in minutes before a successful update",
+    "The time in days before a successful update",
     SUCCESS_AFTER_TIME_TYPE
   )
 
@@ -140,7 +140,7 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private val statusChangeSuccessTimer = meterFactory.registerMessageAgeTimer(
     meterRegistry,
     STATUS_CHANGE_METRIC,
-    "The time in minutes before a successful update",
+    "The time in days before a successful update",
     SUCCESS_AFTER_TIME_TYPE
   )
 
@@ -162,7 +162,7 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private fun readyForDelete(deleteBy: LocalDateTime) = deleteBy.minus(LAST_RETRY_WINDOW_HOURS, ChronoUnit.HOURS) < LocalDateTime.now()
 
   fun eventSucceeded(eventType: String, createdDate: LocalDateTime, retries: Int = 0) =
-    Duration.ofMinutes(createdDate.until(LocalDateTime.now(), ChronoUnit.MINUTES))!!
+    Duration.ofDays(createdDate.until(LocalDateTime.now(), ChronoUnit.DAYS) + 1)!! // +1 because a partial day counts as a whole day
       .also { duration ->
         when (eventType) {
           "IMPRISONMENT_STATUS-CHANGED" -> {
