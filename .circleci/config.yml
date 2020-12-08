@@ -136,10 +136,6 @@ workflows:
       - smoke-test:
           requires:
             - deploy_dev
-          filters:
-            branches:
-              only:
-                - main
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -166,6 +162,6 @@ workflows:
             branches:
               only:
                 - main
-  jobs:
+    jobs:
       - owasp/gradle_owasp_dependency_check:
           executor: validator
