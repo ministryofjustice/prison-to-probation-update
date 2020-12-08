@@ -283,7 +283,7 @@ data:
               "expr": "sum(ptpu_sentenceDateChange_seconds_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
-              "legendFormat": "{{le}}",
+              "legendFormat": {{`"{{le}}"`}},
               "refId": "A"
             }
           ],
@@ -338,7 +338,7 @@ data:
               "expr": "sum(ptpu_sentenceDateChange_retries_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
-              "legendFormat": "{{le}}",
+              "legendFormat": {{`"{{le}}"`}},
               "refId": "A"
             }
           ],
@@ -395,7 +395,7 @@ data:
               "expr": "sum(ptpu_statusChange_seconds_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
-              "legendFormat": "{{le}}",
+              "legendFormat": {{`"{{le}}"`}},
               "refId": "A"
             }
           ],
@@ -449,7 +449,7 @@ data:
               "expr": "sum(ptpu_statusChange_retries_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
-              "legendFormat": "{{le}}",
+              "legendFormat": {{`"{{le}}"`}},
               "refId": "A"
             }
           ],
