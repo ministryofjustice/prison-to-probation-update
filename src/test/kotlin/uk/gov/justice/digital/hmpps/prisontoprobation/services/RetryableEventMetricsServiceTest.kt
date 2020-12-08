@@ -67,12 +67,12 @@ class RetryableEventMetricsServiceTest {
     }
 
     @Test
-    fun `Counts number of seconds required to process a success event`() {
+    fun `Counts number of days required to process a success event`() {
       val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusMinutes(123L))
+      metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusHours(36L))
 
-      verify(successTimer).record(Duration.ofMinutes(123L))
+      verify(successTimer).record(Duration.ofDays(2L))
     }
 
     @Test
@@ -134,12 +134,12 @@ class RetryableEventMetricsServiceTest {
 
     @ParameterizedTest
     @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
-    fun `Counts number of seconds required to process a success event`(eventType: String) {
+    fun `Counts number of days required to process a success event`(eventType: String) {
       val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
-      metricService.eventSucceeded(eventType, LocalDateTime.now().minusMinutes(123L))
+      metricService.eventSucceeded(eventType, LocalDateTime.now().minusHours(24L))
 
-      verify(successTimer).record(Duration.ofMinutes(123L))
+      verify(successTimer).record(Duration.ofDays(2L))
     }
 
     @ParameterizedTest
