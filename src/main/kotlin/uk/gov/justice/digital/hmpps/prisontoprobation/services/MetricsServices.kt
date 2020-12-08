@@ -22,7 +22,7 @@ internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
 internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeDays"
 internal const val LAST_RETRY_WINDOW_HOURS = 24L
 internal const val RETRIES_EXPECTED_MAX = 50.0
-internal const val AGE_EXPECTED_MAX_DAYS = 40L
+internal const val AGE_EXPECTED_MAX_DAYS = 20L
 
 @Component
 class MeterFactory {
