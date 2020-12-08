@@ -121,7 +121,6 @@ workflows:
             branches:
               only:
                 - main
-                - mh-DT-1259-histograms
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
@@ -129,7 +128,6 @@ workflows:
             branches:
               only:
                 - main
-                - mh-DT-1259-histograms
           requires:
             - validate
             - test-integration
@@ -168,6 +166,6 @@ workflows:
             branches:
               only:
                 - main
-    jobs:
+  jobs:
       - owasp/gradle_owasp_dependency_check:
           executor: validator
