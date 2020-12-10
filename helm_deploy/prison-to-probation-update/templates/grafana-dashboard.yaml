@@ -26,7 +26,7 @@ data:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 1,
-      "id": 55,
+      "id": 34,
       "links": [],
       "panels": [
         {
@@ -40,11 +40,12 @@ data:
           },
           "id": 12,
           "panels": [],
-          "title": "Offender Update Counts",
+          "title": "Offender Updates",
           "type": "row"
         },
         {
           "datasource": null,
+          "description": "The number of movements completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -55,10 +56,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -73,7 +70,7 @@ data:
           },
           "id": 2,
           "options": {
-            "displayMode": "lcd",
+            "displayMode": "gradient",
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -87,28 +84,32 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(increase(ptpu_movement_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_movement_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(increase(ptpu_movement_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_movement_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(increase(ptpu_movement_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_movement_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
             }
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Movements / 24h",
+          "title": "Movements",
           "type": "bargauge"
         },
         {
           "datasource": null,
+          "description": "The number of sentence date changes completed ",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -119,10 +120,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -137,7 +134,7 @@ data:
           },
           "id": 14,
           "options": {
-            "displayMode": "lcd",
+            "displayMode": "gradient",
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -151,28 +148,32 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_sentenceDateChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
             }
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Sentence Date Changes / 24h",
+          "title": "Sentence Date Changes",
           "type": "bargauge"
         },
         {
           "datasource": null,
+          "description": "The number of status changes completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -183,10 +184,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -201,7 +198,7 @@ data:
           },
           "id": 13,
           "options": {
-            "displayMode": "lcd",
+            "displayMode": "gradient",
             "orientation": "horizontal",
             "reduceOptions": {
               "calcs": [
@@ -215,29 +212,32 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[24h]))",
+              "expr": "sum(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"})",
+              "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
             }
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Status Changes / 24h",
+          "title": "Status Changes ",
           "type": "bargauge"
         },
         {
           "datasource": null,
-          "description": "The time taken in days for all successful sentence date change message completed in the last 24 hours.",
+          "description": "The time taken in days for all successful sentence date change messages completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -248,10 +248,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -289,12 +285,12 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Sentence Date Time to Process (mins)",
+          "title": "Sentence Date Time to Process (days)",
           "type": "bargauge"
         },
         {
           "datasource": null,
-          "description": "The number of retries required for all successful sentence date change message completed in the last 24 hours.",
+          "description": "The number of retries required for all successful sentence date change messages completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -349,7 +345,7 @@ data:
         },
         {
           "datasource": null,
-          "description": "The time taken in days for all successful status change message completed in the last 24 hours.",
+          "description": "The time taken in days for all successful status change messages completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},
@@ -360,10 +356,6 @@ data:
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               }
@@ -401,12 +393,12 @@ data:
           ],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Status Change Time to Process (mins)",
+          "title": "Status Change Time to Process (days)",
           "type": "bargauge"
         },
         {
           "datasource": null,
-          "description": "The number of retries required to successfully process each status change message completed in the last 24 hours.",
+          "description": "The number of retries required to successfully process each status change messages completed",
           "fieldConfig": {
             "defaults": {
               "custom": {},

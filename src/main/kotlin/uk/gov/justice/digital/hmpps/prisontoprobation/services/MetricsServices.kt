@@ -3,12 +3,10 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Timer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -22,7 +20,7 @@ internal const val SUCCESS_AFTER_RETRIES_TYPE = "successAfterRetries"
 internal const val SUCCESS_AFTER_TIME_TYPE = "successAfterTimeDays"
 internal const val LAST_RETRY_WINDOW_HOURS = 24L
 internal const val RETRIES_EXPECTED_MAX = 50.0
-internal const val AGE_EXPECTED_MAX_DAYS = 20L
+internal const val AGE_EXPECTED_MAX_DAYS = 20.0
 
 @Component
 class MeterFactory {
@@ -42,11 +40,11 @@ class MeterFactory {
       .tag("eventType", type)
       .register(meterRegistry)
 
-  fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): Timer =
-    Timer.builder(name)
+  fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
+    DistributionSummary.builder(name)
       .publishPercentileHistogram()
-      .minimumExpectedValue(Duration.ofDays(1))
-      .maximumExpectedValue(Duration.ofDays(AGE_EXPECTED_MAX_DAYS))
+      .minimumExpectedValue(0.1)
+      .maximumExpectedValue(AGE_EXPECTED_MAX_DAYS)
       .description(description)
       .tag("eventType", type)
       .register(meterRegistry)
@@ -162,20 +160,20 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   private fun readyForDelete(deleteBy: LocalDateTime) = deleteBy.minus(LAST_RETRY_WINDOW_HOURS, ChronoUnit.HOURS) < LocalDateTime.now()
 
   fun eventSucceeded(eventType: String, createdDate: LocalDateTime, retries: Int = 0) =
-    Duration.ofDays(createdDate.until(LocalDateTime.now(), ChronoUnit.DAYS) + 1)!! // +1 because a partial day counts as a whole day
-      .also { duration ->
+    (createdDate.until(LocalDateTime.now(), ChronoUnit.DAYS) + 1) // +1 because a partial day counts as a whole day
+      .also { days ->
         when (eventType) {
           "IMPRISONMENT_STATUS-CHANGED" -> {
             statusChangesTotalCounter.increment()
             statusChangesSuccessCounter.increment()
             statusChangeRetriesDistribution.record(retries.toDouble())
-            statusChangeSuccessTimer.record(duration)
+            statusChangeSuccessTimer.record(days.toDouble())
           }
           "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
             sentenceDatesTotalCounter.increment()
             sentenceDatesSuccessCounter.increment()
             sentenceDatesRetriesDistribution.record(retries.toDouble())
-            sentenceDatesSuccessTimer.record(duration)
+            sentenceDatesSuccessTimer.record(days.toDouble())
           }
         }
       }

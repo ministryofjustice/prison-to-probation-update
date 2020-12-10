@@ -9,14 +9,12 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Timer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyString
-import java.time.Duration
 import java.time.LocalDateTime
 
 class RetryableEventMetricsServiceTest {
@@ -30,7 +28,7 @@ class RetryableEventMetricsServiceTest {
     private val successCounter = mock<Counter>()
     private val failCounter = mock<Counter>()
     private val retryDistribution = mock<DistributionSummary>()
-    private val successTimer = mock<Timer>()
+    private val successTimer = mock<DistributionSummary>()
 
     @BeforeEach
     fun `mock counters`() {
@@ -72,7 +70,7 @@ class RetryableEventMetricsServiceTest {
 
       metricService.eventSucceeded("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now().minusHours(36L))
 
-      verify(successTimer).record(Duration.ofDays(2L))
+      verify(successTimer).record(2.0)
     }
 
     @Test
@@ -94,7 +92,7 @@ class RetryableEventMetricsServiceTest {
     private val successCounter = mock<Counter>()
     private val failCounter = mock<Counter>()
     private val retryDistribution = mock<DistributionSummary>()
-    private val successTimer = mock<Timer>()
+    private val successTimer = mock<DistributionSummary>()
 
     @BeforeEach
     fun `mock counters`() {
@@ -139,7 +137,7 @@ class RetryableEventMetricsServiceTest {
 
       metricService.eventSucceeded(eventType, LocalDateTime.now().minusHours(24L))
 
-      verify(successTimer).record(Duration.ofDays(2L))
+      verify(successTimer).record(2.0)
     }
 
     @ParameterizedTest
