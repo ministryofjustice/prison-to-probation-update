@@ -16,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -23,6 +24,9 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 abstract class IntegrationTest {
   @Value("\${token}")
   private val token: String? = null
+
+  @Autowired
+  protected lateinit var jwtAuthHelper: JwtAuthHelper
 
   @SpyBean
   @Qualifier("awsSqsClient")
@@ -40,6 +44,7 @@ abstract class IntegrationTest {
     internal val communityMockServer = CommunityMockServer()
     internal val searchMockServer = SearchMockServer()
 
+    @Suppress("unused")
     @BeforeAll
     @JvmStatic
     fun startMocks() {
@@ -49,6 +54,7 @@ abstract class IntegrationTest {
       searchMockServer.start()
     }
 
+    @Suppress("unused")
     @AfterAll
     @JvmStatic
     fun stopMocks() {
@@ -83,4 +89,9 @@ abstract class IntegrationTest {
   }
 
   internal fun Any.asJson() = objectMapper.writeValueAsBytes(this)
+
+  internal fun setAuthorisation(
+    user: String = "ptpu-report-client",
+    roles: List<String> = listOf()
+  ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
 }
