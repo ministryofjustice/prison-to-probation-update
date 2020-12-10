@@ -42,6 +42,7 @@ dependencies {
 
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("io.micrometer:micrometer-core")
+  implementation("com.opencsv:opencsv:5.3")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
@@ -49,4 +50,5 @@ dependencies {
   testImplementation("org.testcontainers:localstack:1.15.0")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.1")
+  testImplementation("io.jsonwebtoken:jjwt:0.9.1")
 }
