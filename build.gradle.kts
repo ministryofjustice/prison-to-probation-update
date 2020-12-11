@@ -23,8 +23,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.15.1")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.15.1")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.18.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.18.0")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
@@ -32,10 +32,15 @@ dependencies {
   implementation("com.sun.xml.bind:jaxb-core:2.3.0.1")
   implementation("com.google.code.gson:gson:2.8.6")
 
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.3")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0")
+
+  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.1")
+  implementation("org.springdoc:springdoc-openapi-ui:1.5.1")
+  implementation("org.springdoc:springdoc-openapi-data-rest:1.5.1")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.1")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.907"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.916"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
@@ -46,7 +51,7 @@ dependencies {
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.21.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.22.0")
   testImplementation("org.testcontainers:localstack:1.15.0")
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.1")
