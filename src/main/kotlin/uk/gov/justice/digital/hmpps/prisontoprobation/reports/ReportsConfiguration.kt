@@ -20,15 +20,12 @@ class ReportsConfiguration(private val inProgressReport: InProgressReport) {
       path = "/report/in-progress",
       method = arrayOf(RequestMethod.GET),
       beanClass = InProgressReport::class,
-      produces = arrayOf("text/csv"),
       beanMethod = "generate"
     )
   )
-  fun router(): RouterFunction<ServerResponse> {
-    return router {
-      path("/report").nest {
-        GET("/in-progress", ::getInProgress)
-      }
+  fun router(): RouterFunction<ServerResponse> = router {
+    path("/report").nest {
+      GET("/in-progress", ::getInProgress)
     }
   }
 
