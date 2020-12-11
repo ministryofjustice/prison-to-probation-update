@@ -28,8 +28,6 @@ dependencies {
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.sun.xml.bind:jaxb-impl:3.0.0")
-  implementation("com.sun.xml.bind:jaxb-core:3.0.0")
   implementation("com.google.code.gson:gson:2.8.6")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0")
