@@ -276,7 +276,7 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_sentenceDateChange_seconds_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
+              "expr": "sum(ptpu_sentenceDateChange_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
               "legendFormat": {{`"{{le}}"`}},
@@ -384,7 +384,7 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_statusChange_seconds_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
+              "expr": "sum(ptpu_statusChange_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
               "format": "heatmap",
               "interval": "",
               "legendFormat": {{`"{{le}}"`}},
