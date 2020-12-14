@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.reports
 
 import com.opencsv.bean.StatefulBeanToCsvBuilder
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
@@ -11,6 +15,29 @@ import java.time.ZoneOffset
 @Service
 class InProgressReport(private val messageRepository: MessageRepository) {
   @PreAuthorize("hasRole('ROLE_PTPU_REPORT')")
+  @Operation(
+    summary = "InProgress report",
+    description = "A report of all matches currently in progress",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "CSV report",
+        content = arrayOf(
+          Content(
+            mediaType = "text/csv",
+            examples = arrayOf(
+              ExampleObject(
+                """
+                "BOOKINGID","CREATEDDATE","DELETEBY","EVENTTYPE"
+                "2672916","2020-12-10T10:38:26.226873","2020-12-18T10:38:26","IMPRISONMENT_STATUS-CHANGED"
+                """
+              )
+            )
+          )
+        )
+      )
+    ]
+  )
   fun generate(): String {
     return messageRepository.findAll().map {
       InProgress(
