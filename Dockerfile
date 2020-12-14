@@ -27,7 +27,7 @@ WORKDIR /app
 
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/prison-to-probation-update*.jar /app/app.jar
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
-COPY --from=builder --chown=appuser:appgroup /app/applicationinsights.json /app
+COPY --from=builder --chown=appuser:appgroup /app/AI-Agent.xml /app
 
 USER 2000
 
