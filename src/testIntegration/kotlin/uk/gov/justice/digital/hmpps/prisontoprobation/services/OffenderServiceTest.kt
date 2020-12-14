@@ -74,6 +74,7 @@ class OffenderServiceTest : IntegrationTest() {
       get("/api/bookings/1234/movement/1").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
+          .withBody("{\"error\": \"not found\"}")
           .withStatus(HTTP_NOT_FOUND)
       )
     )
