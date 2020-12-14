@@ -34,7 +34,6 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.1")
   implementation("org.springdoc:springdoc-openapi-ui:1.5.1")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.5.1")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.5.1")
 
   implementation("org.springframework:spring-jms")
