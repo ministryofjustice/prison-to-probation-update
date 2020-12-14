@@ -23,14 +23,11 @@ class MessageAggregator(
 
   fun processMessagesForNextBookingSets() {
     val messages = messageRepository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minus(holdBackDuration))
-    log.debug("${messages.size} candidate messages for initial processing")
 
     val (messagesToProcess, messagesToDiscard) = aggregatedMessagesOrdered(messages)
 
-    log.debug("Discarding ${messagesToDiscard.size} messages")
     messageRepository.deleteAll(messagesToDiscard)
 
-    log.debug("Processing in this batch ${messagesToProcess.size}")
     messagesToProcess.forEach {
       when (processMessage(it)) {
         is TryLater -> messageRepository.save(it.retry())

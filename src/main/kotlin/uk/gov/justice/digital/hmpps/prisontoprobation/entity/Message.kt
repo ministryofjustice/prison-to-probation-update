@@ -27,7 +27,23 @@ data class Message(
   @DynamoDBAttribute
   var eventType: String = "",
   @DynamoDBAttribute
-  var message: String = ""
+  var message: String = "",
+  @DynamoDBTypeConverted(converter = NullableLocalDateTimeConverter::class)
+  var processedDate: LocalDateTime? = null,
+  @DynamoDBAttribute
+  var reportable: Boolean = false,
+  @DynamoDBAttribute
+  var offenderNo: String? = null,
+  @DynamoDBAttribute
+  var bookingNo: String? = null,
+  @DynamoDBAttribute
+  var locationId: String? = null,
+  @DynamoDBAttribute
+  var locationDescription: String? = null,
+  @DynamoDBAttribute
+  var recall: Boolean? = null,
+  @DynamoDBAttribute
+  var legalStatus: String? = null,
 ) {
   fun retry(retryUntil: LocalDate? = null): Message {
     retryCount += 1
@@ -45,5 +61,15 @@ class LocalDateTimeConverter : DynamoDBTypeConverter<String, LocalDateTime> {
 
   override fun unconvert(stringValue: String): LocalDateTime {
     return LocalDateTime.parse(stringValue)
+  }
+}
+
+class NullableLocalDateTimeConverter : DynamoDBTypeConverter<String, LocalDateTime?> {
+  override fun convert(time: LocalDateTime?): String? {
+    return time?.toString()
+  }
+
+  override fun unconvert(stringValue: String?): LocalDateTime? {
+    return stringValue?.let { LocalDateTime.parse(it) }
   }
 }

@@ -27,7 +27,7 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
 
   fun getBooking(bookingId: Long): Booking {
     return webClient.get()
-      .uri("/api/bookings/$bookingId?basicInfo=true")
+      .uri("/api/bookings/$bookingId?basicInfo=false&&extraInfo=true")
       .retrieve()
       .bodyToMono(Booking::class.java)
       .block()!!
@@ -101,10 +101,12 @@ data class Booking(
   val activeFlag: Boolean,
   val offenderNo: String,
   val agencyId: String? = null,
+  val locationDescription: String? = null,
   val firstName: String,
   val lastName: String,
-  val dateOfBirth: LocalDate
-
+  val dateOfBirth: LocalDate,
+  val recall: Boolean? = null,
+  val legalStatus: String? = null
 )
 
 data class SentenceDetail(

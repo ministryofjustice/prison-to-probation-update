@@ -18,7 +18,9 @@ import java.time.ZoneOffset
 internal class MessageRetryServiceTest {
   private val messageProcessor: MessageProcessor = mock()
   private val messageRepository: MessageRepository = mock()
-  private var service: MessageRetryService = MessageRetryService(messageRepository, messageProcessor, 192)
+  private val offenderService: OffenderService = mock()
+  private var service: MessageRetryService =
+    MessageRetryService(messageRepository, messageProcessor, 192, offenderService)
 
   @BeforeEach
   fun setUp() {
@@ -27,32 +29,37 @@ internal class MessageRetryServiceTest {
   }
 
   @Test
-  internal fun `will add a retry message that expires in 8 days`() {
-    service.retryLater(99L, "EVENT", "message")
-
-    verify(messageRepository).save<Message>(
-      check {
-        assertThat(it.bookingId).isEqualTo(99L)
-        assertThat(it.eventType).isEqualTo("EVENT")
-        assertThat(it.message).isEqualTo("message")
-        assertThat(it.retryCount).isEqualTo(1)
-        assertThat(it.createdDate.toLocalDate()).isToday()
-        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(8))
-      }
-    )
-  }
-  @Test
   internal fun `will schedule a message that expires in 8 days`() {
+    whenever(offenderService.getBooking(99L)).thenReturn(
+      createBooking(
+        agencyId = "MDI",
+        locationDescription = "HMP Moorland",
+        offenderNo = "AB1234Y",
+        bookingNo = "12344G",
+        recall = true,
+        legalStatus = "SENTENCED"
+      )
+    )
     service.scheduleForProcessing(99L, "EVENT", "message")
 
-    verify(messageRepository).save<Message>(
+    verify(messageRepository).save(
       check {
         assertThat(it.bookingId).isEqualTo(99L)
         assertThat(it.eventType).isEqualTo("EVENT")
         assertThat(it.message).isEqualTo("message")
         assertThat(it.retryCount).isEqualTo(0)
-        assertThat(it.createdDate.toLocalDate()).isToday()
-        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(8))
+        assertThat(it.createdDate.toLocalDate()).isToday
+        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
+          LocalDate.now().plusDays(8)
+        )
+        assertThat(it.reportable).isTrue
+        assertThat(it.processedDate).isNull()
+        assertThat(it.offenderNo).isEqualTo("AB1234Y")
+        assertThat(it.bookingNo).isEqualTo("12344G")
+        assertThat(it.locationId).isEqualTo("MDI")
+        assertThat(it.locationDescription).isEqualTo("HMP Moorland")
+        assertThat(it.recall).isTrue
+        assertThat(it.legalStatus).isEqualTo("SENTENCED")
       }
     )
   }
@@ -94,10 +101,12 @@ internal class MessageRetryServiceTest {
 
     service.retryShortTerm()
 
-    verify(messageRepository).save<Message>(
+    verify(messageRepository).save(
       check {
         assertThat(it.id).isEqualTo("123")
-        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(LocalDate.now().plusDays(6))
+        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
+          LocalDate.now().plusDays(6)
+        )
       }
     )
   }
@@ -122,10 +131,12 @@ internal class MessageRetryServiceTest {
 
     service.retryShortTerm()
 
-    verify(messageRepository).save<Message>(
+    verify(messageRepository).save(
       check {
         assertThat(it.id).isEqualTo("123")
-        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(expectedRetryUntilDate)
+        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
+          expectedRetryUntilDate
+        )
       }
     )
   }
@@ -138,7 +149,7 @@ internal class MessageRetryServiceTest {
 
     service.retryShortTerm()
 
-    verify(messageRepository).save<Message>(
+    verify(messageRepository).save(
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(it.retryCount).isEqualTo(2)

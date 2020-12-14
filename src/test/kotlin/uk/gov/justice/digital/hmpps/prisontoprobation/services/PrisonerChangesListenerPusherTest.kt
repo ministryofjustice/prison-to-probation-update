@@ -21,7 +21,7 @@ class PrisonerChangesListenerPusherTest {
   }
 
   @Test
-  fun `will call retry service when requested`() {
+  fun `will schedule for processing when valid message that needs scheduling`() {
     whenever(messageProcessor.validateMessage(any(), any())).thenReturn(TryLater(99L))
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
@@ -30,12 +30,12 @@ class PrisonerChangesListenerPusherTest {
   }
 
   @Test
-  fun `will not call retry service when done`() {
+  fun `will not schedule for processing when message processing done`() {
     whenever(messageProcessor.validateMessage(any(), any())).thenReturn(Done())
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 
-    verify(messageRetryService, never()).retryLater(any(), any(), any())
+    verify(messageRetryService, never()).scheduleForProcessing(any(), any(), any())
   }
 }
 
