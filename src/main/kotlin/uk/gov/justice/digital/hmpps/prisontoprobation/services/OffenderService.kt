@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -51,8 +53,8 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
     return webClient.get()
       .uri("/api/bookings/$bookingId/movement/$movementSeq")
       .retrieve()
-      .onStatus({ it == HttpStatus.NOT_FOUND }, { Mono.empty() })
       .bodyToMono(Movement::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
       .block()
   }
 
@@ -63,6 +65,9 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
       .bodyToMono(object : ParameterizedTypeReference<List<BookingIdentifier>>() {})
       .block()!!
   }
+  fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
+  fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
+    if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
 }
 
 data class Prisoner(
