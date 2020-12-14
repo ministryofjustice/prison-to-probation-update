@@ -53,6 +53,7 @@ class CommunityServiceTest : IntegrationTest() {
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A"))
           .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
+          .withHeader("Content-Type", equalTo("application/json"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
       )
     }
@@ -115,6 +116,7 @@ class CommunityServiceTest : IntegrationTest() {
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
           .withRequestBody(matchingJsonPath("bookingNumber", equalTo("38353A")))
           .withRequestBody(matchingJsonPath("sentenceStartDate", matching(".*")))
       )
@@ -172,6 +174,7 @@ class CommunityServiceTest : IntegrationTest() {
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
       communityMockServer.verify(
         postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
+          .withHeader("Content-Type", equalTo("application/json"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
       )
     }
@@ -257,6 +260,7 @@ class CommunityServiceTest : IntegrationTest() {
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
           .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D")))
       )
     }
@@ -280,6 +284,7 @@ class CommunityServiceTest : IntegrationTest() {
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A11111Y/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
           .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y")))
       )
     }
