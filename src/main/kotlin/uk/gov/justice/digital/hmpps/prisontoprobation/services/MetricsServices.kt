@@ -43,7 +43,7 @@ class MeterFactory {
   fun registerMessageAgeTimer(meterRegistry: MeterRegistry, name: String, description: String, type: String): DistributionSummary =
     DistributionSummary.builder(name)
       .publishPercentileHistogram()
-      .minimumExpectedValue(0.1)
+      .minimumExpectedValue(1.0)
       .maximumExpectedValue(AGE_EXPECTED_MAX_DAYS)
       .description(description)
       .tag("eventType", type)
