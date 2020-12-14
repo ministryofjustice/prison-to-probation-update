@@ -18,7 +18,6 @@ class SerialiseBookingScheduler(val messageAggregator: MessageAggregator) {
   @Scheduled(fixedDelayString = "\${prisontoprobation.message-processor.delay}")
   @SchedulerLock(name = "scheduleLock")
   fun processMessages() {
-    log.info("Processing messages for next booking")
     messageAggregator.processMessagesForNextBookingSets()
   }
 }

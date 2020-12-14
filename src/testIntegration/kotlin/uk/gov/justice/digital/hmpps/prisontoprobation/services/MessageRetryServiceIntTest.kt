@@ -11,11 +11,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Autowired
   private lateinit var service: MessageRetryService
+
   @Autowired
   private lateinit var repository: MessageRepository
 
@@ -27,9 +31,20 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Test
   internal fun `will retry once on success`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
-    val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(Done()).whenever(messageProcessor).processMessage(any())
-    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
 
     // continually call this as if on a schedule
     repeat(33) {
@@ -47,11 +62,22 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Test
   internal fun `will retry twice on success on second attempt`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
-    val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835))
       .doReturn(Done())
       .whenever(messageProcessor).processMessage(any())
-    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
 
     // continually call this as if on a schedule
     repeat(33) {
@@ -69,9 +95,20 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Test
   internal fun `will retry four times in short term retry mode on failure`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
-    val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
 
     // continually call this as if on a schedule
     repeat(33) {
@@ -89,9 +126,20 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Test
   internal fun `will retry six times in medium term retry mode on failure`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
-    val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
     val shortTermRepeat = 4
 
     repeat(shortTermRepeat) {
@@ -112,9 +160,20 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Test
   internal fun `will retry until deleted in long term retry mode on failure`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
-    val message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    service.retryLater(bookingId = 33L, eventType = eventType, message = message)
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
     val shortTermRepeat = 4
     val mediumTermRepeat = 6
 

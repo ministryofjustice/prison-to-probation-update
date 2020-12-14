@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
-import uk.gov.justice.digital.hmpps.prisontoprobation.createBooking
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
@@ -24,6 +23,7 @@ import java.time.LocalDateTime
 class OffenderServiceTest : IntegrationTest() {
   @Autowired
   private lateinit var service: OffenderService
+
   @Test
   fun `test get offender calls rest endpoint`() {
     val expectedPrisoner = createPrisoner()
@@ -98,21 +98,192 @@ class OffenderServiceTest : IntegrationTest() {
 
   @Test
   fun `test get booking calls rest endpoint`() {
-    val expectedBooking = createBooking()
+    val expectedBooking =
+      """
+{
+    "offenderNo": "A1234CV",
+    "bookingId": 2679999,
+    "bookingNo": "9995D",
+    "offenderId": 2999950,
+    "rootOffenderId": 2999950,
+    "firstName": "JOHN",
+    "lastName": "SMITH",
+    "dateOfBirth": "1983-11-12",
+    "age": 37,
+    "activeFlag": true,
+    "facialImageId": 7373773,
+    "agencyId": "PVI",
+    "assignedLivingUnitId": 193939,
+    "religion": "Sikh",
+    "alertsCodes": [
+        "H",
+        "X"
+    ],
+    "activeAlertCount": 1,
+    "inactiveAlertCount": 1,
+    "alerts": [
+        {
+            "alertId": 32,
+            "alertType": "H",
+            "alertTypeDescription": "Self Harm",
+            "alertCode": "HA",
+            "alertCodeDescription": "ACCT Open (HMPS)",
+            "comment": "Thought of Self Harm",
+            "dateCreated": "2020-12-12",
+            "expired": false,
+            "active": true,
+            "addedByFirstName": "BOB",
+            "addedByLastName": "BOBBY"
+        },
+        {
+            "alertId": 1,
+            "alertType": "X",
+            "alertTypeDescription": "Security",
+            "alertCode": "XNR",
+            "alertCodeDescription": "Not For Release",
+            "comment": "Alert",
+            "dateCreated": "2013-02-05",
+            "dateExpires": "2013-07-09",
+            "expired": true,
+            "active": false,
+            "addedByFirstName": "BOB",
+            "addedByLastName": "BOBBY",
+            "expiredByFirstName": "BOB",
+            "expiredByLastName": "BOBBY"
+        }
+    ],
+    "assignedLivingUnit": {
+        "agencyId": "PVI",
+        "locationId": 73773,
+        "description": "B-2-912",
+        "agencyName": "Pentonville (HMP)"
+    },
+    "physicalAttributes": {
+        "gender": "Male",
+        "raceCode": "A1",
+        "ethnicity": "Asian/Asian British: Indian",
+        "sexCode": "M"
+    },
+    "physicalCharacteristics": [
+        {
+            "type": "HAIR",
+            "characteristic": "Hair Colour",
+            "detail": "Black"
+        }
+    ],
+    "profileInformation": [
+        {
+            "type": "YOUTH",
+            "question": "Youth Offender?",
+            "resultValue": "No"
+        }
+    ],
+    "physicalMarks": [
+        {
+            "type": "Scar",
+            "side": "Front",
+            "bodyPart": "Face",
+            "comment": "BOTH EYEBROWS"
+        }
+    ],
+    "assessments": [
+        {
+            "bookingId": 2671944,
+            "classificationCode": "STANDARD",
+            "classification": "Standard",
+            "assessmentCode": "CSR",
+            "assessmentDescription": "CSR Rating",
+            "cellSharingAlertFlag": true,
+            "assessmentDate": "2020-12-03",
+            "nextReviewDate": "2021-12-03",
+            "assessmentStatus": "A",
+            "assessmentSeq": 1
+        },
+        {
+            "bookingId": 2671944,
+            "classificationCode": "U",
+            "classification": "Unsentenced",
+            "assessmentCode": "CATEGORY",
+            "assessmentDescription": "Categorisation",
+            "cellSharingAlertFlag": false,
+            "assessmentDate": "2020-12-03",
+            "nextReviewDate": "2021-06-01",
+            "assessmentStatus": "A",
+            "assessmentSeq": 2
+        }
+    ],
+    "csra": "Standard",
+    "category": "Unsentenced",
+    "categoryCode": "U",
+    "birthPlace": "MOON",
+    "birthCountryCode": "IND",
+    "inOutStatus": "IN",
+    "identifiers": [
+        {
+            "type": "PNC",
+            "value": "12/838396B",
+            "offenderNo": "A973737CV",
+            "bookingId": 26838383,
+            "issuedDate": "2017-02-13",
+            "caseloadType": "INST"
+        }
+    ],
+    "personalCareNeeds": [
+        {
+            "problemType": "DISAB",
+            "problemCode": "ND",
+            "problemStatus": "ON",
+            "problemDescription": "No Disability",
+            "commentText": "No disabilities declared at WSI.",
+            "startDate": "2013-02-05",
+            "endDate": null
+        }
+    ],
+    "sentenceDetail": {
+        "bookingId": 8282284
+    },
+    "offenceHistory": [],
+    "sentenceTerms": [],
+    "aliases": [],
+    "status": "ACTIVE IN",
+    "legalStatus": "SENTENCED",
+    "recall": false,
+    "imprisonmentStatus": "SENT",
+    "privilegeSummary": {
+        "bookingId": 9535935,
+        "iepLevel": "Standard",
+        "iepDate": "2020-12-02",
+        "iepTime": "2020-12-02T19:31:57",
+        "daysSinceReview": 12,
+        "iepDetails": []
+    },
+    "locationDescription": "Pentonville (HMP)"
+}      
+      """.trimIndent()
     prisonMockServer.stubFor(
       get(anyUrl()).willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withBody(expectedBooking.asJson())
+          .withBody(expectedBooking)
           .withStatus(HTTP_OK)
       )
     )
 
     val booking = service.getBooking(1234L)
 
-    assertThat(booking).isEqualTo(expectedBooking)
+    assertThat(booking.bookingNo).isEqualTo("9995D")
+    assertThat(booking.activeFlag).isTrue
+    assertThat(booking.offenderNo).isEqualTo("A1234CV")
+    assertThat(booking.agencyId).isEqualTo("PVI")
+    assertThat(booking.locationDescription).isEqualTo("Pentonville (HMP)")
+    assertThat(booking.firstName).isEqualTo("JOHN")
+    assertThat(booking.lastName).isEqualTo("SMITH")
+    assertThat(booking.dateOfBirth).isEqualTo(LocalDate.parse("1983-11-12"))
+    assertThat(booking.recall).isFalse
+    assertThat(booking.legalStatus).isEqualTo("SENTENCED")
+
     prisonMockServer.verify(
-      getRequestedFor(urlEqualTo("/api/bookings/1234?basicInfo=true"))
+      getRequestedFor(urlEqualTo("/api/bookings/1234?basicInfo=false&extraInfo=true"))
         .withHeader("Authorization", equalTo("Bearer ABCDE"))
     )
   }
@@ -224,9 +395,22 @@ class OffenderServiceTest : IntegrationTest() {
     val sentences = service.getCurrentSentences(1234L)
 
     assertThat(sentences).containsExactly(
-      SentenceSummary(startDate = LocalDate.parse("2020-10-10"), sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence", sentenceSequence = 61),
-      SentenceSummary(startDate = LocalDate.parse("2020-11-21"), sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence", sentenceSequence = 62, consecutiveTo = 61),
-      SentenceSummary(startDate = LocalDate.parse("2020-01-13"), sentenceTypeDescription = "ORA 14 Day Fixed Term Recall", sentenceSequence = 69),
+      SentenceSummary(
+        startDate = LocalDate.parse("2020-10-10"),
+        sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence",
+        sentenceSequence = 61
+      ),
+      SentenceSummary(
+        startDate = LocalDate.parse("2020-11-21"),
+        sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence",
+        sentenceSequence = 62,
+        consecutiveTo = 61
+      ),
+      SentenceSummary(
+        startDate = LocalDate.parse("2020-01-13"),
+        sentenceTypeDescription = "ORA 14 Day Fixed Term Recall",
+        sentenceSequence = 69
+      ),
     )
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/offender-sentences/booking/1234/sentenceTerms"))
