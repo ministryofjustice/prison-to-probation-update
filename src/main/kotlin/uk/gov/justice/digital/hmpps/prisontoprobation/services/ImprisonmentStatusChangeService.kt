@@ -53,14 +53,45 @@ class ImprisonmentStatusChangeService(
     val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return Done() to it.reason }
     val sentenceStartDate = getLatestPrimarySentenceStartDate(bookingId).onIgnore { return Done() to it.reason }.also { if (sentenceDetail.sentenceStartDate != it) { log.debug("Latest and original sentence dates differ for booking $bookingId -  ${sentenceDetail.sentenceStartDate} compared to $it") } }
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
-    val offenderNo = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(booking, sentenceStartDate)
-      .onIgnore { return TryLater(bookingId) to it.reason }
-    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore { return Done() to it.reason.with(booking).with(sentenceStartDate) }
-    updateProbationCustodyBookingNumber(offenderNo, sentenceStartDate, bookingNumber).onIgnore { return TryLater(bookingId) to it.reason.with(booking).with(sentenceStartDate) }
-    booking.agencyId?.let { agencyId ->
-      updateProbationPrisonLocation(offenderNo, bookingNumber, agencyId).onIgnore { return TryLater(bookingId, sentenceDetail.sentenceExpiryDate) to it.reason.with(booking).with(sentenceStartDate) }
+    val (offenderNo, crn) = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(
+      booking,
+      sentenceStartDate
+    )
+      .onIgnore {
+        val (telemetryEvent, status) = it.reason
+        return TryLater(bookingId, status = status) to telemetryEvent
+      }
+
+    val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore {
+      return Done() to it.reason.with(
+        booking
+      ).with(sentenceStartDate)
     }
-    updateProbationKeyDates(offenderNo, bookingNumber, sentenceDetail).onIgnore { return TryLater(bookingId, sentenceDetail.sentenceExpiryDate) to it.reason.with(booking).with(sentenceStartDate) }
+
+    updateProbationCustodyBookingNumber(offenderNo, sentenceStartDate, bookingNumber).onIgnore {
+      return TryLater(
+        bookingId,
+        status = SynchroniseStatus(crn, SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED)
+      ) to it.reason.with(booking).with(sentenceStartDate)
+    }
+
+    booking.agencyId?.let { agencyId ->
+      updateProbationPrisonLocation(offenderNo, bookingNumber, agencyId).onIgnore {
+        return TryLater(
+          bookingId,
+          retryUntil = sentenceDetail.sentenceExpiryDate,
+          status = SynchroniseStatus(crn, SynchroniseState.LOCATION_NOT_UPDATED)
+        ) to it.reason.with(booking).with(sentenceStartDate)
+      }
+    }
+
+    updateProbationKeyDates(offenderNo, bookingNumber, sentenceDetail).onIgnore {
+      return TryLater(
+        bookingId,
+        retryUntil = sentenceDetail.sentenceExpiryDate,
+        status = SynchroniseStatus(crn, SynchroniseState.KEY_DATES_NOT_UPDATED)
+      ) to it.reason.with(booking).with(sentenceStartDate)
+    }
 
     return Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }

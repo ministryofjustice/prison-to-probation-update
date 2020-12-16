@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.microsoft.applicationinsights.TelemetryClient
@@ -9,6 +11,11 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS
+import kotlin.math.abs
+
+typealias OffenderIdentifiers = Pair<String, String>
+
+typealias FailureResult = Pair<TelemetryEvent, SynchroniseStatus>
 
 @Service
 class OffenderProbationMatchService(
@@ -22,7 +29,10 @@ class OffenderProbationMatchService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun ensureOffenderNumberExistsInProbation(booking: Booking, sentenceStartDate: LocalDate): Result<String, TelemetryEvent> {
+  fun ensureOffenderNumberExistsInProbation(
+    booking: Booking,
+    sentenceStartDate: LocalDate
+  ): Result<OffenderIdentifiers, FailureResult> {
     val prisoner = offenderService.getOffender(booking.offenderNo)
 
     val result = offenderSearchService.matchProbationOffender(
@@ -57,18 +67,54 @@ class OffenderProbationMatchService(
     )
 
     return when (result.matchedBy) {
-      "ALL_SUPPLIED", "ALL_SUPPLIED_ALIAS", "HMPPS_KEY" -> Success(booking.offenderNo) // NOMS number is already set in probation
+      "ALL_SUPPLIED", "ALL_SUPPLIED_ALIAS", "HMPPS_KEY" -> Success(
+        booking.offenderNo to result.CRNList().first()
+      ) // NOMS number is already set in probation
       else -> {
         when (filteredCRNs.size) {
-          0 -> Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())))
+          0 -> ignoreNotMatch(booking, result)
           1 -> updateProbationWithOffenderNo(booking, filteredCRNs.first())
-          else -> Ignore(TelemetryEvent(name = "P2POffenderTooManyMatches", attributes = mapOf("offenderNo" to booking.offenderNo, "filtered_crns" to filteredCRNs.sorted().joinToString())))
+          else -> ignoreTooManyMatches(booking, filteredCRNs)
         }
       }
     }
   }
 
-  private fun updateProbationWithOffenderNo(booking: Booking, crn: String): Result<String, TelemetryEvent> {
+  private fun ignoreTooManyMatches(
+    booking: Booking,
+    filteredCRNs: Set<String>
+  ) = Ignore(
+    TelemetryEvent(
+      name = "P2POffenderTooManyMatches",
+      attributes = mapOf(
+        "offenderNo" to booking.offenderNo,
+        "filtered_crns" to filteredCRNs.sorted().joinToString()
+      )
+    ) to SynchroniseStatus(
+      matchingCRNs = filteredCRNs.sorted().joinToString(),
+      state = SynchroniseState.TOO_MANY_MATCHES
+    )
+  )
+
+  private fun ignoreNotMatch(
+    booking: Booking,
+    result: OffenderMatches
+  ) = Ignore(
+    TelemetryEvent(
+      name = "P2POffenderNoMatch",
+      attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())
+    ) to SynchroniseStatus(
+      matchingCRNs = result.CRNs(),
+      state = if (result.CRNList()
+        .isEmpty()
+      ) SynchroniseState.NO_MATCH else SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE
+    )
+  )
+
+  private fun updateProbationWithOffenderNo(
+    booking: Booking,
+    crn: String
+  ): Result<OffenderIdentifiers, FailureResult> {
     return if (isBookingInInterestedPrison(booking.agencyId)) {
       communityService.updateProbationOffenderNo(crn, booking.offenderNo)
       telemetryClient.trackEvent(
@@ -80,9 +126,13 @@ class OffenderProbationMatchService(
         ),
         null
       )
-      Success(booking.offenderNo)
+      Success(booking.offenderNo to crn)
     } else {
-      Ignore(TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")))
+      Ignore(
+        TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")) to SynchroniseStatus(
+          state = SynchroniseState.NOT_VALID
+        )
+      )
     }
   }
 
@@ -111,7 +161,7 @@ class OffenderProbationMatchService(
   private fun allowAnyPrison() = allowedPrisons.isEmpty()
 }
 
-private fun LocalDate.closeTo(date: LocalDate, days: Int = 7): Boolean = Math.abs(DAYS.between(this, date)) <= days
+private fun LocalDate.closeTo(date: LocalDate, days: Int = 7): Boolean = abs(DAYS.between(this, date)) <= days
 
 private fun OffenderMatches.CRNs() = this.CRNList().joinToString()
 private fun OffenderMatches.CRNList() = this.matches.map { it.offender.otherIds.crn }.sorted()

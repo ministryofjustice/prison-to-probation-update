@@ -69,6 +69,6 @@ class MessageRetryService(
       messageProcessor.processMessage(message)
     } catch (e: Exception) {
       log.error("Exception while processing ${message.eventType} for ${message.bookingId}", e)
-      TryLater(message.bookingId)
+      TryLater(message.bookingId, status = SynchroniseStatus(state = SynchroniseState.ERROR))
     }
 }

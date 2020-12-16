@@ -43,7 +43,7 @@ class MessageAggregator(
       result
     } catch (e: Exception) {
       log.error("Unable to process message ${message.eventType} for ${message.bookingId}", e)
-      TryLater(message.bookingId)
+      TryLater(message.bookingId, status = SynchroniseStatus(state = SynchroniseState.ERROR))
     }
   }
 
