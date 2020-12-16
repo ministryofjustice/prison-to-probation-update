@@ -73,7 +73,7 @@ enum class SynchroniseState {
   LOCATION_NOT_UPDATED,
   KEY_DATES_NOT_UPDATED,
 }
-data class SynchroniseStatus(val matchingCRNs: String? = null, val state: SynchroniseState = SynchroniseState.VALIDATED)
+data class SynchroniseStatus(val matchingCrns: String? = null, val state: SynchroniseState = SynchroniseState.VALIDATED)
 sealed class MessageResult
 class TryLater(
   val bookingId: Long,

@@ -26,7 +26,14 @@ class PrisonerChangesListenerPusherTest {
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 
-    verify(messageRetryService).scheduleForProcessing(bookingId = eq(99L), eventType = eq("IMPRISONMENT_STATUS-CHANGED"), message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"))
+    verify(messageRetryService).scheduleForProcessing(
+      bookingId = eq(99L),
+      eventType = eq("IMPRISONMENT_STATUS-CHANGED"),
+      message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"),
+      eq(
+        SynchroniseStatus(state = SynchroniseState.VALIDATED)
+      )
+    )
   }
 
   @Test
@@ -35,7 +42,7 @@ class PrisonerChangesListenerPusherTest {
 
     pusher.pushPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
 
-    verify(messageRetryService, never()).scheduleForProcessing(any(), any(), any())
+    verify(messageRetryService, never()).scheduleForProcessing(any(), any(), any(), any())
   }
 }
 

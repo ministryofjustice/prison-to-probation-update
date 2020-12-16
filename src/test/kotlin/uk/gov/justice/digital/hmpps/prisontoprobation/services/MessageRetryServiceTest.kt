@@ -40,7 +40,7 @@ internal class MessageRetryServiceTest {
         legalStatus = "SENTENCED"
       )
     )
-    service.scheduleForProcessing(99L, "EVENT", "message")
+    service.scheduleForProcessing(99L, "EVENT", "message", SynchroniseStatus())
 
     verify(messageRepository).save(
       check {
@@ -60,6 +60,7 @@ internal class MessageRetryServiceTest {
         assertThat(it.locationDescription).isEqualTo("HMP Moorland")
         assertThat(it.recall).isTrue
         assertThat(it.legalStatus).isEqualTo("SENTENCED")
+        assertThat(it.status).isEqualTo("VALIDATED")
       }
     )
   }
@@ -153,6 +154,48 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(it.retryCount).isEqualTo(2)
+      }
+    )
+  }
+
+  @Test
+  internal fun `will update message status`() {
+    val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
+    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageProcessor.processMessage(any())).thenReturn(
+      TryLater(
+        bookingId = 99L,
+        status = SynchroniseStatus(state = SynchroniseState.LOCATION_NOT_UPDATED)
+      )
+    )
+
+    service.retryShortTerm()
+
+    verify(messageRepository).save(
+      check {
+        assertThat(it.id).isEqualTo("123")
+        assertThat(it.status).isEqualTo("LOCATION_NOT_UPDATED")
+      }
+    )
+  }
+
+  @Test
+  internal fun `will update message matched crns`() {
+    val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
+    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageProcessor.processMessage(any())).thenReturn(
+      TryLater(
+        bookingId = 99L,
+        status = SynchroniseStatus(matchingCrns = "X12345", state = SynchroniseState.LOCATION_NOT_UPDATED)
+      )
+    )
+
+    service.retryShortTerm()
+
+    verify(messageRepository).save(
+      check {
+        assertThat(it.id).isEqualTo("123")
+        assertThat(it.matchingCrns).isEqualTo("X12345")
       }
     )
   }

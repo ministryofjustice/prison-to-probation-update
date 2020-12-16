@@ -91,7 +91,7 @@ class OffenderProbationMatchService(
         "filtered_crns" to filteredCRNs.sorted().joinToString()
       )
     ) to SynchroniseStatus(
-      matchingCRNs = filteredCRNs.sorted().joinToString(),
+      matchingCrns = filteredCRNs.sorted().joinToString(),
       state = SynchroniseState.TOO_MANY_MATCHES
     )
   )
@@ -104,7 +104,7 @@ class OffenderProbationMatchService(
       name = "P2POffenderNoMatch",
       attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())
     ) to SynchroniseStatus(
-      matchingCRNs = result.CRNs(),
+      matchingCrns = result.CRNs(),
       state = if (result.CRNList()
         .isEmpty()
       ) SynchroniseState.NO_MATCH else SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE

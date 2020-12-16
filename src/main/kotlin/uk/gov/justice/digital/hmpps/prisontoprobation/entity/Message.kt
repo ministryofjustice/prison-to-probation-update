@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverter
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -44,11 +45,19 @@ data class Message(
   var recall: Boolean? = null,
   @DynamoDBAttribute
   var legalStatus: String? = null,
+  @DynamoDBAttribute
+  var status: String? = null,
+  @DynamoDBAttribute
+  var matchingCrns: String? = null,
 ) {
-  fun retry(retryUntil: LocalDate? = null): Message {
+  fun retry(retryUntil: LocalDate? = null, status: SynchroniseStatus): Message {
     retryCount += 1
     retryUntil?.also {
       this.deleteBy = retryUntil.toEpochSecond(LocalTime.now(), ZoneOffset.UTC)
+    }
+    this.status = status.state.name
+    status.matchingCrns?.also {
+      this.matchingCrns = it
     }
     return this
   }

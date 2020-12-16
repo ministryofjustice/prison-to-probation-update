@@ -29,8 +29,8 @@ class MessageAggregator(
     messageRepository.deleteAll(messagesToDiscard)
 
     messagesToProcess.forEach {
-      when (processMessage(it)) {
-        is TryLater -> messageRepository.save(it.retry())
+      when (val result = processMessage(it)) {
+        is TryLater -> messageRepository.save(it.retry(status = result.status))
         is Done -> messageRepository.delete(it)
       }
     }
