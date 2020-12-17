@@ -21,7 +21,7 @@ class MessageRetryService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun scheduleForProcessing(bookingId: Long, eventType: String, message: String) {
+  fun scheduleForProcessing(bookingId: Long, eventType: String, message: String, status: SynchroniseStatus) {
     log.info("Registering an initial processing for booking $bookingId for event $eventType")
     val booking = offenderService.getBooking(bookingId)
     messageRepository.save(
@@ -38,6 +38,7 @@ class MessageRetryService(
         locationDescription = booking.locationDescription,
         recall = booking.recall,
         legalStatus = booking.legalStatus,
+        status = status.state.name,
       )
     )
   }
@@ -54,7 +55,7 @@ class MessageRetryService(
       when (val result: MessageResult = processMessage(it)) {
         is TryLater -> {
           log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
-          messageRepository.save(it.retry(result.retryUntil))
+          messageRepository.save(it.retry(result.retryUntil, result.status))
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
@@ -69,6 +70,6 @@ class MessageRetryService(
       messageProcessor.processMessage(message)
     } catch (e: Exception) {
       log.error("Exception while processing ${message.eventType} for ${message.bookingId}", e)
-      TryLater(message.bookingId)
+      TryLater(message.bookingId, status = SynchroniseStatus(state = SynchroniseState.ERROR))
     }
 }

@@ -70,7 +70,7 @@ class ImprisonmentStatusChangeServiceTest {
   inner class Process {
     @BeforeEach
     fun setUp() {
-      whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo) }
+      whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenAnswer { Success((it.arguments[0] as Booking).offenderNo to "X12345") }
     }
 
     @Nested
@@ -182,7 +182,14 @@ class ImprisonmentStatusChangeServiceTest {
       inner class WhenMatchNotFound {
         @BeforeEach
         fun setup() {
-          whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenReturn(Ignore(TelemetryEvent(name = "P2POffenderNoMatch", attributes = mapOf("offenderNo" to "A5089DY", "crns" to ""))))
+          whenever(offenderProbationMatchService.ensureOffenderNumberExistsInProbation(any(), any())).thenReturn(
+            Ignore(
+              TelemetryEvent(
+                name = "P2POffenderNoMatch",
+                attributes = mapOf("offenderNo" to "A5089DY", "crns" to "")
+              ) to SynchroniseStatus("", state = SynchroniseState.NO_MATCH)
+            )
+          )
         }
 
         @Test
@@ -236,7 +243,13 @@ class ImprisonmentStatusChangeServiceTest {
         fun `will indicate we want to try again until sentence expires`() {
           val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
-          assertThat(result).isEqualToComparingFieldByField(TryLater(bookingId = 12345, retryUntil = sentenceExpiryDate))
+          assertThat(result).usingRecursiveComparison().isEqualTo(
+            TryLater(
+              bookingId = 12345,
+              retryUntil = sentenceExpiryDate,
+              status = SynchroniseStatus("X12345", SynchroniseState.LOCATION_NOT_UPDATED)
+            )
+          )
         }
         @Test
         fun `will log that prison location could not be set`() {
@@ -270,7 +283,13 @@ class ImprisonmentStatusChangeServiceTest {
         fun `will indicate we want to try again until sentence expires`() {
           val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
 
-          assertThat(result).isEqualToComparingFieldByField(TryLater(bookingId = 12345, retryUntil = sentenceExpiryDate))
+          assertThat(result).usingRecursiveComparison().isEqualTo(
+            TryLater(
+              bookingId = 12345,
+              retryUntil = sentenceExpiryDate,
+              status = SynchroniseStatus("X12345", SynchroniseState.KEY_DATES_NOT_UPDATED)
+            )
+          )
         }
 
         @Test

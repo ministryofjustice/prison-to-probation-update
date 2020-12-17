@@ -62,6 +62,23 @@ data class BookingNumberChangedMessage(val bookingId: Long)
 data class ImprisonmentStatusChangesMessage(val bookingId: Long, val imprisonmentStatusSeq: Long)
 data class SentenceKeyDateChangeMessage(val bookingId: Long)
 
+enum class SynchroniseState {
+  ERROR,
+  NOT_VALID,
+  VALIDATED,
+  NO_MATCH,
+  NO_MATCH_WITH_SENTENCE_DATE,
+  TOO_MANY_MATCHES,
+  BOOKING_NUMBER_NOT_ASSIGNED,
+  LOCATION_NOT_UPDATED,
+  KEY_DATES_NOT_UPDATED,
+}
+data class SynchroniseStatus(val matchingCrns: String? = null, val state: SynchroniseState = SynchroniseState.VALIDATED)
 sealed class MessageResult
-class TryLater(val bookingId: Long, val retryUntil: LocalDate? = null) : MessageResult()
+class TryLater(
+  val bookingId: Long,
+  val retryUntil: LocalDate? = null,
+  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.VALIDATED)
+) : MessageResult()
+
 class Done(val message: String? = null) : MessageResult()

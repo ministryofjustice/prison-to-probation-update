@@ -44,7 +44,15 @@ class InProgressReport(private val messageRepository: MessageRepository) {
         bookingId = it.bookingId,
         createdDate = it.createdDate,
         deleteBy = LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC),
-        eventType = it.eventType
+        eventType = it.eventType,
+        offenderNo = it.offenderNo,
+        bookingNo = it.bookingNo,
+        crns = it.matchingCrns,
+        locationId = it.locationId,
+        location = it.locationDescription,
+        legalStatus = it.legalStatus,
+        recall = it.recall,
+        status = it.status
       )
     }.asCSV()
   }
@@ -62,5 +70,13 @@ data class InProgress(
   val bookingId: Long,
   val createdDate: LocalDateTime,
   val deleteBy: LocalDateTime,
-  val eventType: String
+  val eventType: String,
+  val offenderNo: String?,
+  val bookingNo: String?,
+  val crns: String?,
+  val locationId: String?,
+  val location: String?,
+  val legalStatus: String?,
+  val recall: Boolean?,
+  val status: String?,
 )

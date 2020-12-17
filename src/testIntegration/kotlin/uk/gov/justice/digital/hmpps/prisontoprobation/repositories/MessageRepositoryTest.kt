@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -184,7 +185,7 @@ class MessageRepositoryTest : IntegrationTest() {
     val message = repository.findAll().first()
     assertThat(message.retryCount).isEqualTo(1)
 
-    repository.save(message.retry())
+    repository.save(message.retry(status = SynchroniseStatus()))
 
     val messageAfterRetry = repository.findAll().first()
     assertThat(messageAfterRetry.retryCount).isEqualTo(2)

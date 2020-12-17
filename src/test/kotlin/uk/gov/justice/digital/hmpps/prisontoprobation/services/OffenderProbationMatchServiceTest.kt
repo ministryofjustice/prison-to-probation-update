@@ -99,12 +99,13 @@ internal class OffenderProbationMatchServiceTest {
       )
     )
 
-    val offenderNo = service.ensureOffenderNumberExistsInProbation(
+    val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore { Assertions.fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
+    assertThat(crn).isEqualTo("X12345")
   }
 
   @Test
@@ -120,7 +121,8 @@ internal class OffenderProbationMatchServiceTest {
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore {
-      assertThat(it.reason.name).isEqualTo("P2POffenderNoMatch")
+      assertThat(it.reason.first.name).isEqualTo("P2POffenderNoMatch")
+      assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NO_MATCH)
       return
     }
 
@@ -149,7 +151,8 @@ internal class OffenderProbationMatchServiceTest {
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore {
-      assertThat(it.reason.name).isEqualTo("P2POffenderNoMatch")
+      assertThat(it.reason.first.name).isEqualTo("P2POffenderNoMatch")
+      assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE)
       return
     }
 
@@ -174,12 +177,13 @@ internal class OffenderProbationMatchServiceTest {
       )
     )
 
-    val offenderNo = service.ensureOffenderNumberExistsInProbation(
+    val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore { fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
+    assertThat(crn).isEqualTo("X12345")
   }
 
   @Test
@@ -200,12 +204,13 @@ internal class OffenderProbationMatchServiceTest {
       )
     )
 
-    val offenderNo = service.ensureOffenderNumberExistsInProbation(
+    val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore { fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
+    assertThat(crn).isEqualTo("X12345")
   }
 
   @Test
@@ -231,7 +236,8 @@ internal class OffenderProbationMatchServiceTest {
       bookingOf(offenderNo = "A5089DY"),
       LocalDate.parse("2020-01-30")
     ).onIgnore {
-      assertThat(it.reason.name).isEqualTo("P2POffenderTooManyMatches")
+      assertThat(it.reason.first.name).isEqualTo("P2POffenderTooManyMatches")
+      assertThat(it.reason.second.state).isEqualTo(SynchroniseState.TOO_MANY_MATCHES)
       return
     }
 
@@ -643,7 +649,8 @@ internal class OffenderProbationMatchServiceTest {
       bookingOf(offenderNo = "A5089DY", agencyId = "XX"),
       LocalDate.parse("2020-01-30")
     ).onIgnore {
-      assertThat(it.reason.name).isEqualTo("P2PChangeIgnored")
+      assertThat(it.reason.first.name).isEqualTo("P2PChangeIgnored")
+      assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NOT_VALID)
       return
     }
 
