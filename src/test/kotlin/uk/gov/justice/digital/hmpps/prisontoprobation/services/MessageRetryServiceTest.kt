@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.byLessThan
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageReposi
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 internal class MessageRetryServiceTest {
   private val messageProcessor: MessageProcessor = mock()
@@ -25,7 +27,7 @@ internal class MessageRetryServiceTest {
   @BeforeEach
   fun setUp() {
     whenever(messageProcessor.processMessage(any())).thenReturn(Done())
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf())
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf())
   }
 
   @Test
@@ -68,19 +70,19 @@ internal class MessageRetryServiceTest {
   @Test
   internal fun `retry short term will try one to four retry attempts`() {
     service.retryShortTerm()
-    verify(messageRepository).findByRetryCountBetween(1, 4)
+    verify(messageRepository).findByRetryCountBetweenAndProcessedDateIsNull(1, 4)
   }
 
   @Test
   internal fun `retry medium term will try five to eleven retry attempts`() {
     service.retryMediumTerm()
-    verify(messageRepository).findByRetryCountBetween(5, 10)
+    verify(messageRepository).findByRetryCountBetweenAndProcessedDateIsNull(5, 10)
   }
 
   @Test
   internal fun `retry long term will try all those above eleven`() {
     service.retryLongTerm()
-    verify(messageRepository).findByRetryCountBetween(11, 2147483647)
+    verify(messageRepository).findByRetryCountBetweenAndProcessedDateIsNull(11, 2147483647)
   }
 
   @Test
@@ -92,7 +94,7 @@ internal class MessageRetryServiceTest {
       retryCount = 1,
       deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
     )
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
@@ -122,7 +124,7 @@ internal class MessageRetryServiceTest {
       retryCount = 1,
       deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
     )
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
@@ -145,7 +147,7 @@ internal class MessageRetryServiceTest {
   @Test
   internal fun `will update retry count of failure`() {
     val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(TryLater(bookingId = 99L))
 
     service.retryShortTerm()
@@ -161,7 +163,7 @@ internal class MessageRetryServiceTest {
   @Test
   internal fun `will update message status`() {
     val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
@@ -182,7 +184,7 @@ internal class MessageRetryServiceTest {
   @Test
   internal fun `will update message matched crns`() {
     val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
@@ -204,7 +206,7 @@ internal class MessageRetryServiceTest {
   internal fun `will continue processing messages even when we encounter an error`() {
     val message1 = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1, eventType = "EVENT_A")
     val message2 = Message(bookingId = 100L, message = "{}", id = "456", retryCount = 1, eventType = "EVENT_A")
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message1, message2))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message1, message2))
     whenever(messageProcessor.processMessage(any())).thenThrow(RuntimeException("it has all gone wrong"))
 
     service.retryShortTerm()
@@ -213,13 +215,20 @@ internal class MessageRetryServiceTest {
   }
 
   @Test
-  internal fun `will delete message on success`() {
+  internal fun `will mark message processed on success`() {
     val message = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1)
-    whenever(messageRepository.findByRetryCountBetween(any(), any())).thenReturn(listOf(message))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(Done())
 
     service.retryShortTerm()
 
-    verify(messageRepository).delete(message)
+    verify(messageRepository).save(
+      check {
+        assertThat(it.processedDate).isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
+        assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
+          LocalDate.now().plusDays(30)
+        )
+      }
+    )
   }
 }

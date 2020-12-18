@@ -41,7 +41,7 @@ class MessageRepositoryTest : IntegrationTest() {
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
     assertThat(LocalDateTime.ofEpochSecond(message.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-      LocalDate.now().plusDays(8)
+      LocalDate.now().plusDays(30)
     )
 
     assertThat(message.processedDate).isNull()
@@ -53,6 +53,7 @@ class MessageRepositoryTest : IntegrationTest() {
     assertThat(message.recall).isNull()
     assertThat(message.legalStatus).isNull()
   }
+
   @Test
   internal fun canWriteToRepositoryWithAdvancedAttributes() {
     repository.save(
@@ -80,7 +81,7 @@ class MessageRepositoryTest : IntegrationTest() {
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
     assertThat(LocalDateTime.ofEpochSecond(message.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-      LocalDate.now().plusDays(8)
+      LocalDate.now().plusDays(30)
     )
 
     assertThat(message.processedDate?.toLocalDate()).isToday
@@ -157,15 +158,15 @@ class MessageRepositoryTest : IntegrationTest() {
       .hasSize(1)
       .extracting<Long>(Message::bookingId).containsExactly(100L)
 
-    assertThat(repository.findByRetryCountBetween(1, 2))
+    assertThat(repository.findByRetryCountBetweenAndProcessedDateIsNull(1, 2))
       .hasSize(3)
       .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L)
 
-    assertThat(repository.findByRetryCountBetween(1, 3))
+    assertThat(repository.findByRetryCountBetweenAndProcessedDateIsNull(1, 3))
       .hasSize(4)
       .extracting<Long>(Message::bookingId).containsExactlyInAnyOrder(99L, 99L, 100L, 100L)
 
-    assertThat(repository.findByRetryCountBetween(3, Int.MAX_VALUE))
+    assertThat(repository.findByRetryCountBetweenAndProcessedDateIsNull(3, Int.MAX_VALUE))
       .hasSize(1)
       .extracting<Long>(Message::bookingId).containsExactly(100L)
   }
@@ -205,7 +206,7 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).isEmpty()
     }
@@ -222,7 +223,7 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).hasSize(1)
     }
@@ -248,7 +249,7 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).hasSize(2)
     }
@@ -265,7 +266,7 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minusMinutes(10))
+      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).isEmpty()
     }

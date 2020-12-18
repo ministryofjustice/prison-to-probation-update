@@ -12,6 +12,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
+const val MAX_REPORTING_PERIOD_DAYS: Long = 30
+
 @DynamoDBTable(tableName = "Message") // table name will be dynamically amended via config
 data class Message(
   @DynamoDBHashKey
@@ -24,7 +26,7 @@ data class Message(
   @DynamoDBTypeConverted(converter = LocalDateTimeConverter::class)
   var createdDate: LocalDateTime = LocalDateTime.now(),
   @DynamoDBAttribute
-  var deleteBy: Long = LocalDateTime.now().plusWeeks(1).plusDays(1).toEpochSecond(ZoneOffset.UTC),
+  var deleteBy: Long = LocalDateTime.now().plusDays(MAX_REPORTING_PERIOD_DAYS).toEpochSecond(ZoneOffset.UTC),
   @DynamoDBAttribute
   var eventType: String = "",
   @DynamoDBAttribute
@@ -59,6 +61,12 @@ data class Message(
     status.matchingCrns?.also {
       this.matchingCrns = it
     }
+    return this
+  }
+
+  fun markAsProcessed(): Message {
+    this.processedDate = LocalDateTime.now()
+    this.deleteBy = LocalDateTime.now().plusDays(MAX_REPORTING_PERIOD_DAYS).toEpochSecond(ZoneOffset.UTC)
     return this
   }
 }

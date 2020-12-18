@@ -79,6 +79,38 @@ internal class MessageAggregatorTest : IntegrationTest() {
   }
 
   @Test
+  fun `will ignore a single old first-time messages that has already been processed`() {
+    val message = imprisonmentStatusChangedMessage(1200835)
+    repository.save(
+      Message(
+        bookingId = 99,
+        retryCount = 0,
+        createdDate = LocalDateTime.now().minusMinutes(11),
+        eventType = "IMPRISONMENT_STATUS-CHANGED",
+        message = message,
+        processedDate = LocalDateTime.now().minusMinutes(9)
+      )
+    )
+
+    messageAggregator.processMessagesForNextBookingSets()
+
+    verify(messageProcessor, never()).processMessage(any())
+  }
+
+  @Test
+  fun `will only process a single old first-time messages need processing once`() {
+    val message = imprisonmentStatusChangedMessage(1200835)
+    repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "IMPRISONMENT_STATUS-CHANGED", message = message))
+
+    messageAggregator.processMessagesForNextBookingSets()
+    messageAggregator.processMessagesForNextBookingSets()
+
+    verify(messageProcessor).processMessage(
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message)
+    )
+  }
+
+  @Test
   fun `will process messages in any order for each booking batch`() {
     val tooYoungMessage = imprisonmentStatusChangedMessage(99)
     repository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(1), eventType = "IMPRISONMENT_STATUS-CHANGED", message = tooYoungMessage))

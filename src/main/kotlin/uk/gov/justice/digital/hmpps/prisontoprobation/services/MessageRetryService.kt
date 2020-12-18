@@ -50,7 +50,7 @@ class MessageRetryService(
   fun retryLongTerm() = retryForAttemptsMade(11..Int.MAX_VALUE)
 
   private fun retryForAttemptsMade(range: IntRange) =
-    messageRepository.findByRetryCountBetween(range.first, range.last).forEach {
+    messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(range.first, range.last).forEach {
       log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
       when (val result: MessageResult = processMessage(it)) {
         is TryLater -> {
@@ -59,7 +59,7 @@ class MessageRetryService(
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
-          messageRepository.delete(it)
+          messageRepository.save(it.markAsProcessed())
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
         }
       }
