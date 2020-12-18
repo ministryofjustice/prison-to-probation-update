@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.byLessThan
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +17,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 internal class MessageRetryServiceIntTest : IntegrationTest() {
   @Autowired
@@ -57,6 +60,33 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
         assertThat(it.message).isEqualTo(message)
       }
     )
+  }
+
+  @Test
+  internal fun `will keep a processed record for reporting`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    doReturn(Done()).whenever(messageProcessor).processMessage(any())
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC
+        )
+      )
+    )
+
+    service.retryShortTerm()
+
+    assertThat(repository.findByBookingId(33L))
+      .hasSize(1)
+
+    assertThat(repository.findByBookingId(33L).first().processedDate)
+      .isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
   }
 
   @Test
@@ -194,5 +224,31 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
         assertThat(it.message).isEqualTo(message)
       }
     )
+  }
+
+  @Test
+  internal fun `will not retry when marked as processed`() {
+    val eventType = "IMPRISONMENT_STATUS-CHANGED"
+    val message =
+      "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+    doReturn(Done()).whenever(messageProcessor).processMessage(any())
+    repository.save(
+      Message(
+        bookingId = 33L,
+        eventType = eventType,
+        message = message,
+        retryCount = 1,
+        deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
+          ZoneOffset.UTC,
+        ),
+        processedDate = LocalDateTime.now().minusMinutes(50)
+      )
+    )
+
+    service.retryShortTerm()
+    service.retryMediumTerm()
+    service.retryLongTerm()
+
+    verify(messageProcessor, never()).processMessage(any())
   }
 }

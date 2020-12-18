@@ -22,7 +22,7 @@ class MessageAggregator(
   }
 
   fun processMessagesForNextBookingSets() {
-    val messages = messageRepository.findByRetryCountAndCreatedDateBefore(0, LocalDateTime.now().minus(holdBackDuration))
+    val messages = messageRepository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minus(holdBackDuration))
 
     val (messagesToProcess, messagesToDiscard) = aggregatedMessagesOrdered(messages)
 
@@ -31,16 +31,14 @@ class MessageAggregator(
     messagesToProcess.forEach {
       when (val result = processMessage(it)) {
         is TryLater -> messageRepository.save(it.retry(status = result.status))
-        is Done -> messageRepository.delete(it)
+        is Done -> messageRepository.save(it.markAsProcessed())
       }
     }
   }
 
   private fun processMessage(message: Message): MessageResult {
     return try {
-      val result = messageProcessor.processMessage(message)
-      messageRepository.delete(message)
-      result
+      messageProcessor.processMessage(message)
     } catch (e: Exception) {
       log.error("Unable to process message ${message.eventType} for ${message.bookingId}", e)
       TryLater(message.bookingId, status = SynchroniseStatus(state = SynchroniseState.ERROR))

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -41,6 +42,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
     await untilCallTo { eliteRequestCountFor("/api/prisoners?offenderNo=A5089DY") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
+
+    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
   }
 
   @Test
@@ -63,6 +66,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+
+    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
   }
 
   @Test
@@ -78,6 +83,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+
+    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
   }
 
   @Test
@@ -93,6 +100,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
+
+    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
   }
 
   @Test
@@ -108,6 +117,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
+
+    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
   }
 }
 
