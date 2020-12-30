@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.1"
   kotlin("plugin.spring") version "1.4.21"
   id("org.unbroken-dome.test-sets") version "3.0.1"
   idea
@@ -22,9 +22,11 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  // CVE fix for 1.4.4 bought in from spring-boot-starter-oauth2-client:5.4.2
+  implementation("com.nimbusds:lang-tag:1.5")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.19.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.19.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.19.1")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.19.1")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
@@ -32,12 +34,12 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0")
 
-  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.1")
-  implementation("org.springdoc:springdoc-openapi-ui:1.5.1")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.1")
+  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.2")
+  implementation("org.springdoc:springdoc-openapi-ui:1.5.2")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.2")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.918"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.928"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
