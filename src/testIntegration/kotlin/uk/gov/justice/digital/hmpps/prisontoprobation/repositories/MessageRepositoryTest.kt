@@ -36,7 +36,7 @@ class MessageRepositoryTest : IntegrationTest() {
 
     assertThat(message.bookingId).isEqualTo(99L)
     assertThat(message.retryCount).isEqualTo(1)
-    assertThat(message.createdDate.toLocalDate()).isToday()
+    assertThat(message.createdDate.toLocalDate()).isToday
     assertThat(message.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
@@ -76,7 +76,7 @@ class MessageRepositoryTest : IntegrationTest() {
 
     assertThat(message.bookingId).isEqualTo(99L)
     assertThat(message.retryCount).isEqualTo(1)
-    assertThat(message.createdDate.toLocalDate()).isToday()
+    assertThat(message.createdDate.toLocalDate()).isToday
     assertThat(message.eventType).isEqualTo("IMPRISONMENT_STATUS-CHANGED")
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
@@ -206,7 +206,8 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
+      val messages =
+        repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).isEmpty()
     }
@@ -223,7 +224,8 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
+      val messages =
+        repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).hasSize(1)
     }
@@ -249,7 +251,8 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
+      val messages =
+        repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).hasSize(2)
     }
@@ -266,7 +269,8 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
+      val messages =
+        repository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minusMinutes(10))
 
       assertThat(messages).isEmpty()
     }
@@ -350,6 +354,97 @@ class MessageRepositoryTest : IntegrationTest() {
       val messages = repository.findByBookingId(99L)
 
       assertThat(messages).hasSize(3)
+    }
+  }
+
+  @Nested
+  inner class FindAllByStatusInAndCreatedDateLessThan {
+    @Test
+    internal fun `will find records of the statuses supplied`() {
+      repository.save(
+        Message(
+          bookingId = 1,
+          retryCount = 0,
+          createdDate = LocalDateTime.now(),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "NO_MATCH"
+        )
+      )
+      repository.save(
+        Message(
+          bookingId = 2,
+          retryCount = 0,
+          createdDate = LocalDateTime.now(),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "NO_MATCH_WITH_SENTENCE_DATE"
+        )
+      )
+      repository.save(
+        Message(
+          bookingId = 3,
+          retryCount = 0,
+          createdDate = LocalDateTime.now(),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "KEY_DATES_NOT_UPDATED"
+        )
+      )
+      assertThat(
+        repository.findAllByStatusInAndCreatedDateLessThan(
+          listOf("NO_MATCH", "NO_MATCH_WITH_SENTENCE_DATE"),
+          LocalDateTime.now()
+        )
+      ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(1L, 2L)
+    }
+
+    @Test
+    internal fun `will find records older then the supplied date`() {
+      repository.save(
+        Message(
+          bookingId = 1,
+          retryCount = 0,
+          createdDate = LocalDateTime.now(),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "NO_MATCH"
+        )
+      )
+      repository.save(
+        Message(
+          bookingId = 2,
+          retryCount = 0,
+          createdDate = LocalDateTime.now().minusDays(1),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "NO_MATCH"
+        )
+      )
+      repository.save(
+        Message(
+          bookingId = 3,
+          retryCount = 0,
+          createdDate = LocalDateTime.now().minusDays(3),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          status = "NO_MATCH"
+        )
+      )
+
+      assertThat(
+        repository.findAllByStatusInAndCreatedDateLessThan(
+          listOf("NO_MATCH"),
+          LocalDateTime.now()
+        )
+      ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(1L, 2L, 3L)
+
+      assertThat(
+        repository.findAllByStatusInAndCreatedDateLessThan(
+          listOf("NO_MATCH"),
+          LocalDateTime.now().minusDays(2)
+        )
+      ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(3L)
     }
   }
 }

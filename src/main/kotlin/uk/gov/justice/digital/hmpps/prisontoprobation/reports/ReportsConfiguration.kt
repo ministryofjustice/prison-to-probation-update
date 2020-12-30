@@ -12,7 +12,10 @@ import org.springframework.web.servlet.function.ServerResponse
 import org.springframework.web.servlet.function.router
 
 @Configuration
-class ReportsConfiguration(private val inProgressReport: InProgressReport) {
+class ReportsConfiguration(
+  private val inProgressReport: InProgressReport,
+  private val notMatchedReport: NotMatchedReport
+) {
 
   @Bean
   @RouterOperations(
@@ -26,12 +29,18 @@ class ReportsConfiguration(private val inProgressReport: InProgressReport) {
   fun router(): RouterFunction<ServerResponse> = router {
     path("/report").nest {
       GET("/in-progress", ::getInProgress)
+      GET("/not-matched", ::getNotMatched)
     }
   }
 
   fun getInProgress(request: ServerRequest): ServerResponse =
     report {
       inProgressReport.generate()
+    }
+
+  fun getNotMatched(request: ServerRequest): ServerResponse =
+    report {
+      notMatchedReport.generate(request.param("daysOld").orElse("7").toLong())
     }
 }
 
