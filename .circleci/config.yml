@@ -121,15 +121,15 @@ workflows:
             branches:
               only:
                 - main
-                - DT-1262-Report
       - hmpps/deploy_env:
           name: deploy_dev
           env: "dev"
+          context:
+            - hmpps-common-vars
           filters:
             branches:
               only:
                 - main
-                - DT-1262-Report
           requires:
             - validate
             - test-integration
@@ -141,7 +141,9 @@ workflows:
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
-          context: prison-to-probation-update-preprod
+          context:
+            - prison-to-probation-update-preprod
+            - hmpps-common-vars
           requires:
             - smoke-test
       - request-prod-approval:
@@ -152,7 +154,9 @@ workflows:
           name: deploy_prod
           env: "prod"
           slack_notification: true
-          context: prison-to-probation-update-prod
+          context:
+            - prison-to-probation-update-prod
+            - hmpps-common-vars
           requires:
             - request-prod-approval
 
