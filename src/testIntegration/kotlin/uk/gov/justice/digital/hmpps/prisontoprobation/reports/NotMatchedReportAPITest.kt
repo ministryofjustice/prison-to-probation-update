@@ -47,105 +47,19 @@ class NotMatchedReportAPITest : IntegrationTest() {
     internal fun setUp() {
       messageRepository.deleteAll()
       messageRepository.save(
-        Message(
-          bookingId = 1,
-          eventType = "IMPRISONMENT_STATUS-CHANGED",
-          retryCount = 99,
-          createdDate = LocalDateTime.now().minusDays(10),
-          message =
-            """{"text": "value"}""",
-          deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
-          reportable = true,
-          offenderNo = "A1234GA",
-          bookingNo = "12345A",
-          matchingCrns = "",
-          status = "NO_MATCH",
-          locationId = "MDI",
-          locationDescription = "Moorland HMP",
-          recall = false,
-          legalStatus = "SENTENCED",
-          processedDate = null,
-        )
+        aMessage(1, 10, "NO_MATCH")
       )
       messageRepository.save(
-        Message(
-          bookingId = 2,
-          eventType = "IMPRISONMENT_STATUS-CHANGED",
-          retryCount = 99,
-          createdDate = LocalDateTime.now().minusDays(10),
-          message =
-            """{"text": "value"}""",
-          deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
-          reportable = true,
-          processedDate = null,
-          offenderNo = "A1234GB",
-          bookingNo = "12345B",
-          matchingCrns = "X12345",
-          status = "NO_MATCH_WITH_SENTENCE_DATE",
-          locationId = "MDI",
-          locationDescription = "Moorland HMP",
-          recall = false,
-        )
+        aMessage(2, 10, "NO_MATCH_WITH_SENTENCE_DATE")
       )
       messageRepository.save(
-        Message(
-          bookingId = 3,
-          eventType = "IMPRISONMENT_STATUS-CHANGED",
-          retryCount = 99,
-          createdDate = LocalDateTime.now().minusDays(10),
-          message =
-            """{"text": "value"}""",
-          deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
-          reportable = true,
-          processedDate = null,
-          offenderNo = "A1234GC",
-          bookingNo = "12345C",
-          matchingCrns = "X12345,X12346",
-          status = "TOO_MANY_MATCHES",
-          locationId = "MDI",
-          locationDescription = "Moorland HMP",
-          recall = false,
-        )
+        aMessage(3, 10, "TOO_MANY_MATCHES")
       )
       messageRepository.save(
-        Message(
-          bookingId = 4,
-          eventType = "IMPRISONMENT_STATUS-CHANGED",
-          retryCount = 99,
-          createdDate = LocalDateTime.now().minusDays(10),
-          message =
-            """{"text": "value"}""",
-          deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
-          reportable = true,
-          processedDate = null,
-          offenderNo = "A1234GC",
-          bookingNo = "12345C",
-          matchingCrns = "X12345",
-          status = "BOOKING_NUMBER_NOT_ASSIGNED",
-          locationId = "MDI",
-          locationDescription = "Moorland HMP",
-          recall = false,
-        )
+        aMessage(4, 10, "BOOKING_NUMBER_NOT_ASSIGNED")
       )
       messageRepository.save(
-        Message(
-          bookingId = 5,
-          eventType = "IMPRISONMENT_STATUS-CHANGED",
-          retryCount = 99,
-          createdDate = LocalDateTime.now().minusMinutes(1),
-          message =
-            """{"text": "value"}""",
-          deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
-          reportable = true,
-          processedDate = null,
-          offenderNo = "A1234GD",
-          bookingNo = "12345D",
-          matchingCrns = "",
-          status = "NO_MATCH",
-          locationId = "MDI",
-          locationDescription = "Moorland HMP",
-          recall = false,
-        )
+        aMessage(5, 0, "NO_MATCH")
       )
     }
 
@@ -206,3 +120,23 @@ class NotMatchedReportAPITest : IntegrationTest() {
     }
   }
 }
+
+fun aMessage(bookingId: Long, ageInDays: Long, status: String): Message = Message(
+  bookingId = bookingId,
+  eventType = "IMPRISONMENT_STATUS-CHANGED",
+  retryCount = 99,
+  createdDate = LocalDateTime.now().minusDays(ageInDays),
+  message =
+    """{"text": "value"}""",
+  deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
+  reportable = true,
+  offenderNo = "A1234GA",
+  bookingNo = "12345A",
+  matchingCrns = "",
+  status = status,
+  locationId = "MDI",
+  locationDescription = "Moorland HMP",
+  recall = false,
+  legalStatus = "SENTENCED",
+  processedDate = null,
+)
