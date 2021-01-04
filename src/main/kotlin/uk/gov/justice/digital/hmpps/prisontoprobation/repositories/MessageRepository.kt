@@ -17,4 +17,5 @@ interface MessageRepository : CrudRepository<Message, String> {
 
   fun findByBookingId(bookingId: Long): List<Message>
   fun findAllByProcessedDateIsNull(): List<Message>
+  fun findAllByStatusInAndCreatedDateLessThan(status: List<String>, plusDays: LocalDateTime): List<Message>
 }

@@ -7,15 +7,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.NO_MATCH
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.TOO_MANY_MATCHES
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 @Service
-class InProgressReport(private val messageRepository: MessageRepository) {
+class NotMatchedReport(private val messageRepository: MessageRepository) {
   @PreAuthorize("hasRole('ROLE_PTPU_REPORT')")
   @Operation(
-    summary = "InProgress report",
-    description = "A report of all matches currently in progress",
+    summary = "NotMatched report",
+    description = "A report of all records not matched yet",
     responses = [
       ApiResponse(
         responseCode = "200",
@@ -27,7 +30,7 @@ class InProgressReport(private val messageRepository: MessageRepository) {
               ExampleObject(
                 """
                 "BOOKINGID","BOOKINGNO","CREATEDDATE","CRNS","DELETEBY","EVENTTYPE","LEGALSTATUS","LOCATION","LOCATIONID","OFFENDERNO","RECALL","STATUS"
-                "2672916","12345V","2020-12-09T15:15:50","X12345,X87654","2020-12-19T15:15:50","IMPRISONMENT_STATUS-CHANGED","SENTENCED","Moorland HMP","MDI","A1234GY","false","BOOKING_NUMBER_NOT_ASSIGNED"
+                "2672916","12345V","2020-12-09T15:15:50","","2020-12-19T15:15:50","IMPRISONMENT_STATUS-CHANGED","SENTENCED","Moorland HMP","MDI","A1234GY","false","NOT_MATCHED"
                 """
               )
             )
@@ -36,9 +39,16 @@ class InProgressReport(private val messageRepository: MessageRepository) {
       )
     ]
   )
-  fun generate(): String {
-    return messageRepository.findAllByProcessedDateIsNull().map {
-      InProgress(
+  fun generate(daysOld: Long): String {
+    return messageRepository.findAllByStatusInAndCreatedDateLessThan(
+      listOf(
+        NO_MATCH.name,
+        NO_MATCH_WITH_SENTENCE_DATE.name,
+        TOO_MANY_MATCHES.name
+      ),
+      LocalDateTime.now().minusDays(daysOld)
+    ).map {
+      NotMatched(
         bookingId = it.bookingId,
         createdDate = it.createdDate,
         deleteBy = LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC),
@@ -56,7 +66,7 @@ class InProgressReport(private val messageRepository: MessageRepository) {
   }
 }
 
-data class InProgress(
+data class NotMatched(
   val bookingId: Long,
   val createdDate: LocalDateTime,
   val deleteBy: LocalDateTime,
