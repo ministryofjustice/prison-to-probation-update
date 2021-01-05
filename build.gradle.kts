@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "2.1.2"
   kotlin("plugin.spring") version "1.4.21"
   id("org.unbroken-dome.test-sets") version "3.0.1"
   idea
@@ -39,7 +39,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-kotlin:1.5.2")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.928"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.930"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
