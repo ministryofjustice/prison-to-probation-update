@@ -22,8 +22,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  // CVE fix for 1.4.4 bought in from spring-boot-starter-oauth2-client:5.4.2
-  implementation("com.nimbusds:lang-tag:1.5")
 
   implementation("net.javacrumbs.shedlock:shedlock-spring:4.19.1")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.19.1")
