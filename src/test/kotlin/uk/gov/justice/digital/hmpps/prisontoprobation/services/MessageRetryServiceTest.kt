@@ -22,7 +22,7 @@ internal class MessageRetryServiceTest {
   private val messageRepository: MessageRepository = mock()
   private val offenderService: OffenderService = mock()
   private var service: MessageRetryService =
-    MessageRetryService(messageRepository, messageProcessor, 192, offenderService)
+    MessageRetryService(messageRepository, messageProcessor, offenderService)
 
   @BeforeEach
   fun setUp() {
@@ -31,7 +31,7 @@ internal class MessageRetryServiceTest {
   }
 
   @Test
-  internal fun `will schedule a message that expires in 8 days`() {
+  internal fun `will schedule a message that expires in 30 days`() {
     whenever(offenderService.getBooking(99L)).thenReturn(
       createBooking(
         agencyId = "MDI",
@@ -52,7 +52,7 @@ internal class MessageRetryServiceTest {
         assertThat(it.retryCount).isEqualTo(0)
         assertThat(it.createdDate.toLocalDate()).isToday
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          LocalDate.now().plusDays(8)
+          LocalDate.now().plusDays(30)
         )
         assertThat(it.reportable).isTrue
         assertThat(it.processedDate).isNull()
@@ -86,13 +86,13 @@ internal class MessageRetryServiceTest {
   }
 
   @Test
-  internal fun `will keep deleteBy as 8 days by default when trying later`() {
+  internal fun `will keep deleteBy as 30 days by default when trying later`() {
     val message = Message(
       bookingId = 99L,
       message = "{}",
       id = "123",
       retryCount = 1,
-      deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
+      deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC)
     )
     whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
@@ -108,7 +108,7 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          LocalDate.now().plusDays(6)
+          LocalDate.now().plusDays(30)
         )
       }
     )
@@ -206,7 +206,12 @@ internal class MessageRetryServiceTest {
   internal fun `will continue processing messages even when we encounter an error`() {
     val message1 = Message(bookingId = 99L, message = "{}", id = "123", retryCount = 1, eventType = "EVENT_A")
     val message2 = Message(bookingId = 100L, message = "{}", id = "456", retryCount = 1, eventType = "EVENT_A")
-    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message1, message2))
+    whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(
+      listOf(
+        message1,
+        message2
+      )
+    )
     whenever(messageProcessor.processMessage(any())).thenThrow(RuntimeException("it has all gone wrong"))
 
     service.retryShortTerm()
