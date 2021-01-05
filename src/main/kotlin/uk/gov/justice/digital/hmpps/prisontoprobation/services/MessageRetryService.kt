@@ -2,19 +2,14 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Service
 class MessageRetryService(
   private val messageRepository: MessageRepository,
   private val messageProcessor: MessageProcessor,
-  @Value("\${dynamodb.message.expiryHours}")
-  private val expiryHours: Long,
   private val offenderService: OffenderService,
 ) {
   companion object {
@@ -30,7 +25,6 @@ class MessageRetryService(
         eventType = eventType,
         message = message,
         retryCount = 0,
-        deleteBy = LocalDateTime.now().plusHours(expiryHours).toEpochSecond(ZoneOffset.UTC),
         reportable = true,
         offenderNo = booking.offenderNo,
         bookingNo = booking.bookingNo,
