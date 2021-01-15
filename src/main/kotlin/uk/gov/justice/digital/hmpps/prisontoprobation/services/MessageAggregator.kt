@@ -22,7 +22,10 @@ class MessageAggregator(
   }
 
   fun processMessagesForNextBookingSets() {
-    val messages = messageRepository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(0, LocalDateTime.now().minus(holdBackDuration))
+    val messages = messageRepository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(
+      0,
+      LocalDateTime.now().minus(holdBackDuration)
+    )
 
     val (messagesToProcess, messagesToDiscard) = aggregatedMessagesOrdered(messages)
 
@@ -48,7 +51,7 @@ class MessageAggregator(
   private fun aggregatedMessagesOrdered(messages: List<Message>): Pair<List<Message>, List<Message>> {
     val allBookings = messages.map { it.bookingId }.distinct()
     // now get all other messages regardless of age or number or retires that we can process as a batch
-    val allMessagesForAllBookings = allBookings.flatMap { messageRepository.findByBookingId(it) }
+    val allMessagesForAllBookings = allBookings.flatMap { messageRepository.findByBookingIdAndProcessedDateIsNull(it) }
 
     val groupedByBooking = allMessagesForAllBookings.groupBy { it.bookingId }
 

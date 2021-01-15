@@ -328,6 +328,41 @@ internal class MessageAggregatorTest : IntegrationTest() {
     verify(messageProcessor, times(2)).processMessage(any())
   }
 
+  @Test
+  fun `will ignore processed messages when processing a batch`() {
+    val imprisonmentStatusChangedMessage = imprisonmentStatusChangedMessage(99)
+    val sentenceDateChangeMessage = sentenceDatesChangedMessage(99)
+
+    repository.save(
+      Message(
+        processedDate = LocalDateTime.now().minusDays(3),
+        bookingId = 99,
+        retryCount = 0,
+        createdDate = LocalDateTime.now().minusDays(3),
+        eventType = "IMPRISONMENT_STATUS-CHANGED",
+        message = imprisonmentStatusChangedMessage
+      )
+    )
+    repository.save(
+      Message(
+        bookingId = 99,
+        retryCount = 0,
+        createdDate = LocalDateTime.now().minusHours(2),
+        eventType = "SENTENCE_DATES-CHANGED",
+        message = sentenceDateChangeMessage
+      )
+    )
+
+    messageAggregator.processMessagesForNextBookingSets()
+
+    verify(messageProcessor).processMessage(
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage)
+    )
+    verify(messageProcessor, never()).processMessage(
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", imprisonmentStatusChangedMessage)
+    )
+  }
+
   private fun sentenceDatesChangedMessage(bookingId: Long, eventDateTime: String = "2020-02-12T15:14:24.125533"): String =
     "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"$eventDateTime\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
 
