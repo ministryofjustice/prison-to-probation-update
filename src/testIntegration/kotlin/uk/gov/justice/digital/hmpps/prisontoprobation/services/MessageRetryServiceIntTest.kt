@@ -85,6 +85,9 @@ internal class MessageRetryServiceIntTest : IntegrationTest() {
     assertThat(repository.findByBookingId(33L))
       .hasSize(1)
 
+    assertThat(repository.findByBookingIdAndProcessedDateIsNull(33L))
+      .hasSize(0)
+
     assertThat(repository.findByBookingId(33L).first().processedDate)
       .isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
   }

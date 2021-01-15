@@ -277,7 +277,7 @@ class MessageRepositoryTest : IntegrationTest() {
   }
 
   @Nested
-  inner class FindByBookingId {
+  inner class FindByBookingIdAndProcessedDateIsNull {
     @Test
     internal fun `will include messages that are young`() {
       repository.save(
@@ -290,9 +290,29 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByBookingId(99L)
+      val messages = repository.findByBookingIdAndProcessedDateIsNull(99L)
 
       assertThat(messages).hasSize(1)
+    }
+
+    @Test
+    internal fun `will exclude processed messages`() {
+      repository.save(
+        Message(
+          bookingId = 99L,
+          retryCount = 0,
+          createdDate = LocalDateTime.now(),
+          eventType = "IMPRISONMENT_STATUS-CHANGED",
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+          processedDate = LocalDateTime.now()
+        )
+      )
+
+      assertThat(repository.findByBookingId(99L)).hasSize(1)
+
+      val messages = repository.findByBookingIdAndProcessedDateIsNull(99L)
+
+      assertThat(messages).isEmpty()
     }
 
     @Test
@@ -316,13 +336,13 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByBookingId(99L)
+      val messages = repository.findByBookingIdAndProcessedDateIsNull(99L)
 
       assertThat(messages).hasSize(1)
     }
 
     @Test
-    internal fun `will only include messages regardless to retryCount`() {
+    internal fun `will include messages regardless to retryCount`() {
       repository.save(
         Message(
           bookingId = 99L,
@@ -351,7 +371,7 @@ class MessageRepositoryTest : IntegrationTest() {
         )
       )
 
-      val messages = repository.findByBookingId(99L)
+      val messages = repository.findByBookingIdAndProcessedDateIsNull(99L)
 
       assertThat(messages).hasSize(3)
     }
