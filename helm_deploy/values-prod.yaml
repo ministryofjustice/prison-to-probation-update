@@ -25,7 +25,7 @@ env:
   PRISON_ENDPOINT_URL: "https://api.prison.service.justice.gov.uk"
   COMMUNITY_ENDPOINT_URL: "https://community-api-secure.probation.service.justice.gov.uk"
   OFFENDER_SEARCH_ENDPOINT_URL: "https://probation-offender-search.hmpps.service.justice.gov.uk"
-  PRISONTOPROBATION_ONLY_PRISONS: "LEI,DNI,HLI,NHI"
+  PRISONTOPROBATION_ONLY_PRISONS: "LEI,DNI,HLI,NHI,PVI,BXI,WSI,HOI,WWI,FMI,TSI,DWI,BAI"
   RETRY_SCHEDULES_SHORT_CRON: "0 0 * * * *"
   RETRY_SCHEDULES_MEDIUM_CRON: "0 15 */4 * * *"
   RETRY_SCHEDULES_LONG_CRON: "0 30 23 * * *"
