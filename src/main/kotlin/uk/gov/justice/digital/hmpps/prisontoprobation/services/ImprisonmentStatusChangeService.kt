@@ -49,9 +49,14 @@ class ImprisonmentStatusChangeService(
   }
 
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
-    val (bookingId) = getSignificantStatusChange(message).onIgnore { return Done() to it.reason }
-    val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return Done() to it.reason }
-    val sentenceStartDate = getLatestPrimarySentenceStartDate(bookingId).onIgnore { return Done() to it.reason }.also { if (sentenceDetail.sentenceStartDate != it) { log.debug("Latest and original sentence dates differ for booking $bookingId -  ${sentenceDetail.sentenceStartDate} compared to $it") } }
+    val (bookingId) = getSignificantStatusChange(message).onIgnore { return ignored() to it.reason }
+    val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return ignored() to it.reason }
+    val sentenceStartDate =
+      getLatestPrimarySentenceStartDate(bookingId).onIgnore { return ignored() to it.reason }.also {
+        if (sentenceDetail.sentenceStartDate != it) {
+          log.debug("Latest and original sentence dates differ for booking $bookingId -  ${sentenceDetail.sentenceStartDate} compared to $it")
+        }
+      }
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val (offenderNo, crn) = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(
       booking,
@@ -63,7 +68,7 @@ class ImprisonmentStatusChangeService(
       }
 
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore {
-      return Done() to it.reason.with(
+      return ignored() to it.reason.with(
         booking
       ).with(sentenceStartDate)
     }
@@ -93,7 +98,7 @@ class ImprisonmentStatusChangeService(
       ) to it.reason.with(booking).with(sentenceStartDate)
     }
 
-    return Done() to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
+    return completed(crn) to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
 
   private fun updateProbationKeyDates(offenderNo: String, bookingNumber: String, sentenceDetail: SentenceDetail): Result<Unit, TelemetryEvent> =
@@ -165,3 +170,7 @@ private fun TelemetryEvent.with(sentenceStartDate: LocalDate): TelemetryEvent = 
     "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_DATE)
   )
 )
+
+private fun ignored() = Done(status = SynchroniseStatus(state = SynchroniseState.NO_LONGER_VALID))
+private fun completed(crn: String) =
+  Done(status = SynchroniseStatus(matchingCrns = crn, state = SynchroniseState.COMPLETED))

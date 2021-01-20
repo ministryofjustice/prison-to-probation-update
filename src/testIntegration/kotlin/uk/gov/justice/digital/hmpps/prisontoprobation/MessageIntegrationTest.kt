@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -8,7 +9,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
+import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @SpringBootTest(
@@ -43,7 +47,10 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/prisoners?offenderNo=A5089DY") } matches { it == 1 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
 
-    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
 
   @Test
@@ -67,7 +74,11 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5089DY/custody/bookingNumber/38339A") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
 
-    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.matchingCrns).isEqualTo("X142620")
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
 
   @Test
@@ -84,7 +95,10 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
 
-    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
 
   @Test
@@ -101,7 +115,10 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
     await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
 
-    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
 
   @Test
@@ -118,7 +135,10 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
 
-    assertThat(messageRepository.findAll().firstOrNull()).isNotNull
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
 }
 
