@@ -240,7 +240,7 @@ class ProcessedReportAPITest : IntegrationTest() {
     }
 
     @Test
-    internal fun `can filter by just processed start date range`() {
+    internal fun `can filter by just created start date range`() {
       webTestClient.get()
         .uri {
           it.path("/report/processed")
@@ -261,7 +261,7 @@ class ProcessedReportAPITest : IntegrationTest() {
     }
 
     @Test
-    internal fun `can filter by just processed end date range`() {
+    internal fun `can filter by just created end date range`() {
       webTestClient.get()
         .uri {
           it.path("/report/processed")
