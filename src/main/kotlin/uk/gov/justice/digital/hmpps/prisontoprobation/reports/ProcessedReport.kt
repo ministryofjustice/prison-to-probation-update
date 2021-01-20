@@ -38,6 +38,7 @@ class ProcessedReport(private val messageRepository: MessageRepository) {
   )
   fun generate(
     locationId: String?,
+    eventType: String?,
     processedDateStartDateTime: LocalDateTime?,
     processedDateEndDateTime: LocalDateTime?,
     createdDateStartDateTime: LocalDateTime?,
@@ -46,6 +47,7 @@ class ProcessedReport(private val messageRepository: MessageRepository) {
     return messageRepository.findAllByProcessedDateIsNotNull()
       .asSequence()
       .filter { record -> locationId?.let { record.locationId == locationId } ?: true }
+      .filter { record -> eventType?.let { record.eventType == eventType } ?: true }
       .filter { record ->
         processedDateStartDateTime?.let { record.processedDate!!.isAfter(processedDateStartDateTime) } ?: true
       }
@@ -58,6 +60,7 @@ class ProcessedReport(private val messageRepository: MessageRepository) {
       .filter { record ->
         createdDateEndDateTime?.let { record.createdDate.isBefore(createdDateEndDateTime) } ?: true
       }
+      .sortedBy { it.createdDate }
       .map {
         Processed(
           bookingId = it.bookingId,

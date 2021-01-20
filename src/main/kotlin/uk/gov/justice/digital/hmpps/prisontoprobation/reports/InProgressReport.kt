@@ -37,7 +37,7 @@ class InProgressReport(private val messageRepository: MessageRepository) {
     ]
   )
   fun generate(): String {
-    return messageRepository.findAllByProcessedDateIsNull().map {
+    return messageRepository.findAllByProcessedDateIsNull().sortedBy { it.createdDate }.map {
       InProgress(
         bookingId = it.bookingId,
         createdDate = it.createdDate,
