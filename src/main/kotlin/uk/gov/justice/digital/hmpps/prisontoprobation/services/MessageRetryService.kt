@@ -53,7 +53,7 @@ class MessageRetryService(
         }
         is Done -> {
           log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
-          messageRepository.save(it.markAsProcessed())
+          messageRepository.save(it.markAsProcessed(result.status))
           result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
         }
       }

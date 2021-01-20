@@ -34,7 +34,7 @@ class MessageAggregator(
     messagesToProcess.forEach {
       when (val result = processMessage(it)) {
         is TryLater -> messageRepository.save(it.retry(status = result.status))
-        is Done -> messageRepository.save(it.markAsProcessed())
+        is Done -> messageRepository.save(it.markAsProcessed(status = result.status))
       }
     }
   }

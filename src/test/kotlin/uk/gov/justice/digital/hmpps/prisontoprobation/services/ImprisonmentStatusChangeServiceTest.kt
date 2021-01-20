@@ -175,7 +175,14 @@ class ImprisonmentStatusChangeServiceTest {
       @Test
       fun `will indicate we are done with this change`() {
         val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        assertThat(result).isInstanceOf(Done::class.java)
+        assertThat(result).usingRecursiveComparison().isEqualTo(
+          Done(
+            status = SynchroniseStatus(
+              matchingCrns = "X12345",
+              state = SynchroniseState.COMPLETED
+            )
+          )
+        )
       }
 
       @Nested
@@ -325,6 +332,15 @@ class ImprisonmentStatusChangeServiceTest {
     }
 
     @Test
+    fun `will ignore when status change is not significant when sequence is not zero`() {
+      val result =
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+
+      assertThat(result).usingRecursiveComparison()
+        .isEqualTo(Done(status = SynchroniseStatus(state = SynchroniseState.NO_LONGER_VALID)))
+    }
+
+    @Test
     fun `will log that offender has no sentence date and abandon update`() {
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
 
@@ -340,6 +356,17 @@ class ImprisonmentStatusChangeServiceTest {
       )
 
       verify(offenderService, never()).getBooking(any())
+    }
+
+    @Test
+    fun `will ignore when offender has no sentence date`() {
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = null))
+
+      val result =
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+
+      assertThat(result).usingRecursiveComparison()
+        .isEqualTo(Done(status = SynchroniseStatus(state = SynchroniseState.NO_LONGER_VALID)))
     }
 
     @Test
@@ -363,6 +390,28 @@ class ImprisonmentStatusChangeServiceTest {
         isNull()
       )
     }
+
+    @Test
+    fun `will ignore when offender has no active booking`() {
+      whenever(offenderService.getCurrentSentences(any())).thenReturn(
+        listOf(
+          SentenceSummary(
+            startDate = LocalDate.now(),
+            sentenceSequence = 33,
+            sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"
+          ),
+        )
+      )
+      whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
+
+      val result =
+        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 88L))
+
+      assertThat(result).usingRecursiveComparison()
+        .isEqualTo(Done(status = SynchroniseStatus(state = SynchroniseState.NO_LONGER_VALID)))
+    }
+
     @Test
     fun `will log that offender has booking at prison we are not interested in and abandon update`() {
       whenever(offenderService.getCurrentSentences(any())).thenReturn(

@@ -64,9 +64,13 @@ data class Message(
     return this
   }
 
-  fun markAsProcessed(): Message {
+  fun markAsProcessed(status: SynchroniseStatus): Message {
     this.processedDate = LocalDateTime.now()
     this.deleteBy = LocalDateTime.now().plusDays(MAX_REPORTING_PERIOD_DAYS).toEpochSecond(ZoneOffset.UTC)
+    this.status = status.state.name
+    status.matchingCrns?.also {
+      this.matchingCrns = it
+    }
     return this
   }
 }

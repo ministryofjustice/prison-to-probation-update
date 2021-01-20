@@ -27,17 +27,28 @@ class MessageProcessor(
     callMessageHandler(message.eventType, message.message)
       .also {
         when (it) {
-          is Done -> retryableEventMetricsService.eventSucceeded(message.eventType, message.createdDate, message.retryCount)
-          is TryLater -> retryableEventMetricsService.eventFailed(message.eventType, LocalDateTime.ofEpochSecond(message.deleteBy, 0, OffsetDateTime.now().offset))
+          is Done -> retryableEventMetricsService.eventSucceeded(
+            message.eventType,
+            message.createdDate,
+            message.retryCount
+          )
+          is TryLater -> retryableEventMetricsService.eventFailed(
+            message.eventType,
+            LocalDateTime.ofEpochSecond(message.deleteBy, 0, OffsetDateTime.now().offset)
+          )
         }
       }
 
   private fun callMessageHandler(eventType: String, message: String): MessageResult =
     when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.processMovementAndUpdateProbation(fromJson(message))
-      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.processImprisonmentStatusChangeAndUpdateProbation(fromJson(message))
+      "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.processImprisonmentStatusChangeAndUpdateProbation(
+        fromJson(message)
+      )
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.processBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.processSentenceDateChangeAndUpdateProbation(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.processSentenceDateChangeAndUpdateProbation(
+        fromJson(message)
+      )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }
@@ -48,7 +59,9 @@ class MessageProcessor(
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChange(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChange(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChange(fromJson(message))
+      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChange(
+        fromJson(message)
+      )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }
@@ -72,7 +85,10 @@ enum class SynchroniseState {
   BOOKING_NUMBER_NOT_ASSIGNED,
   LOCATION_NOT_UPDATED,
   KEY_DATES_NOT_UPDATED,
+  COMPLETED,
+  NO_LONGER_VALID
 }
+
 data class SynchroniseStatus(val matchingCrns: String? = null, val state: SynchroniseState = SynchroniseState.VALIDATED)
 sealed class MessageResult
 class TryLater(
@@ -81,4 +97,7 @@ class TryLater(
   val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.VALIDATED)
 ) : MessageResult()
 
-class Done(val message: String? = null) : MessageResult()
+class Done(
+  val message: String? = null,
+  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.COMPLETED)
+) : MessageResult()
