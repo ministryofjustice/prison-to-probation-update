@@ -62,6 +62,7 @@ class ReportsConfiguration(
     report {
       processedReport.generate(
         request.param("locationId").orElse(null),
+        request.param("eventType").orElse(null),
         request.param("processedDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
         request.param("processedDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
         request.param("createdDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),

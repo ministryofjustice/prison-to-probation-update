@@ -47,7 +47,7 @@ class NotMatchedReport(private val messageRepository: MessageRepository) {
         TOO_MANY_MATCHES.name
       ),
       LocalDateTime.now().minusDays(daysOld)
-    ).map {
+    ).sortedBy { it.createdDate }.map {
       NotMatched(
         bookingId = it.bookingId,
         createdDate = it.createdDate,

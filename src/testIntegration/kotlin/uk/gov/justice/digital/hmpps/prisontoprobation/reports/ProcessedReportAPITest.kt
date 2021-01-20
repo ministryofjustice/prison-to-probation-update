@@ -124,6 +124,46 @@ class ProcessedReportAPITest : IntegrationTest() {
       }
   }
 
+  @Test
+  internal fun `can filter by event type`() {
+    messageRepository.saveAll(
+      listOf(
+        aMessage(90L, eventType = "SENTENCE_DATES-CHANGED"),
+        aMessage(91L, eventType = "SENTENCE_DATES-CHANGED"),
+        aMessage(92L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
+        aMessage(93L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
+      )
+    )
+
+    webTestClient.get()
+      .uri { it.path("/report/processed").queryParam("eventType", "SENTENCE_DATES-CHANGED").build() }
+      .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
+      .accept(MediaType("text", "csv"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody<String>()
+      .consumeWith {
+        assertThat(it.responseBody).contains(""""90",""")
+        assertThat(it.responseBody).contains(""""91",""")
+        assertThat(it.responseBody).doesNotContain(""""92",""")
+        assertThat(it.responseBody).doesNotContain(""""93",""")
+      }
+
+    webTestClient.get()
+      .uri { it.path("/report/processed").queryParam("eventType", "IMPRISONMENT_STATUS-CHANGED").build() }
+      .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
+      .accept(MediaType("text", "csv"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody<String>()
+      .consumeWith {
+        assertThat(it.responseBody).doesNotContain(""""90",""")
+        assertThat(it.responseBody).doesNotContain(""""91",""")
+        assertThat(it.responseBody).contains(""""92",""")
+        assertThat(it.responseBody).contains(""""93",""")
+      }
+  }
+
   @Nested
   inner class ProcessedDateFiltering {
     @BeforeEach
@@ -286,10 +326,11 @@ class ProcessedReportAPITest : IntegrationTest() {
     bookingId: Long,
     locationId: String = "MDI",
     processedDate: LocalDateTime = LocalDateTime.parse("2020-12-10T15:15:50"),
-    createdDate: LocalDateTime = LocalDateTime.parse("2020-12-09T15:15:50")
+    createdDate: LocalDateTime = LocalDateTime.parse("2020-12-09T15:15:50"),
+    eventType: String = "IMPRISONMENT_STATUS-CHANGED",
   ) = Message(
     bookingId = bookingId,
-    eventType = "IMPRISONMENT_STATUS-CHANGED",
+    eventType = eventType,
     retryCount = 3,
     createdDate = createdDate,
     message =
