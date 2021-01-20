@@ -10,11 +10,13 @@ import org.springframework.web.servlet.function.RouterFunction
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
 import org.springframework.web.servlet.function.router
+import java.time.LocalDateTime
 
 @Configuration
 class ReportsConfiguration(
   private val inProgressReport: InProgressReport,
-  private val notMatchedReport: NotMatchedReport
+  private val notMatchedReport: NotMatchedReport,
+  private val processedReport: ProcessedReport,
 ) {
 
   @Bean
@@ -24,12 +26,25 @@ class ReportsConfiguration(
       method = arrayOf(RequestMethod.GET),
       beanClass = InProgressReport::class,
       beanMethod = "generate"
-    )
+    ),
+    RouterOperation(
+      path = "/report/not-matched",
+      method = arrayOf(RequestMethod.GET),
+      beanClass = NotMatchedReport::class,
+      beanMethod = "generate"
+    ),
+    RouterOperation(
+      path = "/report/processed",
+      method = arrayOf(RequestMethod.GET),
+      beanClass = ProcessedReport::class,
+      beanMethod = "generate"
+    ),
   )
   fun router(): RouterFunction<ServerResponse> = router {
     path("/report").nest {
       GET("/in-progress", ::getInProgress)
       GET("/not-matched", ::getNotMatched)
+      GET("/processed", ::getProcessed)
     }
   }
 
@@ -41,6 +56,17 @@ class ReportsConfiguration(
   fun getNotMatched(request: ServerRequest): ServerResponse =
     report {
       notMatchedReport.generate(request.param("daysOld").orElse("7").toLong())
+    }
+
+  fun getProcessed(request: ServerRequest): ServerResponse =
+    report {
+      processedReport.generate(
+        request.param("locationId").orElse(null),
+        request.param("processedDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+        request.param("processedDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+        request.param("createdDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+        request.param("createdDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+      )
     }
 }
 
