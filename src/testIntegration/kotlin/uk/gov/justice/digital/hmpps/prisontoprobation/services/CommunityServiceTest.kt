@@ -187,7 +187,7 @@ class CommunityServiceTest : IntegrationTest() {
         post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withBody("{\"error\": \"not found\"}")
+            .withBody("{\"error\": \"not found description\"}")
             .withStatus(HTTP_NOT_FOUND)
         )
       )
@@ -196,7 +196,7 @@ class CommunityServiceTest : IntegrationTest() {
 
       assertThat(updatedCustody).isInstanceOf(Ignore::class.java)
       updatedCustody.onIgnore {
-        assertThat(it.reason).contains("404 Not Found")
+        assertThat(it.reason).contains("not found description")
         return
       }
     }
@@ -354,6 +354,7 @@ class CommunityServiceTest : IntegrationTest() {
       assertThatThrownBy { service.replaceProbationOffenderNo("A11111Y", "A99999Y") }.isInstanceOf(BadGateway::class.java)
     }
   }
+
   private fun createUpdatedCustody() = Custody(
     institution = Institution("Doncaster"),
     bookingNumber = "38353A"

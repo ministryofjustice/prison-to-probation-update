@@ -60,7 +60,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
     if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
 
   fun errorMessageWhenNotFound(exception: WebClientResponseException): Mono<Ignore<String>> =
-    if (exception.rawStatusCode == NOT_FOUND.value()) Mono.just(Ignore(exception.message!!)) else Mono.error(exception)
+    if (exception.rawStatusCode == NOT_FOUND.value()) Mono.just(Ignore(exception.responseBodyAsString!!)) else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()
