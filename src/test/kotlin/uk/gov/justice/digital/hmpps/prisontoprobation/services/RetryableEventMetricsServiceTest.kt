@@ -12,8 +12,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyString
 import java.time.LocalDateTime
 
@@ -78,74 +76,6 @@ class RetryableEventMetricsServiceTest {
       val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
 
       metricService.eventFailed("IMPRISONMENT_STATUS-CHANGED", LocalDateTime.now())
-
-      verify(totalCounter).increment()
-      verify(failCounter).increment()
-      verifyNoMoreInteractions(retryDistribution)
-      verifyNoMoreInteractions(successTimer)
-    }
-  }
-
-  @Nested
-  inner class SentenceDatesChange {
-    private val totalCounter = mock<Counter>()
-    private val successCounter = mock<Counter>()
-    private val failCounter = mock<Counter>()
-    private val retryDistribution = mock<DistributionSummary>()
-    private val successTimer = mock<DistributionSummary>()
-
-    @BeforeEach
-    fun `mock counters`() {
-      whenever(meterFactory.registerCounter(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(TOTAL_TYPE)))
-        .thenReturn(totalCounter)
-      whenever(meterFactory.registerCounter(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_TYPE)))
-        .thenReturn(successCounter)
-      whenever(meterFactory.registerCounter(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(FAIL_TYPE)))
-        .thenReturn(failCounter)
-      whenever(
-        meterFactory.registerRetryDistribution(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
-      ).thenReturn(retryDistribution)
-      whenever(meterFactory.registerMessageAgeTimer(any(), eq(SENTENCE_DATES_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
-        .thenReturn(successTimer)
-    }
-
-    @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
-    fun `Counts sentence dates success events`(eventType: String) {
-      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
-
-      metricService.eventSucceeded(eventType, LocalDateTime.now())
-
-      verify(totalCounter).increment()
-      verify(successCounter).increment()
-    }
-
-    @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
-    fun `Counts number of retries required to process a success event`(eventType: String) {
-      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
-
-      metricService.eventSucceeded(eventType, LocalDateTime.now(), retries = 3)
-
-      verify(retryDistribution).record(3.0)
-    }
-
-    @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
-    fun `Counts number of days required to process a success event`(eventType: String) {
-      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
-
-      metricService.eventSucceeded(eventType, LocalDateTime.now().minusHours(24L))
-
-      verify(successTimer).record(2.0)
-    }
-
-    @ParameterizedTest
-    @CsvSource("SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED")
-    fun `Counts sentence dates fail events`(eventType: String) {
-      val metricService = RetryableEventMetricsService(meterRegistry, meterFactory)
-
-      metricService.eventFailed(eventType, LocalDateTime.now())
 
       verify(totalCounter).increment()
       verify(failCounter).increment()

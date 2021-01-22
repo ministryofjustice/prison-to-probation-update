@@ -87,7 +87,7 @@ class ImprisonmentStatusChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
-        whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+        whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Success(Custody(Institution("HMP Brixton"), "38339A")))
       }
 
       @Test
@@ -277,7 +277,7 @@ class ImprisonmentStatusChangeServiceTest {
         private val sentenceExpiryDate: LocalDate = LocalDate.now().plusYears(1)
         @BeforeEach
         fun setup() {
-          whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(null)
+          whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Ignore("Not found error message"))
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
               sentenceStartDate = LocalDate.of(2020, 2, 29),

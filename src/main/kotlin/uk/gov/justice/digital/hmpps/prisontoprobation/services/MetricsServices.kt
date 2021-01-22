@@ -63,9 +63,23 @@ class UnretryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory:
   private val movementsSuccessCounter =
     meterFactory.registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of successful movements", SUCCESS_TYPE)
 
+  private val dateChangeReceivedCounter =
+    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of sentence date changes received", TOTAL_TYPE)
+  private val dateChangeFailedNoOffenderCounter =
+    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of failed sentence date changes", "fail_no_offender")
+  private val dateChangeFailedNoConvictionCounter =
+    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of failed sentence date changes", "fail_no_conviction")
+  private val dateChangeSuccessCounter =
+    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of successful sentence date changes", SUCCESS_TYPE)
+
   fun movementReceived() = movementReceivedCounter.increment()
   fun movementFailed() = movementsFailedCounter.increment()
   fun movementSucceeded() = movementsSuccessCounter.increment()
+
+  fun dateChangeReceived() = dateChangeReceivedCounter.increment()
+  fun dateChangeFailedNoOffender() = dateChangeFailedNoOffenderCounter.increment()
+  fun dateChangeFailedNoConviction() = dateChangeFailedNoConvictionCounter.increment()
+  fun dateChangeSucceeded() = dateChangeSuccessCounter.increment()
 }
 
 /**
@@ -79,37 +93,6 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
-
-  private val sentenceDatesTotalCounter = meterFactory.registerCounter(
-    meterRegistry,
-    SENTENCE_DATES_METRIC,
-    "The number of sentence date updates received",
-    TOTAL_TYPE
-  )
-  private val sentenceDatesFailedCounter = meterFactory.registerCounter(
-    meterRegistry,
-    SENTENCE_DATES_METRIC,
-    "The number of failed sentence date updates",
-    FAIL_TYPE
-  )
-  private val sentenceDatesSuccessCounter = meterFactory.registerCounter(
-    meterRegistry,
-    SENTENCE_DATES_METRIC,
-    "The number of successful sentence date updates ",
-    SUCCESS_TYPE
-  )
-  private val sentenceDatesRetriesDistribution = meterFactory.registerRetryDistribution(
-    meterRegistry,
-    SENTENCE_DATES_METRIC,
-    "The number of retries before a successful update",
-    SUCCESS_AFTER_RETRIES_TYPE
-  )
-  private val sentenceDatesSuccessTimer = meterFactory.registerMessageAgeTimer(
-    meterRegistry,
-    SENTENCE_DATES_METRIC,
-    "The time in days before a successful update",
-    SUCCESS_AFTER_TIME_TYPE
-  )
 
   private val statusChangesTotalCounter = meterFactory.registerCounter(
     meterRegistry,
@@ -150,10 +133,6 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
             statusChangesTotalCounter.increment()
             statusChangesFailedCounter.increment()
           }
-          "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-            sentenceDatesTotalCounter.increment()
-            sentenceDatesFailedCounter.increment()
-          }
         }
       }
 
@@ -168,12 +147,6 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
             statusChangesSuccessCounter.increment()
             statusChangeRetriesDistribution.record(retries.toDouble())
             statusChangeSuccessTimer.record(days.toDouble())
-          }
-          "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> {
-            sentenceDatesTotalCounter.increment()
-            sentenceDatesSuccessCounter.increment()
-            sentenceDatesRetriesDistribution.record(retries.toDouble())
-            sentenceDatesSuccessTimer.record(days.toDouble())
           }
         }
       }

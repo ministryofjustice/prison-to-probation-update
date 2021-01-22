@@ -103,8 +103,8 @@ class ImprisonmentStatusChangeService(
 
   private fun updateProbationKeyDates(offenderNo: String, bookingNumber: String, sentenceDetail: SentenceDetail): Result<Unit, TelemetryEvent> =
     communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
-      ?.let { Success(Unit) }
-      ?: Ignore(TelemetryEvent("P2PKeyDatesNotUpdated"))
+      .onIgnore { return Ignore(TelemetryEvent("P2PKeyDatesNotUpdated")) }
+      .let { Success(Unit) }
 
   private fun updateProbationPrisonLocation(offenderNo: String, bookingNumber: String, agencyId: String): Result<Unit, TelemetryEvent> =
     communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = agencyId))

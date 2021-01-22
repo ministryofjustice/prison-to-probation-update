@@ -8,20 +8,25 @@ import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 
 internal class SentenceDatesChangeServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
+  private val unretryableEventMetricsService: UnretryableEventMetricsService = mock()
 
-  private val service = SentenceDatesChangeService(telemetryClient, offenderService, communityService, listOf("MDI", "WII"))
+  private val service = SentenceDatesChangeService(telemetryClient, offenderService, communityService, unretryableEventMetricsService, listOf("MDI", "WII"))
 
   @Nested
   internal inner class Validate {
@@ -29,7 +34,7 @@ internal class SentenceDatesChangeServiceTest {
     fun setup() {
       whenever(offenderService.getBooking(any())).thenReturn(createBooking())
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail())
-      whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+      whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Success(Custody(Institution("HMP Brixton"), "38339A")))
     }
 
     @Test
@@ -50,6 +55,7 @@ internal class SentenceDatesChangeServiceTest {
       assertThat(result).isInstanceOf(Done::class.java)
     }
   }
+
   @Nested
   internal inner class Process {
     @Nested
@@ -58,7 +64,7 @@ internal class SentenceDatesChangeServiceTest {
       fun setup() {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail())
-        whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+        whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Success(Custody(Institution("HMP Brixton"), "38339A")))
       }
 
       @Test
@@ -300,7 +306,7 @@ internal class SentenceDatesChangeServiceTest {
       inner class WhenProbationRecordNotFound {
         @Test
         fun `will log we have tried to process a sentence date change but record not found `() {
-          whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(null)
+          whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Ignore("not found error message"))
 
           whenever(offenderService.getBooking(any())).thenReturn(
             createBooking(
@@ -369,6 +375,60 @@ internal class SentenceDatesChangeServiceTest {
         )
         verify(communityService, never()).replaceProbationCustodyKeyDates(any(), any(), any())
       }
+    }
+  }
+
+  @Nested
+  inner class Metrics {
+    @BeforeEach
+    fun before() {
+      whenever(offenderService.getBooking(anyLong())).thenReturn(createBooking())
+      whenever(offenderService.getSentenceDetail(anyLong())).thenReturn(SentenceDetail())
+    }
+
+    @Test
+    fun `will not count anything if date change ignored`() {
+      whenever(offenderService.getBooking(anyLong())).thenReturn(createBooking(activeFlag = false))
+
+      service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+
+      verifyNoMoreInteractions(unretryableEventMetricsService)
+    }
+
+    @Test
+    fun `will count date change succeeded`() {
+      whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any()))
+        .thenReturn(Success(Custody(Institution("LEI"), "AA1234A")))
+
+      service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+
+      verify(unretryableEventMetricsService).dateChangeReceived()
+      verify(unretryableEventMetricsService).dateChangeSucceeded()
+      verifyNoMoreInteractions(unretryableEventMetricsService)
+    }
+
+    @Test
+    fun `will count date change failed - offender not found`() {
+      whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any()))
+        .thenReturn(Ignore("Offender with NOMS number AA1234A not found"))
+
+      service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+
+      verify(unretryableEventMetricsService).dateChangeReceived()
+      verify(unretryableEventMetricsService).dateChangeFailedNoOffender()
+      verifyNoMoreInteractions(unretryableEventMetricsService)
+    }
+
+    @Test
+    fun `will count date change failed - conviction not found`() {
+      whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any()))
+        .thenReturn(Ignore("Conviction with bookingNumber 12345 not found for offender with NOMS number AA1234A"))
+
+      service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
+
+      verify(unretryableEventMetricsService).dateChangeReceived()
+      verify(unretryableEventMetricsService).dateChangeFailedNoConviction()
+      verifyNoMoreInteractions(unretryableEventMetricsService)
     }
   }
 }
