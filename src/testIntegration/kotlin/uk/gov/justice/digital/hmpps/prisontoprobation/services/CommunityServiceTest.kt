@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_CONFLICT
@@ -171,7 +173,7 @@ class CommunityServiceTest : IntegrationTest() {
       val replaceCustodyKeyDates = createReplaceCustodyKeyDates()
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", replaceCustodyKeyDates)
 
-      assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
+      assertThat(updatedCustody).isEqualTo(Success(expectedUpdatedCustody))
       communityMockServer.verify(
         postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
           .withHeader("Content-Type", equalTo("application/json"))
@@ -180,7 +182,7 @@ class CommunityServiceTest : IntegrationTest() {
     }
 
     @Test
-    fun `test custody will be null if not found`() {
+    fun `test custody will be ignored if not found`() {
       communityMockServer.stubFor(
         post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
           aResponse()
@@ -192,7 +194,11 @@ class CommunityServiceTest : IntegrationTest() {
 
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
 
-      assertThat(updatedCustody).isNull()
+      assertThat(updatedCustody).isInstanceOf(Ignore::class.java)
+      updatedCustody.onIgnore {
+        assertThat(it.reason).contains("404 Not Found")
+        return
+      }
     }
 
     @Test

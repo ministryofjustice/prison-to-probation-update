@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 
 @Service
@@ -41,19 +43,24 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .block()
   }
 
-  fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Custody? {
+  fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Result<Custody, String> {
     return webClient.post()
       .uri("/secure/offenders/nomsNumber/$offenderNo/bookingNumber/$bookingNo/custody/keyDates")
       .bodyValue(replaceCustodyKeyDates)
       .retrieve()
       .bodyToMono(Custody::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
-      .block()
+      .map<Result<Custody, String>> { Success(it) }
+      .onErrorResume(WebClientResponseException::class.java) { errorMessageWhenNotFound(it) }
+      .block()!!
   }
+
   fun <T> emptyWhenConflict(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, CONFLICT)
   fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
   fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
     if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
+
+  fun errorMessageWhenNotFound(exception: WebClientResponseException): Mono<Ignore<String>> =
+    if (exception.rawStatusCode == NOT_FOUND.value()) Mono.just(Ignore(exception.message!!)) else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()

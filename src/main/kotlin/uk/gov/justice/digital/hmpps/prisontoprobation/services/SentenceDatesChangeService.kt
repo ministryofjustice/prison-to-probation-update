@@ -13,6 +13,7 @@ class SentenceDatesChangeService(
   val telemetryClient: TelemetryClient,
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
+  private val unretryableEventMetricsService: UnretryableEventMetricsService,
   @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
 ) {
   companion object {
@@ -49,11 +50,30 @@ class SentenceDatesChangeService(
     val (bookingNumber, _, offenderNo) = getBookingForInterestedPrison(booking).onIgnore { return it.reason.with(booking) }
     val sentenceDetail = offenderService.getSentenceDetail(bookingId)
 
-    return (
-      communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
-        ?.let { "P2PSentenceDatesChanged" } ?: "P2PSentenceDatesRecordNotFound"
-      )
-      .let { TelemetryEvent(it).with(booking).with(sentenceDetail) }
+    return communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
+      .also { it.metrics() }
+      .let {
+        when (it) {
+          is Success -> "P2PSentenceDatesChanged"
+          is Ignore -> "P2PSentenceDatesRecordNotFound"
+        }.let { event ->
+          TelemetryEvent(event).with(booking).with(sentenceDetail)
+        }
+      }
+  }
+
+  private fun Result<Custody, String>.metrics() {
+    unretryableEventMetricsService.dateChangeReceived()
+    when (this) {
+      is Success -> unretryableEventMetricsService.dateChangeSucceeded()
+      is Ignore -> {
+        if (this.reason.contains("bookingNumber")) {
+          unretryableEventMetricsService.dateChangeFailedNoConviction()
+        } else {
+          unretryableEventMetricsService.dateChangeFailedNoOffender()
+        }
+      }
+    }
   }
 
   private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
