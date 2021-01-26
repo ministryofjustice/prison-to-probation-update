@@ -126,7 +126,3 @@ retry:
       cron: "0 15 */4 * * *"
     long:
       cron: "0 30 23 * * *"
-
-applicationinsights:
-  connection:
-    string: InstrumentationKey=${appinsights.instrumentationkey}
