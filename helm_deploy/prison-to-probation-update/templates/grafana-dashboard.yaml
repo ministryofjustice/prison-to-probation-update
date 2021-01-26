@@ -160,7 +160,7 @@ data:
               "refId": "B"
             },
             {
-              "expr": "sum(ptpu_sentenceDateChange_total{type=\"fail_no_conviction\",namespace=\"p{{ .Release.Namespace }}\"})",
+              "expr": "sum(ptpu_sentenceDateChange_total{type=\"fail_no_conviction\",namespace=\"{{ .Release.Namespace }}\"})",
               "interval": "",
               "legendFormat": "Fail (missing conviction)",
               "refId": "C"
