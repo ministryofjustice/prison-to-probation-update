@@ -315,6 +315,12 @@ requests
   | where name == "PUT CustodyResource/replaceOffenderNomsNumber"
   | summarize count() by resultCode
 ```
+
+#### Grafana Dashboard
+
+There is a [Grafana Dashboard](https://grafana.cloud-platform.service.justice.gov.uk/d/ptpu-prison-to-probation-update-prod/prison-to-probation-update-prison-to-probation-update-prod?orgId=1) that shows the totals for major processing counts.
+
+
 #### Reports
 
 There are number of CSV reports that are documented [here](https://prison-to-probation-update.prison.service.justice.gov.uk/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config)
