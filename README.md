@@ -1,7 +1,8 @@
 # prison-to-probation-update
 
 [![CircleCI](https://circleci.com/gh/ministryofjustice/prison-to-probation-update/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/prison-to-probation-update)
-[![Known Vulnerabilities](https://snyk.io/test/github/ministryofjustice/prison-to-probation-update/badge.svg)](https://snyk.io/test/github/ministryofjustice/prison-to-probation-update)
+[![Docker Repository on Quay](https://quay.io/repository/hmpps/prison-to-probation-update/status "Docker Repository on Quay")](https://quay.io/repository/hmpps/prison-to-probation-update)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://prison-to-probation-update.prison.service.justice.gov.uk/swagger-ui.html)
 
 Self-contained fat-jar micro-service to listen for events from Prison systems (NOMIS) to update offender sentence information in Probation systems (Delius)
 
@@ -79,8 +80,6 @@ These tests are not intended to be run locally, but instead are run against a de
 
 For more information on the smoke tests see the project `dps-smoketest`.
 
-## Live support
-
 ### Architecture
 
 Understanding the architecture makes live support easier:
@@ -113,4 +112,212 @@ The scheduling of the message is processed by *MessageRetryService*
 
 The main processing loop is invoked by *SerialiseBookingScheduler* which is a Spring Scheduler that itself uses DynamoDB has a persistent store for locking - this ensures only a single pod is processing messages at a time.  
 
+Events are held back for a period of time (one hour in production), this is so multiple similar messages are processed for a record all in one go, there is not the drip feeding of small changes, e.g. each of the key sentence dates are all changed in one go.
+
+Events are sorted and grouped so for each run of the processing events for a particular booking and are processed together rather than being processed by different pods simultaneously. This is done by the *MessageAggregator*.
+
+Successful processing of an event leads to the DynamoDB record being marked as processed by setting the *processedDate*.
+Unsuccessful processing can lead to different paths depending on the event being processed:
+ * IMPRISONMENT_STATUS-CHANGED - will be retried for a period of time. Given this indicates a significant change to the prisoner's status, e.g. conviction, it may take some time before the associated Delius record has been created or is the correct state. It will retry for around a month.
+ * EXTERNAL_MOVEMENT_RECORD-INSERTED - only tried once and then discarded
+ * BOOKING_NUMBER-CHANGED - only tried once and then discarded
+ * SENTENCE_DATES-CHANGED - only tried once and then discarded
+ * CONFIRMED_RELEASE_DATE-CHANGED - only tried once and then discarded
+
+However, if there is a *system* exception while processing any of these messages they will be retried, however business "exceptions", for instance the prisoner does not exist in Delius are not retried since they are not expected to succeed because of the passing of time.
+
+#### IMPRISONMENT_STATUS-CHANGED is an event special
+
+The IMPRISONMENT_STATUS-CHANGED event is used as a trigger to indicate there has possibly been a new conviction that therefore means the NOMIS and Delius record should be synchronised.
+Once it has been established the prisoner has a current sentence the initial matching with the Delius record begins. This is a multi-satge process:
+ * Search for the person in probation-offender-search
+ * if successful check they have a matching sentence (*EVENT*) in Delius via *community-api*
+ * if successful attempt to set the NOMS number in Delius via *community-api*
+ * if successful (or already set) attempt to set the book number in Delius via *community-api*
+ * if successful (or already set) attempt to set the prison location in Delius via *community-api*
+ * if successful (or already set) attempt to set the key dates in Delius via *community-api*
+ * if successful mark record as processed or rety again later
+
+#### Retry processing: CRON Scheduler
+
+Retrying events marked as requiring a retry is orchestrated by the *RetryScheduler*. This uses 3 simple CRON expressions to simulate back-off retry processing.
+ * RETRY_SCHEDULES_SHORT_CRON: "0 0 * * * *"
+ * RETRY_SCHEDULES_MEDIUM_CRON: "0 15 */4 * * *"
+ * RETRY_SCHEDULES_LONG_CRON: "0 30 23 * * *"
+
+What retry schedule a failed record goes into is determined by the Message *retryCount*. So it will retry 4 times every hour, then 6 times every 4 hours and then finally once a day until the record is auto-deleted.
+
+#### Deletion
+
+The Message *deleteBy* attribute is set at initial creation and can be extended for a couple of reason:
+  * A record should be retried until the sentence ends since Delius has no SLA for data is not in the correct state (e.g. multiple custodial events)
+  * A record has been processed, but we wish to retain for a period of time for reporting purposes.
+
+Once the date specified by the *deleteBy* value is reach DynamoDB will automatically delete the record.
+
+## Run Book
+
+#### SQS and Dead Letter Queue
+
+If an alert is raised in the *dps_alert* channel indicating the Dead Letter Queue (DLQ) is filling with messages it will mean something is going wrong when validating a message.
+
+Given validation is relatively simple it is likely to be related to the *prison-api* call to get the booking failing.
+
+Check Application Insights to show any errors while the traces will indicate what messages have been received
+
+```bigquery
+exceptions
+| where cloud_RoleName == "prison-to-probation-update"
+| order by timestamp desc 
+
+```
+
+```bigquery
+traces
+| where cloud_RoleName == "prison-to-probation-update"
+| order by timestamp desc 
+```
+
+It will likely to be a transient issue with either retrieving a HMPPS auth token or *prison-api* being down.
+Once the transient issue has been resolved, the messages from the DLQ should be moved back to the main queue. Currently, there is no endpoint to do this so messages will have to be received and acknowledged manually and sent to the main queue.
+
+Secrets for the AWS credentials are stored in namespace `prison-to-probation-update-prod` under `ptpu-sqs-dl-instance-output` for DLQ and `ptpu-sqs-instance-output` for the main queue. 
+
+#### DynamoDB issues
+
+A message could also appear on the DLQ if it was unable to add the message to the DynamoDB table. 
+
+The [health check](https://prison-to-probation-update.prison.service.justice.gov.uk/health) captures the health of DynamoDB. It also displays the table name that is dynamically created, and the number of rows currently on the table. 
+Further details about the table state can be seen run the AWS console commands, again secrets for accessing can be retrieved from the namespace as *message-dynamodb-output* this also includes the table ARN.
+
+```shell
+aws dynamodb describe-table --table-name <table name>
+```
+
+This will show the dynamic provisioned throughput e.g.
+
+```json
+        "ProvisionedThroughput": {
+            "LastIncreaseDateTime": "2021-01-28T10:16:00.613000+00:00",
+            "LastDecreaseDateTime": "2021-01-28T00:04:04.338000+00:00",
+            "NumberOfDecreasesToday": 1,
+            "ReadCapacityUnits": 665,
+            "WriteCapacityUnits": 1
+        }
+```
+
+#### Application insights queries
+
+All telemetry events are prefixed by `P2P` so this query will show all significant events
+
+```bigquery
+customEvents
+| where cloud_RoleName in ("prison-to-probation-update", "community-api")
+| where name startswith "P2P" or name startswith "KeyDate" 
+| summarize count() by name
+```
+Description for each event is as follows:
+
+*Prison transfers*
+
+* prison-to-probation-update service
+    * `P2PExternalMovement` - Movement message is about to be processed
+    * `P2PTransferProbationUpdated` -  Location has been updated or was already correct so required no change.
+    * `P2PTransferProbationRecordNotFound` -  Location could not be updated since prisoner or event has not been found
+    * `P2PTransferIgnored` -  Location movement is no longer valid
+* community-api service
+    * `P2PTransferPrisonUpdated` -  Location has been updated
+    * `P2PTransferPrisonUpdateIgnored` -  Location was already correct
+    * `P2PTransferOffenderNotFound` -  Location could not be updated since prisoner was not found
+    * `P2PTransferBookingNumberNotFound` -  Location could not be updated since event not found
+    * `P2PTransferBookingNumberHasDuplicates` -  Location could not be updated since mutiple events found with book number
+
+*Sentence dates changes*
+
+* prison-to-probation-update service
+    * `P2PSentenceDatesRecordNotFound` -  Dates could not be updated since prisoner or event has not been found
+    * `P2PSentenceDatesChanged` - Dates have been updated or where correct already
+    * `P2PSentenceDatesChangeIgnored` - Dates changes are ignored since the dates or booking is no longer valid
+* community-api service
+    * `keyDatesBulkUnchanged` - No dates required updating 
+    * `keyDatesBulkSummary` - dates were successfully updated  
+    * `keyDatesBulkAllRemoved` - All dates were updated, this may indicate the sentence has changed to a Life sentence or they have been deported, or new dates are about to be added
+    * `KeyDateDeleted` - One of the key the dates was deleted (also fired POM handover dates)
+    * `KeyDateUpdated` - Existing date was updated (also fired POM handover dates)
+    * `KeyDateAdded` - New date was added (also fired POM handover dates)
+
+*Imprisonment status change and offender matching*
+
+* prison-to-probation-update service
+  * `P2POffenderNoMatch` - Prisoner not found in Delius
+  * `P2POffenderTooManyMatches` - Prisoner found in Delius but multiple hits found 
+  * `P2POffenderMatch` - Details of the prisoner matching - a successful match would be represented by the number of time we see this event minus the P2POffenderNoMatch and P2POffenderTooManyMatches count
+  * `P2POffenderNumberSet` - NOMS number set in Delius (new offender has been matched)
+  * `P2PImprisonmentStatusUpdated` - Successfully completed matching and setting the dates and location
+  * `P2PImprisonmentStatusNoSentenceStartDate` - Change is being ignored since the prisoner has no sentence start date 
+  * `P2PImprisonmentStatusIgnored` - Change is being ignored since booking is no longer relevant, e.g. the booking is no longer active and they have been released
+  * `P2PBookingNumberNotAssigned` - book number can be set in Delius, typically because there are multiple active events
+  * `P2PLocationNotUpdated` - location can not be set for the matched offender, typically where there are multiple custodial events
+  * `P2PKeyDatesNotUpdated` - dates can not be set for the matched offender, typically where there are multiple custodial events
+
+* community-api service
+  * `P2PImprisonmentStatusCustodyEventsHasDuplicates` - book number can not be set due multiple matching events
+  * `P2PImprisonmentStatusCustodyEventNotFound` - book number can not be set due no matching events
+  * `P2PImprisonmentStatusBookingNumberUpdated` - book number updated
+  * `P2PImprisonmentStatusBookingNumberInserted` - book number inserted
+  * `P2PImprisonmentStatusBookingNumberAlreadySet` - book number already correct
+
+*Book number changed*
+
+* prison-to-probation-update service
+  * `P2PBookingNumberChanged` - NOMS number updated
+  * `P2PBookingNumberChangedOffenderNotFound` - Offender not found so can't update NOMS number
+
+
+#### community-api update requests
+
+For the above telemetry events that are emitted from the community-api there would be an associate request this queries show these requests
+
+* Set NOMS number 
+```bigquery
+requests
+| where cloud_RoleName in ("community-api")
+| where name == "PUT CustodyResource/updateOffenderNomsNumber"
+| summarize count() by resultCode
+```
+
+* Set Book number
+```bigquery
+requests
+| where cloud_RoleName in ("community-api")
+| where name == "PUT CustodyResource/updateCustodyBookingNumber"
+| summarize count() by resultCode
+```
+
+* Set prison location
+```bigquery
+  requests
+  | where cloud_RoleName in ("community-api")
+  | where name == "PUT CustodyResource/updateCustody"
+  | summarize count() by resultCode
+```
+* Set key dates
+```bigquery
+  requests
+  | where cloud_RoleName in ("community-api")
+  | where name == "POST CustodyKeyDatesController/replaceAllCustodyKeyDateByNomsNumberAndBookingNumber"
+  | summarize count() by resultCode
+```
+* Replace NOMS number
+```bigquery
+  requests
+  | where cloud_RoleName in ("community-api")
+  | where name == "PUT CustodyResource/replaceOffenderNomsNumber"
+  | summarize count() by resultCode
+```
+#### Reports
+
+There are number of CSV reports that are documented [here](https://prison-to-probation-update.prison.service.justice.gov.uk/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config)
+
+To run the reports you require the `ROLE_PTPU_REPORT` role. We would recommend asking the HMPPS Auth administrators (DPS Tech team) to create personal production client credentials and just add that single role. Use Postman or cUrl to request the report.    
 
