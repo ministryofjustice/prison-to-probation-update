@@ -84,19 +84,19 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_movement_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_movement_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(ptpu_movement_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_movement_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(ptpu_movement_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_movement_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
@@ -148,25 +148,25 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(ptpu_sentenceDateChange_total{type=\"fail_no_conviction\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail_no_conviction\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Fail (missing conviction)",
               "refId": "C"
             },
             {
-              "expr": "sum(ptpu_sentenceDateChange_total{type=\"fail_no_offender\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_sentenceDateChange_total{type=\"fail_no_offender\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Fail (missing offender)",
               "refId": "D"
@@ -218,19 +218,19 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"})",
+              "expr": "sum(increase(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
@@ -282,7 +282,7 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_statusChange_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
+              "expr": "sum(increase(ptpu_statusChange_bucket{namespace=\"{{ .Release.Namespace }}\"}[$__range])) by (le)",
               "format": "heatmap",
               "interval": "",
               "legendFormat": {{`"{{le}}"`}},
@@ -336,7 +336,7 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(ptpu_statusChange_retries_bucket{namespace=\"{{ .Release.Namespace }}\"}) by (le)",
+              "expr": "sum(increase(ptpu_statusChange_retries_bucket{namespace=\"{{ .Release.Namespace }}\"}[$__range])) by (le)",
               "format": "heatmap",
               "interval": "",
               "legendFormat": {{`"{{le}}"`}},
