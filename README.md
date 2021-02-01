@@ -276,8 +276,7 @@ Description for each event is as follows:
 
 #### community-api update requests
 
-For the above telemetry events that are emitted from the community-api there would be an associated request - use the
-queries below to show these requests:
+For the above telemetry events that are emitted from the community-api there would be an associated request - use the queries below to show these requests:
 
 * Set NOMS number 
 ```bigquery
