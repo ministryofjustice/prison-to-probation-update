@@ -17,6 +17,7 @@ class ReportsConfiguration(
   private val inProgressReport: InProgressReport,
   private val notMatchedReport: NotMatchedReport,
   private val processedReport: ProcessedReport,
+  private val matchSummaryReport: MatchSummaryReport,
 ) {
 
   @Bean
@@ -39,12 +40,19 @@ class ReportsConfiguration(
       beanClass = ProcessedReport::class,
       beanMethod = "generate"
     ),
+    RouterOperation(
+      path = "/report//match-summary",
+      method = arrayOf(RequestMethod.GET),
+      beanClass = MatchSummaryReport::class,
+      beanMethod = "generate"
+    ),
   )
   fun router(): RouterFunction<ServerResponse> = router {
     path("/report").nest {
       GET("/in-progress", ::getInProgress)
       GET("/not-matched", ::getNotMatched)
       GET("/processed", ::getProcessed)
+      GET("/match-summary", ::getMatchSummary)
     }
   }
 
@@ -69,6 +77,15 @@ class ReportsConfiguration(
         request.param("createdDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
       )
     }
+
+  fun getMatchSummary(request: ServerRequest): ServerResponse =
+    ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(
+      matchSummaryReport.generate(
+        request.param("locationId").orElse(null),
+        request.param("createdDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+        request.param("createdDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
+      )
+    )
 }
 
 private fun report(report: () -> String): ServerResponse =
