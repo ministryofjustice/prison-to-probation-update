@@ -121,7 +121,7 @@ operator fun Category.plus(message: Message): Category =
 private fun Message.isRejected() = this.status == NO_LONGER_VALID.name
 private fun Message.isNew() = this.retryCount == 0
 private fun Message.isProcessed() = this.processedDate != null
-private fun Message.hasExceededSLA(sla: Long): Boolean = this.createdDate.isBefore(LocalDateTime.now().minusDays(sla))
+private fun Message.hasExceededSLA(sla: Long): Boolean = this.createdDate.isBefore(LocalDateTime.now().minusDays(sla)) && this.isProcessed().not()
 
 private fun Message.isWaiting(sla: Long) = this.isProcessed().not() && hasExceededSLA(sla).not()
 
