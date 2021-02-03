@@ -12,6 +12,8 @@ import org.springframework.web.servlet.function.ServerResponse
 import org.springframework.web.servlet.function.router
 import java.time.LocalDateTime
 
+const val EXPECT_MATCHING_SLA_DAYS: String = "7"
+
 @Configuration
 class ReportsConfiguration(
   private val inProgressReport: InProgressReport,
@@ -41,7 +43,7 @@ class ReportsConfiguration(
       beanMethod = "generate"
     ),
     RouterOperation(
-      path = "/report//match-summary",
+      path = "/report/match-summary",
       method = arrayOf(RequestMethod.GET),
       beanClass = MatchSummaryReport::class,
       beanMethod = "generate"
@@ -63,7 +65,7 @@ class ReportsConfiguration(
 
   fun getNotMatched(request: ServerRequest): ServerResponse =
     report {
-      notMatchedReport.generate(request.param("daysOld").orElse("7").toLong())
+      notMatchedReport.generate(request.param("daysOld").orElse(EXPECT_MATCHING_SLA_DAYS).toLong())
     }
 
   fun getProcessed(request: ServerRequest): ServerResponse =
@@ -84,7 +86,8 @@ class ReportsConfiguration(
         request.param("locationId").orElse(null),
         request.param("createdDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
         request.param("createdDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
-      )
+        request.param("slaDays").orElse(EXPECT_MATCHING_SLA_DAYS).toLong()
+      ),
     )
 }
 

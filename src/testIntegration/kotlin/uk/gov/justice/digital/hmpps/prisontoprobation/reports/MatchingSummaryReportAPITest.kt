@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.reports
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -56,58 +57,98 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
       .expectStatus().isForbidden
   }
 
-  @Test
-  internal fun `can retrieve a summary report breaking down totals`() {
-    messageRepository.saveAll(
-      listOf(
-        aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
-        aMessage(ageInDays = 1, status = NO_LONGER_VALID, processedDate = yesterday()),
-        aMessage(ageInDays = 1, status = VALIDATED, retryCount = 0),
-        aMessage(ageInDays = 1, status = NO_MATCH),
-        aMessage(ageInDays = 1, status = NO_MATCH_WITH_SENTENCE_DATE),
-        aMessage(ageInDays = 1, status = TOO_MANY_MATCHES),
-        aMessage(ageInDays = 1, status = BOOKING_NUMBER_NOT_ASSIGNED),
-        aMessage(ageInDays = 1, status = LOCATION_NOT_UPDATED),
-        aMessage(ageInDays = 1, status = KEY_DATES_NOT_UPDATED),
-        aMessage(ageInDays = 1, status = ERROR),
-        aMessage(ageInDays = 8, status = NO_MATCH),
-        aMessage(ageInDays = 8, status = NO_MATCH_WITH_SENTENCE_DATE),
-        aMessage(ageInDays = 8, status = TOO_MANY_MATCHES),
-        aMessage(ageInDays = 8, status = BOOKING_NUMBER_NOT_ASSIGNED),
-        aMessage(ageInDays = 8, status = LOCATION_NOT_UPDATED),
-        aMessage(ageInDays = 8, status = KEY_DATES_NOT_UPDATED),
-        aMessage(ageInDays = 8, status = ERROR),
+  @Nested
+  inner class TotalsBreakdown {
+    @BeforeEach
+    internal fun setUp() {
+      messageRepository.saveAll(
+        listOf(
+          aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
+          aMessage(ageInDays = 1, status = NO_LONGER_VALID, processedDate = yesterday()),
+          aMessage(ageInDays = 1, status = VALIDATED, retryCount = 0),
+          aMessage(ageInDays = 1, status = NO_MATCH),
+          aMessage(ageInDays = 1, status = NO_MATCH_WITH_SENTENCE_DATE),
+          aMessage(ageInDays = 1, status = TOO_MANY_MATCHES),
+          aMessage(ageInDays = 1, status = BOOKING_NUMBER_NOT_ASSIGNED),
+          aMessage(ageInDays = 1, status = LOCATION_NOT_UPDATED),
+          aMessage(ageInDays = 1, status = KEY_DATES_NOT_UPDATED),
+          aMessage(ageInDays = 1, status = ERROR),
+          aMessage(ageInDays = 8, status = NO_MATCH),
+          aMessage(ageInDays = 8, status = NO_MATCH_WITH_SENTENCE_DATE),
+          aMessage(ageInDays = 8, status = TOO_MANY_MATCHES),
+          aMessage(ageInDays = 8, status = BOOKING_NUMBER_NOT_ASSIGNED),
+          aMessage(ageInDays = 8, status = LOCATION_NOT_UPDATED),
+          aMessage(ageInDays = 8, status = KEY_DATES_NOT_UPDATED),
+          aMessage(ageInDays = 8, status = ERROR),
+        )
       )
-    )
-    webTestClient.get()
-      .uri("/report/match-summary")
-      .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
-      .accept(MediaType.APPLICATION_JSON)
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("total").isEqualTo(17)
-      .jsonPath("completed.total").isEqualTo(2)
-      .jsonPath("completed.success").isEqualTo(1)
-      .jsonPath("completed.rejected").isEqualTo(1)
-      .jsonPath("waiting.total").isEqualTo(8)
-      .jsonPath("waiting.new").isEqualTo(1)
-      .jsonPath("waiting.retry").isEqualTo(7)
-      .jsonPath("waiting.category.no-match").isEqualTo(1)
-      .jsonPath("waiting.category.no-match-sentence").isEqualTo(1)
-      .jsonPath("waiting.category.too-many-matches").isEqualTo(1)
-      .jsonPath("waiting.category.book-number-set-fail").isEqualTo(1)
-      .jsonPath("waiting.category.location-set-fail").isEqualTo(1)
-      .jsonPath("waiting.category.key-dates-set-fail").isEqualTo(1)
-      .jsonPath("waiting.category.error-fail").isEqualTo(1)
-      .jsonPath("exceeded-sla.total").isEqualTo(7)
-      .jsonPath("exceeded-sla.category.no-match").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.no-match-sentence").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.too-many-matches").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.book-number-set-fail").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.location-set-fail").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.key-dates-set-fail").isEqualTo(1)
-      .jsonPath("exceeded-sla.category.error-fail").isEqualTo(1)
+    }
+
+    @Test
+    internal fun `can retrieve a summary report breaking down totals`() {
+      webTestClient.get()
+        .uri("/report/match-summary")
+        .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("total").isEqualTo(17)
+        .jsonPath("completed.total").isEqualTo(2)
+        .jsonPath("completed.success").isEqualTo(1)
+        .jsonPath("completed.rejected").isEqualTo(1)
+        .jsonPath("waiting.total").isEqualTo(8)
+        .jsonPath("waiting.new").isEqualTo(1)
+        .jsonPath("waiting.retry").isEqualTo(7)
+        .jsonPath("waiting.category.no-match").isEqualTo(1)
+        .jsonPath("waiting.category.no-match-sentence").isEqualTo(1)
+        .jsonPath("waiting.category.too-many-matches").isEqualTo(1)
+        .jsonPath("waiting.category.book-number-set-fail").isEqualTo(1)
+        .jsonPath("waiting.category.location-set-fail").isEqualTo(1)
+        .jsonPath("waiting.category.key-dates-set-fail").isEqualTo(1)
+        .jsonPath("waiting.category.error-fail").isEqualTo(1)
+        .jsonPath("exceeded-sla.total").isEqualTo(7)
+        .jsonPath("exceeded-sla.category.no-match").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.no-match-sentence").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.too-many-matches").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.book-number-set-fail").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.location-set-fail").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.key-dates-set-fail").isEqualTo(1)
+        .jsonPath("exceeded-sla.category.error-fail").isEqualTo(1)
+    }
+
+    @Test
+    internal fun `adjusting sla adjusts totals in buckets`() {
+      webTestClient.get()
+        .uri { it.path("/report/match-summary").queryParam("slaDays", "9").build() }
+        .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("total").isEqualTo(17)
+        .jsonPath("completed.total").isEqualTo(2)
+        .jsonPath("completed.success").isEqualTo(1)
+        .jsonPath("completed.rejected").isEqualTo(1)
+        .jsonPath("waiting.total").isEqualTo(15)
+        .jsonPath("waiting.new").isEqualTo(1)
+        .jsonPath("waiting.retry").isEqualTo(14)
+        .jsonPath("waiting.category.no-match").isEqualTo(2)
+        .jsonPath("waiting.category.no-match-sentence").isEqualTo(2)
+        .jsonPath("waiting.category.too-many-matches").isEqualTo(2)
+        .jsonPath("waiting.category.book-number-set-fail").isEqualTo(2)
+        .jsonPath("waiting.category.location-set-fail").isEqualTo(2)
+        .jsonPath("waiting.category.key-dates-set-fail").isEqualTo(2)
+        .jsonPath("waiting.category.error-fail").isEqualTo(2)
+        .jsonPath("exceeded-sla.total").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.no-match").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.no-match-sentence").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.too-many-matches").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.book-number-set-fail").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.location-set-fail").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.key-dates-set-fail").isEqualTo(0)
+        .jsonPath("exceeded-sla.category.error-fail").isEqualTo(0)
+    }
   }
 
   @Test
