@@ -1,18 +1,12 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class OpenApiDocsTest : IntegrationTest() {
-
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  private lateinit var webTestClient: WebTestClient
 
   @Test
   fun `open api docs are available`() {

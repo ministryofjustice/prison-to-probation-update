@@ -16,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 
@@ -37,6 +38,10 @@ abstract class IntegrationTest {
 
   @Autowired
   private lateinit var objectMapper: ObjectMapper
+
+  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
+  @Autowired
+  protected lateinit var webTestClient: WebTestClient
 
   companion object {
     internal val prisonMockServer = PrisonMockServer()
