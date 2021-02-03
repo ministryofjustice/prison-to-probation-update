@@ -64,6 +64,7 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
       messageRepository.saveAll(
         listOf(
           aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
+          aMessage(ageInDays = 8, status = COMPLETED, processedDate = yesterday()),
           aMessage(ageInDays = 1, status = NO_LONGER_VALID, processedDate = yesterday()),
           aMessage(ageInDays = 1, status = VALIDATED, retryCount = 0),
           aMessage(ageInDays = 1, status = NO_MATCH),
@@ -93,9 +94,9 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
         .exchange()
         .expectStatus().isOk
         .expectBody()
-        .jsonPath("total").isEqualTo(17)
-        .jsonPath("completed.total").isEqualTo(2)
-        .jsonPath("completed.success").isEqualTo(1)
+        .jsonPath("total").isEqualTo(18)
+        .jsonPath("completed.total").isEqualTo(3)
+        .jsonPath("completed.success").isEqualTo(2)
         .jsonPath("completed.rejected").isEqualTo(1)
         .jsonPath("waiting.total").isEqualTo(8)
         .jsonPath("waiting.new").isEqualTo(1)
@@ -126,9 +127,9 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
         .exchange()
         .expectStatus().isOk
         .expectBody()
-        .jsonPath("total").isEqualTo(17)
-        .jsonPath("completed.total").isEqualTo(2)
-        .jsonPath("completed.success").isEqualTo(1)
+        .jsonPath("total").isEqualTo(18)
+        .jsonPath("completed.total").isEqualTo(3)
+        .jsonPath("completed.success").isEqualTo(2)
         .jsonPath("completed.rejected").isEqualTo(1)
         .jsonPath("waiting.total").isEqualTo(15)
         .jsonPath("waiting.new").isEqualTo(1)
