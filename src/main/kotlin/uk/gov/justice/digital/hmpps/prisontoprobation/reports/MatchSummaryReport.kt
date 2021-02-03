@@ -39,7 +39,7 @@ class MatchSummaryReport(private val messageRepository: MessageRepository) {
       )
     }
 
-    return messageRepository.findAll()
+    return messageRepository.findByEventType("IMPRISONMENT_STATUS-CHANGED")
       .asSequence()
       .filter { record -> locationId?.let { record.locationId == locationId } ?: true }
       .filter { record -> createdDateStartDateTime?.let { record.createdDate.isAfter(createdDateStartDateTime) } ?: true }

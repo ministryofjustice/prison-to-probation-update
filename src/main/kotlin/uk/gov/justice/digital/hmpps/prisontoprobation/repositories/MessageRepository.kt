@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 @EnableScan
 interface MessageRepository : CrudRepository<Message, String> {
   fun findByBookingIdAndEventType(bookingId: Long, eventType: String): List<Message>
+  fun findByEventType(eventType: String): List<Message>
   fun findByEventTypeAndRetryCount(eventType: String, retryCount: Int): List<Message>
   fun findByRetryCountBetweenAndProcessedDateIsNull(low: Int, high: Int): List<Message>
   fun findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(
