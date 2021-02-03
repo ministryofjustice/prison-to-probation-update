@@ -11,8 +11,6 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.NO_LONGER_VALID
 import java.time.LocalDateTime
 
-const val EXPECT_MATCHING_SLA_DAYS: Long = 7
-
 @Service
 class MatchSummaryReport(private val messageRepository: MessageRepository) {
   @PreAuthorize("hasRole('ROLE_PTPU_REPORT')")
@@ -30,7 +28,17 @@ class MatchSummaryReport(private val messageRepository: MessageRepository) {
     locationId: String?,
     createdDateStartDateTime: LocalDateTime?,
     createdDateEndDateTime: LocalDateTime?,
+    slaDays: Long,
   ): MatchSummary {
+    operator fun MatchSummary.plus(message: Message): MatchSummary {
+      return this.copy(
+        total = this.total + 1,
+        completed = this.completed.addWhenProcessed(message),
+        waiting = this.waiting.addWhenWaiting(message, slaDays),
+        `exceeded-sla` = this.`exceeded-sla`.addWhenExceededSLA(message, slaDays),
+      )
+    }
+
     return messageRepository.findAll()
       .asSequence()
       .filter { record -> locationId?.let { record.locationId == locationId } ?: true }
@@ -77,44 +85,26 @@ data class Category(
   val `error-fail`: Long = 0,
 )
 
-operator fun MatchSummary.plus(message: Message): MatchSummary {
-  return this.copy(
+operator fun Completed.plus(message: Message): Completed =
+  this.copy(
     total = this.total + 1,
-    completed = this.completed + message,
-    waiting = this.waiting + message,
-    `exceeded-sla` = this.`exceeded-sla` + message,
+    rejected = this.rejected.incrementWhenTrue(message.isRejected()),
+    success = this.success.incrementWhenTrue(message.isRejected().not()),
   )
-}
 
-operator fun Completed.plus(message: Message): Completed {
-  return message.takeIf { it.isProcessed() }?.let {
-    this.copy(
-      total = this.total + 1,
-      rejected = this.rejected.incrementWhenTrue(message.isRejected()),
-      success = this.success.incrementWhenTrue(message.isRejected().not()),
-    )
-  } ?: this
-}
+operator fun Waiting.plus(message: Message): Waiting =
+  this.copy(
+    total = this.total + 1,
+    new = this.new.incrementWhenTrue(message.isNew()),
+    retry = this.retry.incrementWhenTrue(message.isNew().not()),
+    category = this.category + message,
+  )
 
-operator fun Waiting.plus(message: Message): Waiting {
-  return message.takeIf { it.isWaiting() }?.let {
-    this.copy(
-      total = this.total + 1,
-      new = this.new.incrementWhenTrue(message.isNew()),
-      retry = this.retry.incrementWhenTrue(message.isNew().not()),
-      category = this.category + message,
-    )
-  } ?: this
-}
-
-operator fun ExceededSLA.plus(message: Message): ExceededSLA {
-  return message.takeIf { it.hasExceededSLA() }?.let {
-    this.copy(
-      total = this.total + 1,
-      category = this.category + message,
-    )
-  } ?: this
-}
+operator fun ExceededSLA.plus(message: Message): ExceededSLA =
+  this.copy(
+    total = this.total + 1,
+    category = this.category + message,
+  )
 
 operator fun Category.plus(message: Message): Category =
   when (message.status) {
@@ -131,8 +121,11 @@ operator fun Category.plus(message: Message): Category =
 private fun Message.isRejected() = this.status == NO_LONGER_VALID.name
 private fun Message.isNew() = this.retryCount == 0
 private fun Message.isProcessed() = this.processedDate != null
-private fun Message.hasExceededSLA(): Boolean = this.createdDate.isBefore(LocalDateTime.now().minusDays(EXPECT_MATCHING_SLA_DAYS))
+private fun Message.hasExceededSLA(sla: Long): Boolean = this.createdDate.isBefore(LocalDateTime.now().minusDays(sla))
 
-private fun Message.isWaiting() = this.isProcessed().not() && hasExceededSLA().not()
+private fun Message.isWaiting(sla: Long) = this.isProcessed().not() && hasExceededSLA(sla).not()
 
 private fun Long.incrementWhenTrue(condition: Boolean): Long = if (condition) this + 1 else this
+private fun Completed.addWhenProcessed(message: Message): Completed = if (message.isProcessed()) this + message else this
+private fun Waiting.addWhenWaiting(message: Message, sla: Long): Waiting = if (message.isWaiting(sla)) this + message else this
+private fun ExceededSLA.addWhenExceededSLA(message: Message, sla: Long): ExceededSLA = if (message.hasExceededSLA(sla)) this + message else this
