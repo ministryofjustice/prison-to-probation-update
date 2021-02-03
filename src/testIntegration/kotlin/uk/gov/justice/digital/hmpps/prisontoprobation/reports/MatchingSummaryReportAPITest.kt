@@ -63,6 +63,7 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
     internal fun setUp() {
       messageRepository.saveAll(
         listOf(
+          aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday(), eventType = "SENTENCE_DATES-CHANGED"),
           aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
           aMessage(ageInDays = 8, status = COMPLETED, processedDate = yesterday()),
           aMessage(ageInDays = 1, status = NO_LONGER_VALID, processedDate = yesterday()),
@@ -86,7 +87,7 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
     }
 
     @Test
-    internal fun `can retrieve a summary report breaking down totals`() {
+    internal fun `can retrieve a summary report breaking down totals for IMPRISONMENT_STATUS-CHANGED`() {
       webTestClient.get()
         .uri("/report/match-summary")
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
@@ -318,10 +319,11 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
     status: SynchroniseState,
     processedDate: LocalDateTime? = null,
     locationId: String = "MDI",
-    retryCount: Int = 99
+    retryCount: Int = 99,
+    eventType: String = "IMPRISONMENT_STATUS-CHANGED"
   ): Message = Message(
     bookingId = Random.nextLong(),
-    eventType = "IMPRISONMENT_STATUS-CHANGED",
+    eventType = eventType,
     retryCount = retryCount,
     createdDate = LocalDateTime.now().minusDays(ageInDays),
     message =
