@@ -40,7 +40,7 @@ class NotMatchedReport(private val messageRepository: MessageRepository) {
     ]
   )
   fun generate(daysOld: Long): String {
-    return messageRepository.findAllByStatusInAndCreatedDateLessThan(
+    return messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
       listOf(
         NO_MATCH.name,
         NO_MATCH_WITH_SENTENCE_DATE.name,
