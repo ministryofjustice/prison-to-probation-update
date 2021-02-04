@@ -390,8 +390,11 @@ class MessageRepositoryTest : IntegrationTest() {
       repository.save(
         aMessage(3, LocalDateTime.now(), "KEY_DATES_NOT_UPDATED")
       )
+      repository.save(
+        aMessage(4, LocalDateTime.now(), "NO_MATCH", processedDate = LocalDateTime.now())
+      )
       assertThat(
-        repository.findAllByStatusInAndCreatedDateLessThan(
+        repository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
           listOf("NO_MATCH", "NO_MATCH_WITH_SENTENCE_DATE"),
           LocalDateTime.now()
         )
@@ -411,27 +414,28 @@ class MessageRepositoryTest : IntegrationTest() {
       )
 
       assertThat(
-        repository.findAllByStatusInAndCreatedDateLessThan(
+        repository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
           listOf("NO_MATCH"),
           LocalDateTime.now()
         )
       ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(1L, 2L, 3L)
 
       assertThat(
-        repository.findAllByStatusInAndCreatedDateLessThan(
+        repository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
           listOf("NO_MATCH"),
           LocalDateTime.now().minusDays(2)
         )
       ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(3L)
     }
 
-    private fun aMessage(bookingId: Long, createdDate: LocalDateTime, status: String): Message = Message(
+    private fun aMessage(bookingId: Long, createdDate: LocalDateTime, status: String, processedDate: LocalDateTime? = null): Message = Message(
       bookingId = bookingId,
       retryCount = 0,
       createdDate = createdDate,
       eventType = "IMPRISONMENT_STATUS-CHANGED",
       message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
-      status = status
+      status = status,
+      processedDate = processedDate
     )
   }
 }
