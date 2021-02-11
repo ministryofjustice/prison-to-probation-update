@@ -136,6 +136,7 @@ workflows:
             - helm_lint
             - build_docker
       - smoke-test:
+          context: hmpps-smoketest-common-vars
           requires:
             - deploy_dev
       - hmpps/deploy_env:
