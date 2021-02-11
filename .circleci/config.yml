@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   owasp: entur/owasp@0.0.10
-  hmpps: ministryofjustice/hmpps@2.2
+  hmpps: ministryofjustice/hmpps@2.3.1
 
 executors:
   validator-integration:
@@ -82,25 +82,6 @@ jobs:
           path: build/test-results
       - store_artifacts:
           path: build/reports/tests
-  smoke-test:
-    executor: validator
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
-      - run:
-          command: ./gradlew testSmoke -Dtestlogger.showStandardStreams=true
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle.kts" }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/reports/tests
-
 workflows:
   version: 2
   build-test-and-deploy:
@@ -135,8 +116,9 @@ workflows:
             - test-integration
             - helm_lint
             - build_docker
-      - smoke-test:
+      - hmpps/smoke_test:
           context: hmpps-smoketest-common-vars
+          name: smoke_test
           requires:
             - deploy_dev
       - hmpps/deploy_env:
@@ -146,7 +128,7 @@ workflows:
             - prison-to-probation-update-preprod
             - hmpps-common-vars
           requires:
-            - smoke-test
+            - smoke_test
       - request-prod-approval:
           type: approval
           requires:
