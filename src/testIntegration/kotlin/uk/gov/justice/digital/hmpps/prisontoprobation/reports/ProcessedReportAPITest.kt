@@ -54,8 +54,7 @@ class ProcessedReportAPITest : IntegrationTest() {
         eventType = "IMPRISONMENT_STATUS-CHANGED",
         retryCount = 3,
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
-        message =
-          """{"text": "value"}""",
+        message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
           ZoneOffset.UTC
         ),
@@ -77,8 +76,7 @@ class ProcessedReportAPITest : IntegrationTest() {
         eventType = "IMPRISONMENT_STATUS-CHANGED",
         retryCount = 3,
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
-        message =
-          """{"text": "value"}""",
+        message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
           ZoneOffset.UTC
         ),
@@ -333,8 +331,7 @@ class ProcessedReportAPITest : IntegrationTest() {
     eventType = eventType,
     retryCount = 3,
     createdDate = createdDate,
-    message =
-      """{"text": "value"}""",
+    message = """{"text": "value"}""",
     deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
       ZoneOffset.UTC
     ),
