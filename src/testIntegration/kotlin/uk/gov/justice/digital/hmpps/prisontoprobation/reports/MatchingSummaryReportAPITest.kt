@@ -326,8 +326,7 @@ class MatchingSummaryReportAPITest : IntegrationTest() {
     eventType = eventType,
     retryCount = retryCount,
     createdDate = LocalDateTime.now().minusDays(ageInDays),
-    message =
-      """{"text": "value"}""",
+    message = """{"text": "value"}""",
     deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
     reportable = true,
     offenderNo = "A1234GA",

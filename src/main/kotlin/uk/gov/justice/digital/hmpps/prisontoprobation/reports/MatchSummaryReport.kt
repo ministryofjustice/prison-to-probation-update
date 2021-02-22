@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.reports
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -35,7 +36,7 @@ class MatchSummaryReport(private val messageRepository: MessageRepository) {
         total = this.total + 1,
         completed = this.completed.addWhenProcessed(message),
         waiting = this.waiting.addWhenWaiting(message, slaDays),
-        `exceeded-sla` = this.`exceeded-sla`.addWhenExceededSLA(message, slaDays),
+        exceededSla = this.exceededSla.addWhenExceededSLA(message, slaDays),
       )
     }
 
@@ -54,7 +55,8 @@ data class MatchSummary(
   @Schema(title = "waiting", description = "waiting to be processed")
   val waiting: Waiting = Waiting(),
   @Schema(title = "exceeded-sla", description = "exceeded SLA but may still be processed in the future")
-  val `exceeded-sla`: ExceededSLA = ExceededSLA()
+  @JsonProperty("exceeded-sla")
+  val exceededSla: ExceededSLA = ExceededSLA()
 )
 
 data class Completed(
@@ -76,13 +78,20 @@ data class ExceededSLA(
 )
 
 data class Category(
-  val `no-match`: Long = 0,
-  val `no-match-sentence`: Long = 0,
-  val `too-many-matches`: Long = 0,
-  val `book-number-set-fail`: Long = 0,
-  val `location-set-fail`: Long = 0,
-  val `key-dates-set-fail`: Long = 0,
-  val `error-fail`: Long = 0,
+  @JsonProperty("no-match")
+  val noMatch: Long = 0,
+  @JsonProperty("no-match-sentence")
+  val noMatchSentence: Long = 0,
+  @JsonProperty("too-many-matches")
+  val tooManyMatches: Long = 0,
+  @JsonProperty("book-number-set-fail")
+  val bookNumberSetFail: Long = 0,
+  @JsonProperty("location-set-fail")
+  val locationSetFail: Long = 0,
+  @JsonProperty("key-dates-set-fail")
+  val keyDatesSetFail: Long = 0,
+  @JsonProperty("error-fail")
+  val errorFail: Long = 0,
 )
 
 operator fun Completed.plus(message: Message): Completed =
@@ -108,13 +117,13 @@ operator fun ExceededSLA.plus(message: Message): ExceededSLA =
 
 operator fun Category.plus(message: Message): Category =
   when (message.status) {
-    SynchroniseState.NO_MATCH.name -> this.copy(`no-match` = this.`no-match` + 1)
-    SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE.name -> this.copy(`no-match-sentence` = this.`no-match-sentence` + 1)
-    SynchroniseState.TOO_MANY_MATCHES.name -> this.copy(`too-many-matches` = this.`too-many-matches` + 1)
-    SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED.name -> this.copy(`book-number-set-fail` = this.`book-number-set-fail` + 1)
-    SynchroniseState.LOCATION_NOT_UPDATED.name -> this.copy(`location-set-fail` = this.`location-set-fail` + 1)
-    SynchroniseState.KEY_DATES_NOT_UPDATED.name -> this.copy(`key-dates-set-fail` = this.`key-dates-set-fail` + 1)
-    SynchroniseState.ERROR.name -> this.copy(`error-fail` = this.`error-fail` + 1)
+    SynchroniseState.NO_MATCH.name -> this.copy(noMatch = this.noMatch + 1)
+    SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE.name -> this.copy(noMatchSentence = this.noMatchSentence + 1)
+    SynchroniseState.TOO_MANY_MATCHES.name -> this.copy(tooManyMatches = this.tooManyMatches + 1)
+    SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED.name -> this.copy(bookNumberSetFail = this.bookNumberSetFail + 1)
+    SynchroniseState.LOCATION_NOT_UPDATED.name -> this.copy(locationSetFail = this.locationSetFail + 1)
+    SynchroniseState.KEY_DATES_NOT_UPDATED.name -> this.copy(keyDatesSetFail = this.keyDatesSetFail + 1)
+    SynchroniseState.ERROR.name -> this.copy(errorFail = this.errorFail + 1)
     else -> this
   }
 

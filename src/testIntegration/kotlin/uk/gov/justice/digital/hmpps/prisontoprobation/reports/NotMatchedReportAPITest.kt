@@ -126,8 +126,7 @@ fun aMessage(bookingId: Long, ageInDays: Long, status: String): Message = Messag
   eventType = "IMPRISONMENT_STATUS-CHANGED",
   retryCount = 99,
   createdDate = LocalDateTime.now().minusDays(ageInDays),
-  message =
-    """{"text": "value"}""",
+  message = """{"text": "value"}""",
   deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
   reportable = true,
   offenderNo = "A1234GA",
