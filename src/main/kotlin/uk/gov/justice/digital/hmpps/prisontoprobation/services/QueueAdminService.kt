@@ -42,7 +42,7 @@ class QueueAdminService(
         }
     }
 
-  private fun getEventDlqMessageCount() =
+  fun getEventDlqMessageCount() =
     awsSqsDlqClient.getQueueAttributes(eventDlqUrl, listOf("ApproximateNumberOfMessages"))
       .attributes["ApproximateNumberOfMessages"]
       ?.toInt() ?: 0

@@ -17,6 +17,10 @@ metadata:
         deny all;
         return 401;
       }
+      location /queue_admin/queue-housekeeping {
+        deny all;
+        return 401;
+      }
 spec:
   tls:
   {{- range .Values.ingress.hosts }}
