@@ -1,17 +1,12 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
-import com.amazonaws.services.sqs.AmazonSQS
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
@@ -40,9 +35,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
   @Inject
   private lateinit var queueAdminService: QueueAdminService
-
-  @Inject
-  private lateinit var awsSqsDlqClient: AmazonSQS
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
@@ -188,36 +180,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     assertThat(processedMessage).isNotNull
     assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
     assertThat(processedMessage?.status).isEqualTo("COMPLETED")
-  }
-
-  @Nested
-  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-  inner class SecureEndpoints {
-    private fun secureEndpoints() =
-      listOf(
-        "/queue-admin/purge-event-dlq",
-      )
-
-    @ParameterizedTest
-    @MethodSource("secureEndpoints")
-    internal fun `requires a valid authentication token`(uri: String) {
-      webTestClient.put()
-        .uri(uri)
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isUnauthorized
-    }
-
-    @ParameterizedTest
-    @MethodSource("secureEndpoints")
-    internal fun `requires the correct role`(uri: String) {
-      webTestClient.put()
-        .uri(uri)
-        .headers(setAuthorisation(roles = listOf()))
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isForbidden
-    }
   }
 }
 
