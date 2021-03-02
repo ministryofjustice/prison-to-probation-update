@@ -16,29 +16,29 @@ class QueueResource(
   private val queueAdminService: QueueAdminService
 ) {
   @PutMapping("/transfer-event-dlq")
-  @PreAuthorize("hasRole('PTPU_QUEUE_ADMIN')")
+  @PreAuthorize("hasRole('ROLE_PTPU_QUEUE_ADMIN')")
   @Operation(
     summary = "Transfers all DLQ messages to the main queue",
-    description = "Requires PTPU_QUEUE_ADMIN role"
+    description = "Requires ROLE_PTPU_QUEUE_ADMIN role"
   )
   @ApiResponses(
     value = [
       ApiResponse(responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token"),
-      ApiResponse(responseCode = "403", description = "Forbidden, requires an authorisation with role PTPU_QUEUE_ADMIN")
+      ApiResponse(responseCode = "403", description = "Forbidden, requires an authorisation with role ROLE_PTPU_QUEUE_ADMIN")
     ]
   )
   fun transferEventDlq(): Unit = queueAdminService.transferEventMessages()
 
   @PutMapping("/purge-event-dlq")
-  @PreAuthorize("hasRole('PTPU_QUEUE_ADMIN')")
+  @PreAuthorize("hasRole('ROLE_PTPU_QUEUE_ADMIN')")
   @Operation(
     summary = "Purges the event dead letter queue",
-    description = "Requires PTPU_QUEUE_ADMIN role"
+    description = "Requires ROLE_PTPU_QUEUE_ADMIN role"
   )
   @ApiResponses(
     value = [
       ApiResponse(responseCode = "401", description = "Unauthorised, requires a valid Oauth2 token"),
-      ApiResponse(responseCode = "403", description = "Forbidden, requires an authorisation with role PTPU_QUEUE_ADMIN")
+      ApiResponse(responseCode = "403", description = "Forbidden, requires an authorisation with role ROLE_PTPU_QUEUE_ADMIN")
     ]
   )
   fun purgeEventDlq(): Unit = queueAdminService.clearAllDlqMessagesForEvent()
@@ -46,7 +46,7 @@ class QueueResource(
   @PutMapping("/queue-housekeeping")
   @Operation(
     summary = "Triggers maintenance of the queues",
-    description = "This is an internal service which isn't exposed to the outside world. It is called from a Kubernetes CronJob named `index-housekeeping-cronjob`"
+    description = "This is an internal service which isn't exposed to the outside world. It is called from a Kubernetes CronJob named `queue-housekeeping-cronjob`"
   )
   fun indexQueueHousekeeping() {
     queueAdminService.transferEventMessages()

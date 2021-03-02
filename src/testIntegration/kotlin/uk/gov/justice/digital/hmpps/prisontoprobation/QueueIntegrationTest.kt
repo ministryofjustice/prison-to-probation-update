@@ -13,6 +13,9 @@ class QueueIntegrationTest : IntegrationTest() {
   @Autowired
   lateinit var queueUrl: String
 
+  @Autowired
+  lateinit var dlqUrl: String
+
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
     val queueAttributes = awsSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
