@@ -17,7 +17,7 @@ metadata:
         deny all;
         return 401;
       }
-      location /queue_admin/queue-housekeeping {
+      location /queue-admin/queue-housekeeping {
         deny all;
         return 401;
       }
