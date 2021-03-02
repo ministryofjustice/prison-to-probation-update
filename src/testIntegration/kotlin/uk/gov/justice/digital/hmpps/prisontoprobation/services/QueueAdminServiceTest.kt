@@ -58,7 +58,7 @@ internal class QueueAdminServiceTest {
     internal fun `will read single message from dlq`() {
       stubDlqMessageCount(1)
       whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X1"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X1"))))
 
       queueAdminService.transferEventMessages()
 
@@ -73,9 +73,9 @@ internal class QueueAdminServiceTest {
     internal fun `will read multiple messages from dlq`() {
       stubDlqMessageCount(3)
       whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X1"))))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X2"))))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X3"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X1"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X2"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X3"))))
 
       queueAdminService.transferEventMessages()
 
@@ -90,26 +90,26 @@ internal class QueueAdminServiceTest {
     internal fun `will send single message to the event queue`() {
       stubDlqMessageCount(1)
       whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X1"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X1"))))
 
       queueAdminService.transferEventMessages()
 
-      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, offenderChangedMessage("X1"))
+      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, bookingNumberChangedMessage("X1"))
     }
 
     @Test
     internal fun `will send multiple messages to the event queue`() {
       stubDlqMessageCount(3)
       whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X1"))))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X2"))))
-        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(offenderChangedMessage("X3"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X1"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X2"))))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(bookingNumberChangedMessage("X3"))))
 
       queueAdminService.transferEventMessages()
 
-      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, offenderChangedMessage("X1"))
-      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, offenderChangedMessage("X2"))
-      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, offenderChangedMessage("X3"))
+      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, bookingNumberChangedMessage("X1"))
+      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, bookingNumberChangedMessage("X2"))
+      verify(eventAwsSqsClient).sendMessage(eventQueueUrl, bookingNumberChangedMessage("X3"))
     }
 
     private fun stubDlqMessageCount(count: Int) =
@@ -117,13 +117,28 @@ internal class QueueAdminServiceTest {
         .thenReturn(GetQueueAttributesResult().withAttributes(mutableMapOf("ApproximateNumberOfMessages" to count.toString())))
   }
 
-  fun offenderChangedMessage(crn: String) =
+  @Nested
+  inner class ClearAllDlqMessagesForEvent {
+    @Test
+    internal fun `will purge event dlq of messages`() {
+      whenever(eventAwsSqsDlqClient.getQueueUrl("event-dlq")).thenReturn(GetQueueUrlResult().withQueueUrl("arn:eu-west-1:event-dlq"))
+
+      queueAdminService.clearAllDlqMessagesForEvent()
+      verify(eventAwsSqsDlqClient).purgeQueue(
+        check {
+          assertThat(it.queueUrl).isEqualTo("arn:eu-west-1:event-dlq")
+        }
+      )
+    }
+  }
+
+  fun bookingNumberChangedMessage(bookingId: String) =
     """
     {
       "Type": "Notification",
       "MessageId": "20e13002-d1be-56e7-be8c-66cdd7e23341",
       "TopicArn": "arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7",
-      "Message": "{\"offenderId\":490001467,\"crn\":\"$crn\",\"nomsNumber\":\"A1234BC\"}",
+      "Message": "{\"eventType\":\"BOOKING_NUMBER-CHANGED\",\"eventDatetime\":\"2020-02-25T10:48:26.606784\",\"offenderId\":2581805,\"bookingId\":$bookingId,\"nomisEventType\":\"BOOK_UPD_OASYS\", \"previousBookingNumber\": \"38430A\"}",
       "Timestamp": "2020-02-25T11:25:16.169Z",
       "SignatureVersion": "1",
       "Signature": "h5p3FnnbsSHxj53RFePh8HR40cbVvgEZa6XUVTlYs/yuqfDsi17MPA+bX4ijKmmTT2l6xG2xYhcmRAbJWQ4wrwncTBm2azgiwSO5keRNWYVdiC0rI484KLZboP1SDsE+Y7hOU/R0dz49q7+0yd+QIocPteKB/8xG7/6kjGStAZKf3cEdlxOwLhN+7RU1Yk2ENuwAJjVRtvlAa76yKB3xvL2hId7P7ZLmHGlzZDNZNYxbg9C8HGxteOzZ9ZeeQsWDf9jmZ+5+7dKXQoW9LeqwHxEAq2vuwSZ8uwM5JljXbtS5w1P0psXPYNoin2gU1F5MDK8RPzjUtIvjINx08rmEOA==",
@@ -132,7 +147,7 @@ internal class QueueAdminServiceTest {
       "MessageAttributes": {
         "eventType": {
           "Type": "String",
-          "Value": "OFFENDER_CHANGED"
+          "Value": "BOOKING_NUMBER-CHANGED"
         },
         "id": {
           "Type": "String",
