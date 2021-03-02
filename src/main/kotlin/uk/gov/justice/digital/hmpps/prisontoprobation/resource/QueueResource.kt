@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 
 @RestController
-@RequestMapping("/queue_admin", produces = [MediaType.APPLICATION_JSON_VALUE])
+@RequestMapping("/queue-admin", produces = [MediaType.APPLICATION_JSON_VALUE])
 class QueueResource(
   private val queueAdminService: QueueAdminService
 ) {

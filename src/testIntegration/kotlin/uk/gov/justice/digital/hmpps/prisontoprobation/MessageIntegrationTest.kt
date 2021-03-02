@@ -172,7 +172,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, message)
 
     webTestClient.put()
-      .uri("/queue_admin/queue-housekeeping")
+      .uri("/queue-admin/queue-housekeeping")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
