@@ -155,7 +155,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
   }
 
   @Test
-  fun `will consume a booking changed message on the dlq and return to main queue`() {
+  fun `housekeeping will consume a booking changed message on the dlq and return to main queue`() {
     val message = "/messages/bookingNumberChanged.json".readResourceAsText()
 
     // wait until our queue has been purged
@@ -165,6 +165,64 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
     webTestClient.put()
       .uri("/queue-admin/queue-housekeeping")
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+
+    await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
+    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
+
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
+  }
+
+  @Test
+  fun `will purge a booking changed message on the dlq`() {
+    val message = "/messages/bookingNumberChanged.json".readResourceAsText()
+
+    // wait until our queue has been purged
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+    awsSqsClient.sendMessage(dlqUrl, message)
+
+    webTestClient.put()
+      .uri("/queue-admin/purge-event-dlq")
+      .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+
+    await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
+    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
+    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
+
+    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
+    assertThat(processedMessage).isNotNull
+    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
+    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
+  }
+
+  @Test
+  fun `will consume a booking changed message on the dlq and return to main queue`() {
+    val message = "/messages/bookingNumberChanged.json".readResourceAsText()
+
+    // wait until our queue has been purged
+    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
+
+    awsSqsClient.sendMessage(dlqUrl, message)
+
+    webTestClient.put()
+      .uri("/queue-admin/transfer-event-dlq")
+      .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
