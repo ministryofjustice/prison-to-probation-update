@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.awaitility.kotlin.await
@@ -170,7 +171,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
       .expectStatus().isOk
 
     await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
-
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -199,16 +199,13 @@ class MessageIntegrationTest : QueueIntegrationTest() {
       .expectStatus().isOk
 
     await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
+    assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
 
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
-    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A9999DY/nomsNumber") } matches { it == 1 }
+    // Nothing to process
+    prisonMockServer.verify(0, WireMock.anyRequestedFor(WireMock.anyUrl()))
+    communityMockServer.verify(0, WireMock.anyRequestedFor(WireMock.anyUrl()))
 
-    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
-    assertThat(processedMessage).isNotNull
-    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
-    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
+    assertThat(messageRepository.findAll().firstOrNull()).isNull()
   }
 
   @Test
@@ -228,7 +225,6 @@ class MessageIntegrationTest : QueueIntegrationTest() {
       .expectStatus().isOk
 
     await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
-
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }

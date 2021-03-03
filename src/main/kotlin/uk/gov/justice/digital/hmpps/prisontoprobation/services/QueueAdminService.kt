@@ -36,7 +36,7 @@ class QueueAdminService(
         awsSqsDlqClient.purgeQueue(PurgeQueueRequest(eventDlqUrl))
         log.info("Clear all messages on event dead letter queue")
         telemetryClient.trackEvent(
-          TelemetryEvents.PURGED_EVENT_DLQ.name, mapOf("messages-on-queue" to total.toString()), null
+          TelemetryEvents.PURGED_EVENT_DLQ.name, mapOf("messages-on-queue" to "$total"), null
         )
       }
   }
@@ -54,7 +54,7 @@ class QueueAdminService(
         }
       }?.also { total ->
         telemetryClient.trackEvent(
-          TelemetryEvents.TRANSFERRED_EVENT_DLQ.name, mapOf("messages-on-queue" to total.toString()), null
+          TelemetryEvents.TRANSFERRED_EVENT_DLQ.name, mapOf("messages-on-queue" to "$total"), null
         )
       }
   }
