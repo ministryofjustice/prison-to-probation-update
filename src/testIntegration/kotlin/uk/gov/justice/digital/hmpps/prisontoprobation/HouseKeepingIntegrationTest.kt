@@ -73,10 +73,8 @@ class HouseKeepingIntegrationTest : QueueIntegrationTest() {
   }
 
   @Test
-  fun `will purge a booking changed message on the dlq`() {
-    val message = "/messages/bookingNumberChanged.json".readResourceAsText()
-
-    awsSqsClient.sendMessage(dlqUrl, message)
+  fun `will purge any messages on the dlq`() {
+    awsSqsClient.sendMessage(dlqUrl, "{}")
 
     webTestClient.put()
       .uri("/queue-admin/purge-event-dlq")
