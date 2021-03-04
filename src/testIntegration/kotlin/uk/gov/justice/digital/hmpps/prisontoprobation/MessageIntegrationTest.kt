@@ -20,7 +20,8 @@ import javax.inject.Inject
     "prisontoprobation.message-processor.enabled=true",
     "prisontoprobation.message-processor.delay=50",
     "prisontoprobation.hold-back.duration=0m"
-  ]
+  ],
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @DirtiesContext
 class MessageIntegrationTest : QueueIntegrationTest() {
