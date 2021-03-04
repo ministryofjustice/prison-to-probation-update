@@ -13,12 +13,14 @@ import com.nhaarman.mockitokotlin2.check
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.TelemetryEvents
 
 internal class QueueAdminServiceTest {
 
@@ -119,8 +121,18 @@ internal class QueueAdminServiceTest {
 
   @Nested
   inner class ClearAllDlqMessagesForEvent {
+    private val eventDlqUrl = "arn:eu-west-1:event-dlq"
+
+    @Test
+    internal fun `will purge no messages from dlq`() {
+      stubDlqMessageCount(0)
+      queueAdminService.clearAllDlqMessagesForEvent()
+      verify(eventAwsSqsDlqClient, times(0)).purgeQueue(ArgumentMatchers.any())
+    }
+
     @Test
     internal fun `will purge event dlq of messages`() {
+      stubDlqMessageCount(1)
       whenever(eventAwsSqsDlqClient.getQueueUrl("event-dlq")).thenReturn(GetQueueUrlResult().withQueueUrl("arn:eu-west-1:event-dlq"))
 
       queueAdminService.clearAllDlqMessagesForEvent()
@@ -130,6 +142,65 @@ internal class QueueAdminServiceTest {
         }
       )
     }
+
+    private fun stubDlqMessageCount(count: Int) =
+      whenever(eventAwsSqsDlqClient.getQueueAttributes(eventDlqUrl, listOf("ApproximateNumberOfMessages")))
+        .thenReturn(GetQueueAttributesResult().withAttributes(mutableMapOf("ApproximateNumberOfMessages" to count.toString())))
+  }
+
+  @Nested
+  inner class TelelemetryEvents {
+    private val eventDlqUrl = "arn:eu-west-1:event-dlq"
+
+    @Test
+    internal fun `will send a TRANSFERRED_EVENT_DLQ telemetry event`() {
+      stubDlqMessageCount(1)
+      whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(populateBookingNumberMessage("X1"))))
+
+      queueAdminService.transferEventMessages()
+
+      verify(telemetryClient).trackEvent(
+        TelemetryEvents.TRANSFERRED_EVENT_DLQ.name,
+        mapOf("messages-on-queue" to "1"),
+        null
+      )
+    }
+
+    @Test
+    internal fun `will send a PURGED_EVENT_DLQ telemetry event`() {
+      stubDlqMessageCount(2)
+      whenever(eventAwsSqsDlqClient.receiveMessage(any<ReceiveMessageRequest>()))
+        .thenReturn(ReceiveMessageResult().withMessages(Message().withBody(populateBookingNumberMessage("X1"))))
+
+      queueAdminService.clearAllDlqMessagesForEvent()
+
+      verify(telemetryClient).trackEvent(
+        TelemetryEvents.PURGED_EVENT_DLQ.name,
+        mapOf("messages-on-queue" to "2"),
+        null
+      )
+    }
+
+    @Test
+    internal fun `will not send a TRANSFERRED_EVENT_DLQ telemetry event if there are no messages`() {
+      stubDlqMessageCount(0)
+      queueAdminService.transferEventMessages()
+
+      verifyZeroInteractions(telemetryClient)
+    }
+
+    @Test
+    internal fun `will not send a PURGED_EVENT_DLQ telemetry event if there are no messages`() {
+      stubDlqMessageCount(0)
+      queueAdminService.clearAllDlqMessagesForEvent()
+
+      verifyZeroInteractions(telemetryClient)
+    }
+
+    private fun stubDlqMessageCount(count: Int) =
+      whenever(eventAwsSqsDlqClient.getQueueAttributes(eventDlqUrl, listOf("ApproximateNumberOfMessages")))
+        .thenReturn(GetQueueAttributesResult().withAttributes(mutableMapOf("ApproximateNumberOfMessages" to count.toString())))
   }
 
   fun bookingNumberChangedMessage(bookingId: String) =
@@ -166,11 +237,11 @@ internal class QueueAdminServiceTest {
 
     """.trimIndent()
 
-  fun populateOffenderMessage(crn: String) =
+  fun populateBookingNumberMessage(bookingId: String) =
     """
   {
-    "type":"POPULATE_OFFENDER",
-    "crn":"$crn"
+    "type":"Notification",
+    "bookingId":"$bookingId"
   }
     """.trimIndent()
 }

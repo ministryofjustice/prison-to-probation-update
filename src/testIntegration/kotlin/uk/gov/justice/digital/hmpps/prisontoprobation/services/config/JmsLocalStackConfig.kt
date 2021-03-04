@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services.config
 
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,4 +24,10 @@ class JmsLocalStackConfig(private val localStackContainer: LocalStackContainer) 
     .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
     .withCredentials(localStackContainer.defaultCredentialsProvider)
     .build()
+
+  @Bean("dlqUrl")
+  fun eventDlqUrl(
+    @Qualifier("awsSqsClient") eventAwsSqsClient: AmazonSQS,
+    @Value("\${sqs.dlq.name}") eventDlqQueueName: String
+  ): String = eventAwsSqsClient.getQueueUrl(eventDlqQueueName).queueUrl
 }

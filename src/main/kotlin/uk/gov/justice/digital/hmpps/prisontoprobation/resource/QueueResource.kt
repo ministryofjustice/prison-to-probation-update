@@ -48,7 +48,7 @@ class QueueResource(
     summary = "Triggers maintenance of the queues",
     description = "This is an internal service which isn't exposed to the outside world. It is called from a Kubernetes CronJob named `queue-housekeeping-cronjob`"
   )
-  fun indexQueueHousekeeping() {
+  fun eventQueueHousekeeping() {
     queueAdminService.transferEventMessages()
   }
 }
