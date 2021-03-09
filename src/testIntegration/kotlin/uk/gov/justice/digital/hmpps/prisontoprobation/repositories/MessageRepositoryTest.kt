@@ -5,14 +5,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class MessageRepositoryTest : IntegrationTest() {
+class MessageRepositoryTest : NoQueueIntegrationTest() {
 
   @Autowired
   private lateinit var repository: MessageRepository

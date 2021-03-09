@@ -8,11 +8,8 @@ import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
@@ -28,18 +25,12 @@ import javax.inject.Inject
   ],
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-
-@DirtiesContext
 class HouseKeepingIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository
 
   @Inject
   private lateinit var queueAdminService: QueueAdminService
-
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  lateinit var webTestClient: WebTestClient
 
   @BeforeEach
   internal fun setUp() {

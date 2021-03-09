@@ -13,17 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
-import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
 
 @ExtendWith(SpringExtension::class)
-class HealthCheckIntegrationTest : IntegrationTest() {
+class HealthCheckIntegrationTest : NoQueueIntegrationTest() {
   @Autowired
   private lateinit var queueHealth: QueueHealth
-
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  private lateinit var webTestClient: WebTestClient
 
   @Autowired
   @Value("\${sqs.queue.name}")

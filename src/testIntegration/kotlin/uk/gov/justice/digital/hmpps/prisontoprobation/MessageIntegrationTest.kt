@@ -8,7 +8,6 @@ import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.annotation.DirtiesContext
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
@@ -23,7 +22,6 @@ import javax.inject.Inject
   ],
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@DirtiesContext
 class MessageIntegrationTest : QueueIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository

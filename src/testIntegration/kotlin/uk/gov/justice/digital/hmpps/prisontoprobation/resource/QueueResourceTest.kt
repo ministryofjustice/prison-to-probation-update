@@ -4,16 +4,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.QueueIntegrationTest
 
 class QueueResourceTest : QueueIntegrationTest() {
-
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  lateinit var webTestClient: WebTestClient
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)

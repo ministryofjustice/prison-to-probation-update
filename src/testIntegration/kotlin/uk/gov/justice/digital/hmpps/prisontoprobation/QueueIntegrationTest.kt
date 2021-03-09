@@ -5,9 +5,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.annotation.DirtiesContext
 
-@ActiveProfiles(profiles = ["test", "test-queue"])
+@DirtiesContext
 class QueueIntegrationTest : IntegrationTest() {
 
   @Autowired
