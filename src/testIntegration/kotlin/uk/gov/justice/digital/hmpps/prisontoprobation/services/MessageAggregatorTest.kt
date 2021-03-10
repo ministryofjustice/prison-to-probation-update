@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatcher
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
-import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
@@ -25,7 +25,7 @@ import java.time.LocalDateTime
     "prisontoprobation.hold-back.duration=10m"
   ]
 )
-internal class MessageAggregatorTest : IntegrationTest() {
+internal class MessageAggregatorTest : NoQueueIntegrationTest() {
   @Autowired
   private lateinit var repository: MessageRepository
 
