@@ -3,11 +3,9 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.reports
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState.COMPLETED
@@ -25,14 +23,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
-
-  @Autowired
-  private lateinit var messageRepository: MessageRepository
-
-  @BeforeEach
-  internal fun setUp() {
-    messageRepository.deleteAll()
-  }
 
   @Test
   internal fun `requires a valid authentication token`() {

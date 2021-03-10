@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest(
@@ -16,12 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class QueueListenerIntegrationTest : IntegrationTest() {
-
-  @Autowired
-  lateinit var queueUrl: String
-
-  @Autowired
-  lateinit var dlqUrl: String
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
     val queueAttributes = awsSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))

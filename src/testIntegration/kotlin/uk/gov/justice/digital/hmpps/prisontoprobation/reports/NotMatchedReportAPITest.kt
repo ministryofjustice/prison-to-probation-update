@@ -4,19 +4,14 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class NotMatchedReportAPITest : NoQueueListenerIntegrationTest() {
-
-  @Autowired
-  private lateinit var messageRepository: MessageRepository
 
   @Test
   internal fun `requires a valid authentication token`() {
@@ -41,7 +36,6 @@ class NotMatchedReportAPITest : NoQueueListenerIntegrationTest() {
   inner class WithCorrectRole {
     @BeforeEach
     internal fun setUp() {
-      messageRepository.deleteAll()
       messageRepository.save(
         aMessage(1, 10, "NO_MATCH")
       )

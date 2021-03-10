@@ -2,19 +2,14 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.reports
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class InProgressReportAPITest : NoQueueListenerIntegrationTest() {
-
-  @Autowired
-  private lateinit var messageRepository: MessageRepository
 
   @Test
   internal fun `requires a valid authentication token`() {

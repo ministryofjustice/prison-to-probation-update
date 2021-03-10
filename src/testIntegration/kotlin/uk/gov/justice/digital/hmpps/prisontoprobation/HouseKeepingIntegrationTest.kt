@@ -6,29 +6,18 @@ import org.assertj.core.api.Assertions.within
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
-  @Inject
-  private lateinit var messageRepository: MessageRepository
 
   @Inject
   private lateinit var queueAdminService: QueueAdminService
-
-  @BeforeEach
-  internal fun setUp() {
-    messageRepository.deleteAll()
-    // wait until our queues have been purged
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-  }
 
   @Test
   fun `housekeeping will consume a booking changed message on the dlq and return to main queue`() {

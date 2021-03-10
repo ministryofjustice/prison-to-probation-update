@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
 import com.amazonaws.services.sqs.AmazonSQS
+import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -20,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
 
@@ -36,6 +41,18 @@ abstract class IntegrationTest {
   @Qualifier("awsSqsClient")
   internal lateinit var awsSqsClient: AmazonSQS
 
+  @Autowired
+  @Qualifier("queueUrl")
+  internal lateinit var queueUrl: String
+
+  @SpyBean
+  @Qualifier("awsSqsDlqClient")
+  internal lateinit var awsSqsDlqClient: AmazonSQS
+
+  @Autowired
+  @Qualifier("dlqUrl")
+  internal lateinit var dlqUrl: String
+
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
 
@@ -51,6 +68,9 @@ abstract class IntegrationTest {
   @Autowired(required = false)
   private lateinit var prisonerChangesListenerPusher: PrisonerChangesListenerPusher
 
+  @Autowired
+  protected lateinit var messageRepository: MessageRepository
+
   @BeforeEach
   fun `Debug bean information`() {
     log.info("Starting integration test applicationContext=${applicationContext.hashCode()}")
@@ -59,6 +79,15 @@ abstract class IntegrationTest {
     } catch (e: Exception) {
       log.info("...with prisonerChangesListenerPusher=null")
     }
+  }
+
+  @BeforeEach
+  fun `Reset resources`() {
+    messageRepository.deleteAll()
+    awsSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+    awsSqsDlqClient.purgeQueue(PurgeQueueRequest(dlqUrl))
+    await untilCallTo { awsSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
+    await untilCallTo { awsSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
   }
 
   companion object {
@@ -118,4 +147,11 @@ abstract class IntegrationTest {
     user: String = "ptpu-report-client",
     roles: List<String> = listOf()
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
+
+  internal fun AmazonSQS.activeMessageCount(queueUrl: String): Int {
+    val queueAttributes = this.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"))
+    val msgsOnQueue = queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt() ?: 0
+    val msgsInFlight = queueAttributes.attributes["ApproximateNumberOfMessagesNotVisible"]?.toInt() ?: 0
+    return msgsOnQueue + msgsInFlight
+  }
 }

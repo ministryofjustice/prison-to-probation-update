@@ -9,12 +9,10 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.byLessThan
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -23,21 +21,13 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: MessageRetryService
 
-  @Autowired
-  private lateinit var repository: MessageRepository
-
-  @BeforeEach
-  fun setUp() {
-    repository.deleteAll()
-  }
-
   @Test
   internal fun `will retry once on success`() {
     val eventType = "IMPRISONMENT_STATUS-CHANGED"
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(Done()).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -68,7 +58,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(Done()).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -82,13 +72,13 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
 
     service.retryShortTerm()
 
-    assertThat(repository.findByBookingId(33L))
+    assertThat(messageRepository.findByBookingId(33L))
       .hasSize(1)
 
-    assertThat(repository.findByBookingIdAndProcessedDateIsNull(33L))
+    assertThat(messageRepository.findByBookingIdAndProcessedDateIsNull(33L))
       .hasSize(0)
 
-    assertThat(repository.findByBookingId(33L).first().processedDate)
+    assertThat(messageRepository.findByBookingId(33L).first().processedDate)
       .isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
   }
 
@@ -100,7 +90,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     doReturn(TryLater(1200835))
       .doReturn(Done())
       .whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -131,7 +121,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -162,7 +152,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -196,7 +186,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(TryLater(1200835)).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
@@ -235,7 +225,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
     val message =
       "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
     doReturn(Done()).whenever(messageProcessor).processMessage(any())
-    repository.save(
+    messageRepository.save(
       Message(
         bookingId = 33L,
         eventType = eventType,
