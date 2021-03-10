@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.SynchroniseState
@@ -24,7 +24,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
-class MatchingSummaryReportAPITest : NoQueueIntegrationTest() {
+class MatchingSummaryReportAPITestListener : NoQueueListenerIntegrationTest() {
 
   @Autowired
   private lateinit var messageRepository: MessageRepository

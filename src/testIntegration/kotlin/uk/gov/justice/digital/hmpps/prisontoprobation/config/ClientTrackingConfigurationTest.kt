@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 
 @Import(JwtAuthHelper::class, ClientTrackingInterceptor::class, ClientTrackingConfiguration::class)
 @ContextConfiguration(initializers = [ConfigDataApplicationContextInitializer::class])
-@ActiveProfiles("test", "no-queue")
+@ActiveProfiles("test", "no-queue-listener")
 @ExtendWith(SpringExtension::class)
 class ClientTrackingConfigurationTest {
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")

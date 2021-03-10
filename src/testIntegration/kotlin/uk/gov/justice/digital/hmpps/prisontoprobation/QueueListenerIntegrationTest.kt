@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest
   ],
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-class QueueIntegrationTest : IntegrationTest() {
+class QueueListenerIntegrationTest : IntegrationTest() {
 
   @Autowired
   lateinit var queueUrl: String

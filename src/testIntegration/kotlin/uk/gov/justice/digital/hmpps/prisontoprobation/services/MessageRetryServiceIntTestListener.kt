@@ -12,14 +12,14 @@ import org.assertj.core.api.Assertions.byLessThan
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
-internal class MessageRetryServiceIntTest : NoQueueIntegrationTest() {
+internal class MessageRetryServiceIntTestListener : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: MessageRetryService
 
