@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
@@ -46,24 +45,19 @@ abstract class IntegrationTest {
   @Autowired
   private lateinit var applicationContext: ApplicationContext
 
-  @Autowired(required = false)
-  private lateinit var jmsListenerContainerFactory: DefaultJmsListenerContainerFactory
-
-  @Autowired(required = false)
+  @Autowired
   lateinit var webTestClient: WebTestClient
 
   @Autowired(required = false)
   private lateinit var prisonerChangesListenerPusher: PrisonerChangesListenerPusher
 
   @BeforeEach
-  fun `check context and some beans`() {
-    log.info(">>>>>>>>>> applicationContext=${applicationContext.hashCode()}")
-    log.info(">>>>>>>>>> jmsListenerContainerFactory=${jmsListenerContainerFactory.hashCode()}")
-    log.info(">>>>>>>>>> webTestClient=${webTestClient.hashCode()}")
+  fun `Debug bean information`() {
+    log.info("Starting integration test applicationContext=${applicationContext.hashCode()}")
     try {
-      log.info(">>>>>>>>>> prisonerChangesListenerPusher=${prisonerChangesListenerPusher.hashCode()}")
+      log.info("...with prisonerChangesListenerPusher=${prisonerChangesListenerPusher.hashCode()}")
     } catch (e: Exception) {
-      log.info(">>>>>>>>>> prisonerChangesListenerPusher=null")
+      log.info("...with prisonerChangesListenerPusher=null")
     }
   }
 
