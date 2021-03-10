@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
-internal class MessageRetryServiceIntTestListener : NoQueueListenerIntegrationTest() {
+internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: MessageRetryService
 

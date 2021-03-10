@@ -16,7 +16,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 
 @ExtendWith(SpringExtension::class)
-class HealthCheckListenerIntegrationTest : NoQueueListenerIntegrationTest() {
+class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var queueHealth: QueueHealth
 

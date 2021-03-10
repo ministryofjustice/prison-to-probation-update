@@ -20,7 +20,7 @@ import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class OffenderServiceTestListener : NoQueueListenerIntegrationTest() {
+class OffenderServiceTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: OffenderService
 

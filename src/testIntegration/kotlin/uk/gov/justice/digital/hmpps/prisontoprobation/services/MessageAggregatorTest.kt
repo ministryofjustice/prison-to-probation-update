@@ -25,7 +25,7 @@ import java.time.LocalDateTime
     "prisontoprobation.hold-back.duration=10m"
   ]
 )
-internal class MessageAggregatorTestListener : NoQueueListenerIntegrationTest() {
+internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var repository: MessageRepository
 

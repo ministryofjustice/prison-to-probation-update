@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegration
 import java.net.HttpURLConnection
 import java.time.LocalDate
 
-internal class OffenderSearchServiceTestListener : NoQueueListenerIntegrationTest() {
+internal class OffenderSearchServiceTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: OffenderSearchService
 

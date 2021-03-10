@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class MessageRepositoryTestListener : NoQueueListenerIntegrationTest() {
+class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
 
   @Autowired
   private lateinit var repository: MessageRepository

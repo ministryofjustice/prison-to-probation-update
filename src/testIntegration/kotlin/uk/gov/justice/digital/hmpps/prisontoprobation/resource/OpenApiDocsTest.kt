@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class OpenApiDocsTestListener : NoQueueListenerIntegrationTest() {
+class OpenApiDocsTest : NoQueueListenerIntegrationTest() {
 
   @Test
   fun `open api docs are available`() {

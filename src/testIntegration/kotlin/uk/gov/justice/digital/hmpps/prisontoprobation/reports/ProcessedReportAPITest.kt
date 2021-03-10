@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageReposi
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class ProcessedReportAPITestListener : NoQueueListenerIntegrationTest() {
+class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
 
   @Autowired
   private lateinit var messageRepository: MessageRepository

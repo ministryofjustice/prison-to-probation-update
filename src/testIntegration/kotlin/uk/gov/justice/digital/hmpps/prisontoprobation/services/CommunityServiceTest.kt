@@ -29,7 +29,7 @@ import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
 
-class CommunityServiceTestListener : NoQueueListenerIntegrationTest() {
+class CommunityServiceTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: CommunityService
 
