@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-class MessageListenerIntegrationTest : QueueListenerIntegrationTest() {
+class MessageIntegrationTest : QueueListenerIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository
 
@@ -133,5 +133,5 @@ class MessageListenerIntegrationTest : QueueListenerIntegrationTest() {
 }
 
 private fun String.readResourceAsText(): String {
-  return MessageListenerIntegrationTest::class.java.getResource(this).readText()
+  return MessageIntegrationTest::class.java.getResource(this).readText()
 }

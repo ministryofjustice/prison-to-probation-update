@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
-class HouseKeepingListenerIntegrationTest : QueueListenerIntegrationTest() {
+class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
   @Inject
   private lateinit var messageRepository: MessageRepository
 
@@ -102,5 +102,5 @@ class HouseKeepingListenerIntegrationTest : QueueListenerIntegrationTest() {
 }
 
 private fun String.readResourceAsText(): String {
-  return MessageListenerIntegrationTest::class.java.getResource(this).readText()
+  return HouseKeepingIntegrationTest::class.java.getResource(this).readText()
 }

@@ -24,7 +24,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
-class MatchingSummaryReportAPITestListener : NoQueueListenerIntegrationTest() {
+class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
 
   @Autowired
   private lateinit var messageRepository: MessageRepository

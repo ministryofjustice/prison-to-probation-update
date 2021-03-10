@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.QueueListenerIntegrationTest
 
-class QueueListenerResourceTest : QueueListenerIntegrationTest() {
+class QueueResourceTest : QueueListenerIntegrationTest() {
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
