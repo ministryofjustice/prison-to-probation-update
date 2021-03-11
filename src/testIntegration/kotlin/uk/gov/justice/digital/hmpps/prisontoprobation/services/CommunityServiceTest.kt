@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
@@ -29,7 +29,7 @@ import java.net.HttpURLConnection.HTTP_NOT_FOUND
 import java.net.HttpURLConnection.HTTP_OK
 import java.time.LocalDate
 
-class CommunityServiceTest : NoQueueIntegrationTest() {
+class CommunityServiceTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: CommunityService
 

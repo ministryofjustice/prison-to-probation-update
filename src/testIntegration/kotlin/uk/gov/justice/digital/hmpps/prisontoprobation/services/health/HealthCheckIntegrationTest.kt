@@ -10,25 +10,14 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.util.ReflectionTestUtils
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 
 @ExtendWith(SpringExtension::class)
-class HealthCheckIntegrationTest : NoQueueIntegrationTest() {
+class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var queueHealth: QueueHealth
-
-  @Autowired
-  @Value("\${sqs.queue.name}")
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  private lateinit var queueName: String
-
-  @Autowired
-  @Value("\${sqs.dlq.name}")
-  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
-  private lateinit var dlqName: String
 
   @AfterEach
   fun tearDown() {
