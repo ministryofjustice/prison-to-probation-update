@@ -5,9 +5,9 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.prisontoprobation.QueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.QueueListenerIntegrationTest
 
-class QueueResourceTest : QueueIntegrationTest() {
+class QueueResourceTest : QueueListenerIntegrationTest() {
 
   @Nested
   @TestInstance(TestInstance.Lifecycle.PER_CLASS)
