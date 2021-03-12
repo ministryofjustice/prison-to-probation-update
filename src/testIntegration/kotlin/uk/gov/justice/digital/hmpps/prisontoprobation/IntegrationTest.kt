@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -39,7 +40,7 @@ abstract class IntegrationTest {
 
   @SpyBean
   @Qualifier("awsSqsClient")
-  internal lateinit var awsSqsClient: AmazonSQS
+  protected lateinit var awsSqsClient: AmazonSQS
 
   @Value("\${sqs.queue.name}")
   internal lateinit var queueName: String
@@ -53,6 +54,9 @@ abstract class IntegrationTest {
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
+
+  @SpyBean
+  internal lateinit var queueAdminService: QueueAdminService
 
   @Autowired
   private lateinit var objectMapper: ObjectMapper
@@ -93,10 +97,10 @@ abstract class IntegrationTest {
 
   companion object {
     val log = LoggerFactory.getLogger(this::class.java)
-    internal val prisonMockServer = PrisonMockServer()
+    val prisonMockServer = PrisonMockServer()
     internal val oauthMockServer = OAuthMockServer()
-    internal val communityMockServer = CommunityMockServer()
-    internal val searchMockServer = SearchMockServer()
+    val communityMockServer = CommunityMockServer()
+    val searchMockServer = SearchMockServer()
 
     @Suppress("unused")
     @BeforeAll
@@ -144,7 +148,7 @@ abstract class IntegrationTest {
 
   internal fun Any.asJson() = objectMapper.writeValueAsBytes(this)
 
-  internal fun setAuthorisation(
+  protected fun setAuthorisation(
     user: String = "ptpu-report-client",
     roles: List<String> = listOf()
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)

@@ -56,7 +56,8 @@ local test data:
 
 ### Testing
 
-There are 3 source sets to handle the unit, integration and smoke tests.  Note that `check` only runs the unit tests and you have to run the integration tests manually.
+There are 4 source sets to handle the unit, integration, e2e and smoke tests. Note that `check` only runs the unit tests
+and you have to run the integration and e2e tests manually.
 
 #### Unit Tests
 
@@ -64,19 +65,57 @@ The source set `test` contains the unit tests.  These are run with the command `
 
 #### Integration Tests
 
-The source set `testIntegration` contains the integration tests.  These are run with the command `./gradlew testIntegration` but are NOT included in the check when running command `./gradlew check` and so must be run manually.
+The source set `testIntegration` contains the integration tests. These are run with the
+command `./gradlew testIntegration` but are NOT included in the check when running command `./gradlew check` and so must
+be run manually.
 
-Note that the integration tests currently use TestContainers to start localstack and so you do not need to start localstack manually.
+Note that the integration tests currently use TestContainers to start localstack and so you do not need to start
+localstack manually.
 
 If you DO wish to run localstack manually (as is done in the Circle build) then you must:
+
 * start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
 * run the tests with command `AWS_PROVIDER=localstack ./gradlew testIntegration`
+
+##### IMPORTANT
+
+TL;DR - Integration tests do not start the JMS listener and do not start the scheduled DynamoDB message processor. If
+you need these then write an E2E test.
+
+There is an issue with Spring such that when a test requires a new context (e.g. when configuration properties change),
+the old (cached) context continues to a) read messages using the JMS listener and b) run scheduled jobs that read from
+the DynamoDB database. The proper "Spring way" to handle this issue is to use `@DirtiesContext` to stop the old context.
+Unfortunately a separate issue exists where using `@DirtiesContext` causes the Netty executor pool to be closed and the
+new context is unable to make any outbound requests.
+
+The upshot of this unfortunate combination of issues is that tests that require the JMS listener / DynamoDB scheduler to
+NOT run are corrupted by the JMS listener / DynamoDB scheduler running in the cached context.
+
+Therefore you mustn't add any tests to the `testIntegration` test module that use the real JMS listener or DynamoDB
+scheduler - these should be added to the `testE2e` test module.
+
+#### E2e Tests
+
+The source set `testE2e` contains end to end tests. These are defined as tests that require a real JMS listener and real
+DynamoDB scheduled tasks to run.
+
+These tests are run with command `./gradlew testE2e` but are NOT included in the check when running
+command `./gradlew check` and so must be run manually.
+
+Note that the end to end tests currently use TestContainers to start localstack and so you do not need to start
+localstack manually.
+
+If you DO wish to run localstack manually (as is done in the Circle build) then you must:
+
+* start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
+* run the tests with command `AWS_PROVIDER=localstack ./gradlew testE2e`
 
 #### Smoke Tests
 
 The source set `testSmoke` contains the smoke tests.
 
-These tests are not intended to be run locally, but instead are run against a deployed application (as happens in the Circle build).
+These tests are not intended to be run locally, but instead are run against a deployed application (as happens in the
+Circle build).
 
 For more information on the smoke tests see the project `dps-smoketest`.
 
