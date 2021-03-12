@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.resource
 
+import com.nhaarman.mockitokotlin2.doNothing
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -39,15 +43,32 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
         .expectStatus().isForbidden
     }
 
-    @ParameterizedTest
-    @MethodSource("secureEndpoints")
-    internal fun `satisfies the correct role`(uri: String) {
+    @Test
+    internal fun `purge - satisfies the correct role`() {
+      doNothing().whenever(queueAdminService).clearAllDlqMessagesForEvent()
+
       webTestClient.put()
-        .uri(uri)
+        .uri("/queue-admin/purge-event-dlq")
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isOk
+
+      verify(queueAdminService).clearAllDlqMessagesForEvent()
+    }
+
+    @Test
+    internal fun `transfer - satisfies the correct role`() {
+      doNothing().whenever(queueAdminService).transferEventMessages()
+
+      webTestClient.put()
+        .uri("/queue-admin/transfer-event-dlq")
+        .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+
+      verify(queueAdminService).transferEventMessages()
     }
   }
 }
