@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation
+package uk.gov.justice.digital.hmpps.prisontoprobation.e2e
 
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.boot.test.context.SpringBootTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 
 @SpringBootTest(
   properties = [

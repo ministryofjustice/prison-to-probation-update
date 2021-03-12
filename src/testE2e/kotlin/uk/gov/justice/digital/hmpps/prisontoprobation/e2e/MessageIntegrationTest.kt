@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation
+package uk.gov.justice.digital.hmpps.prisontoprobation.e2e
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within

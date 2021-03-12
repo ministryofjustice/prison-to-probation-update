@@ -39,7 +39,7 @@ abstract class IntegrationTest {
 
   @SpyBean
   @Qualifier("awsSqsClient")
-  internal lateinit var awsSqsClient: AmazonSQS
+  protected lateinit var awsSqsClient: AmazonSQS
 
   @Value("\${sqs.queue.name}")
   internal lateinit var queueName: String
@@ -93,10 +93,10 @@ abstract class IntegrationTest {
 
   companion object {
     val log = LoggerFactory.getLogger(this::class.java)
-    internal val prisonMockServer = PrisonMockServer()
+    val prisonMockServer = PrisonMockServer()
     internal val oauthMockServer = OAuthMockServer()
-    internal val communityMockServer = CommunityMockServer()
-    internal val searchMockServer = SearchMockServer()
+    val communityMockServer = CommunityMockServer()
+    val searchMockServer = SearchMockServer()
 
     @Suppress("unused")
     @BeforeAll
@@ -144,7 +144,7 @@ abstract class IntegrationTest {
 
   internal fun Any.asJson() = objectMapper.writeValueAsBytes(this)
 
-  internal fun setAuthorisation(
+  protected fun setAuthorisation(
     user: String = "ptpu-report-client",
     roles: List<String> = listOf()
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)

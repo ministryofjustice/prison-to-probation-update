@@ -5,13 +5,14 @@ plugins {
   idea
 }
 
-configurations {
-  implementation { exclude(group = "tomcat-jdbc") }
-}
-
 testSets {
   "testIntegration"()
+  "testE2e" { extendsFrom("testIntegration") }
   "testSmoke"()
+}
+
+configurations {
+  implementation { exclude(group = "tomcat-jdbc") }
 }
 
 dependencies {
@@ -53,4 +54,6 @@ dependencies {
   testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.2")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
+
+  "testE2eImplementation"(sourceSets.getByName("testIntegration").output)
 }

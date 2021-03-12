@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.prisontoprobation
+package uk.gov.justice.digital.hmpps.prisontoprobation.e2e
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.assertj.core.api.Assertions.assertThat
