@@ -28,6 +28,41 @@ executors:
       _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process
     working_directory: ~/app
 
+commands:
+  run-tests:
+    parameters:
+      gradle-task:
+        type: string
+    steps:
+      - checkout
+      - hmpps/install_aws_cli
+      - run:
+          name: Wait for SQS to be ready
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
+      - run:
+          name: Wait for SNS to be ready
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4575
+      - run:
+          name: Set up queues
+          command: src/testIntegration/resources/localstack/setup-sns.sh
+      - restore_cache:
+          keys:
+            - gradle-{{ checksum "build.gradle.kts" }}
+            - gradle-
+      - run:
+          environment:
+            AWS_PROVIDER: localstack
+          command: ./gradlew <<parameters.gradle-task>>
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle.kts" }}
+      - store_test_results:
+          path: build/test-results
+      - store_artifacts:
+          path: build/reports/tests
+
+
 jobs:
   validate:
     executor: validator
@@ -55,63 +90,13 @@ jobs:
   test-integration:
     executor: validator-integration
     steps:
-      - checkout
-      - hmpps/install_aws_cli
-      - run:
-          name: Wait for SQS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
-      - run:
-          name: Wait for SNS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4575
-      - run:
-          name: Set up queues
-          command: src/testIntegration/resources/localstack/setup-sns.sh
-      - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
-      - run:
-          environment:
-            AWS_PROVIDER: localstack
-          command: ./gradlew testIntegration
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle.kts" }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/reports/tests
+      - run-tests:
+          gradle-task: testIntegration
   test-e2e:
     executor: validator-integration
     steps:
-      - checkout
-      - hmpps/install_aws_cli
-      - run:
-          name: Wait for SQS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
-      - run:
-          name: Wait for SNS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4575
-      - run:
-          name: Set up queues
-          command: src/testIntegration/resources/localstack/setup-sns.sh
-      - restore_cache:
-          keys:
-            - gradle-{{ checksum "build.gradle.kts" }}
-            - gradle-
-      - run:
-          environment:
-            AWS_PROVIDER: localstack
-          command: ./gradlew testE2e
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-{{ checksum "build.gradle.kts" }}
-      - store_test_results:
-          path: build/test-results
-      - store_artifacts:
-          path: build/reports/tests
+      - run-tests:
+          gradle-task: testE2e
 workflows:
   version: 2
   build-test-and-deploy:
