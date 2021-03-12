@@ -10,11 +10,11 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import java.net.HttpURLConnection
 import java.time.LocalDate
 
-internal class OffenderSearchServiceTest : NoQueueIntegrationTest() {
+internal class OffenderSearchServiceTest : NoQueueListenerIntegrationTest() {
   @Autowired
   private lateinit var service: OffenderSearchService
 

@@ -2,11 +2,11 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.resource
 
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueIntegrationTest
+import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class OpenApiDocsTest : NoQueueIntegrationTest() {
+class OpenApiDocsTest : NoQueueListenerIntegrationTest() {
 
   @Test
   fun `open api docs are available`() {

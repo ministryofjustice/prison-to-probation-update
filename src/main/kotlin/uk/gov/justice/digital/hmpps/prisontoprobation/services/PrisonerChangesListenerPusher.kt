@@ -9,7 +9,7 @@ import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("!no-queue")
+@Profile("!no-queue-listener")
 class PrisonerChangesListenerPusher(
   private val messageProcessor: MessageProcessor,
   private val retryService: MessageRetryService

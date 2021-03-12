@@ -5,22 +5,12 @@ import org.assertj.core.api.Assertions.within
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import javax.inject.Inject
 
-class MessageIntegrationTest : QueueIntegrationTest() {
-  @Inject
-  private lateinit var messageRepository: MessageRepository
-
-  @BeforeEach
-  internal fun setUp() {
-    messageRepository.deleteAll()
-  }
+class MessageIntegrationTest : QueueListenerIntegrationTest() {
 
   @Test
   fun `will consume a prison movement message, update probation`() {
