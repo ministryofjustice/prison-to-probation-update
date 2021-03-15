@@ -54,6 +54,7 @@ generic-service:
       DYNAMODB_TABLENAME: "table_name"
       DYNAMODB_AWS_ACCESS_KEY_ID: "access_key_id"
       DYNAMODB_AWS_SECRET_ACCESS_KEY: "secret_access_key"
+    schedule-dynamodb-output:
       DYNAMODB_SCHEDULE_TABLENAME: "table_name"
       DYNAMODB_SCHEDULE_AWS_ACCESS_KEY_ID: "access_key_id"
       DYNAMODB_SCHEDULE_AWS_SECRET_ACCESS_KEY: "secret_access_key"
