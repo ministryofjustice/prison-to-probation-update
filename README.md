@@ -357,12 +357,35 @@ requests
 
 #### Grafana Dashboard
 
-There is a [Grafana Dashboard](https://grafana.cloud-platform.service.justice.gov.uk/d/ptpu-prison-to-probation-update-prod/prison-to-probation-update-prison-to-probation-update-prod?orgId=1) that shows the totals for major processing counts.
+There is
+a [Grafana Dashboard](https://grafana.cloud-platform.service.justice.gov.uk/d/ptpu-prison-to-probation-update-prod/prison-to-probation-update-prison-to-probation-update-prod?orgId=1)
+that shows the totals for major processing counts.
 
+The data for the dashboard is provided by micrometer. This requires the micrometer dependencies in
+the `build.gradle.kts` file which expose the `/prometheus` endpoint. The metrics made available in this endpoint are
+defined in the `MetricsService` class.
+
+The data for the dashboard is gathered by
+a [Prometheus Service Monitor](https://github.com/ministryofjustice/cloud-platform-environments/blob/main/namespaces/live-1.cloud-platform.service.justice.gov.uk/prison-to-probation-update-prod/08-service-monitor.yaml)
+which uses a combination of namespace selector and service label selectors to find pods to query. You can see the
+Service
+Monitor [polling the endpoints](https://prometheus.cloud-platform.service.justice.gov.uk/targets#job-prison-to-probation-update-prod%2fprison-to-probation-update%2f0)
+and also run a Prometheus
+query [to check data is coming through](https://prometheus.cloud-platform.service.justice.gov.uk/graph?g0.range_input=1h&g0.expr=ptpu_movement_total%7Bnamespace%3D%22prison-to-probation-update-prod%22%7D&g0.tab=1)
+.
+
+There is a rule in the ingress to prevent access to the `/prometheus` endpoint externally which is defined in the main
+helm `values.yaml` files (section `generic-service.ingress.nginx.ingress.kubernetes.io/configuration-snippet`). The
+Prometheus Service Monitor does not use the ingress - it polls the pods directly - and so it is not affected by this
+rule. The rule exists to prevent metrics being exposed to the internet.
 
 #### Reports
 
-There are a number of CSV reports that are documented [here](https://prison-to-probation-update.prison.service.justice.gov.uk/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config).
+There are a number of CSV reports that are
+documented [here](https://prison-to-probation-update.prison.service.justice.gov.uk/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config)
+.
 
-To run the reports you require the `ROLE_PTPU_REPORT` role. We would recommend asking the HMPPS Auth administrators (DPS Tech team) to create personal production client credentials and just add that single role. Use Postman or cUrl to request the report.    
+To run the reports you require the `ROLE_PTPU_REPORT` role. We would recommend asking the HMPPS Auth administrators (DPS
+Tech team) to create personal production client credentials and just add that single role. Use Postman or cUrl to
+request the report.    
 
