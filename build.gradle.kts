@@ -57,3 +57,7 @@ dependencies {
 
   "testE2eImplementation"(sourceSets.getByName("testIntegration").output)
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions.jvmTarget = "11"
+}
