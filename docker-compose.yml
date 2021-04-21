@@ -17,7 +17,7 @@ services:
       - COMMUNITY_ENDPOINT_URL=http://localhost:8096
       - OAUTH_API_BASE_URL=http://localhost:8090/auth
       - PRISON_ENDPOINT_URL=http://localhost:8093
-      - SQS_ENDPOINT_URL=http://localhost:4576
+      - SQS_ENDPOINT_URL=http://localhost:4566
       - SPRING_PROFILES_ACTIVE=stdout,localstack
       - AWS_ACCESS_KEY_ID=foobar
       - AWS_SECRET_ACCESS_KEY=foobar
@@ -76,13 +76,14 @@ services:
     environment:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=localstack,dev
+
   localstack:
-    image: localstack/localstack:0.11.2
+    image: localstack/localstack:0.12.9.1
     networks:
       - hmpps
     container_name: localstack
     ports:
-      - "4567-4597:4567-4597"
+      - "4566-4597:4566-4597"
       - 8999:8080
     environment:
       - SERVICES=sns,sqs,es,dynamodb

@@ -7,7 +7,7 @@ aws:
   provider: embedded-localstack
 
 sqs:
-  endpoint.url: http://localhost:4576
+  endpoint.url: http://localhost:4566
 
 dynamodb:
   endpoint: http://localhost:4569
