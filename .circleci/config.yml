@@ -121,6 +121,7 @@ workflows:
       - hmpps/smoke_test:
           context: hmpps-smoketest-common-vars
           name: smoke_test
+          jdk_tag: "16.0"
           requires:
             - deploy_dev
       - hmpps/deploy_env:
