@@ -39,7 +39,9 @@ commands:
 
 jobs:
   validate:
-    executor: hmpps/java
+    executor:
+      name: hmpps/java
+      tag: "16.0"
     steps:
       - checkout
       - restore_cache:
@@ -64,6 +66,7 @@ jobs:
   test-integration:
     executor:
       name: hmpps/localstack
+      jdk_tag: "16.0"
       services: "sqs,sns,dynamodb"
     steps:
       - run-tests:
@@ -71,6 +74,7 @@ jobs:
   test-e2e:
     executor:
       name: hmpps/localstack
+      jdk_tag: "16.0"
       services: "sqs,sns,dynamodb"
     steps:
       - run-tests:

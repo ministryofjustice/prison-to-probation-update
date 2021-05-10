@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.1.7"
-  kotlin("plugin.spring") version "1.4.32"
-  id("org.unbroken-dome.test-sets") version "3.0.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.2.0"
+  kotlin("plugin.spring") version "1.5.0"
+  id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
 }
 
@@ -33,12 +33,12 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3")
 
-  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.7")
-  implementation("org.springdoc:springdoc-openapi-ui:1.5.7")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.7")
+  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.8")
+  implementation("org.springdoc:springdoc-openapi-ui:1.5.8")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.8")
 
   implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.1001"))
+  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.1015"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
@@ -51,7 +51,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.25.0")
   testImplementation("org.testcontainers:localstack:1.15.3")
-  testImplementation("org.awaitility:awaitility-kotlin:4.0.3")
+  testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.4.3")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
 
