@@ -17,6 +17,8 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttri
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.QueueAttributes.MESSAGES_ON_QUEUE
 
 class QueueHealthTest {
+  class TestQueueHealth(awsSqsClient: AmazonSQS, awsSqsDlqClient: AmazonSQS, queueName: String, dlqName: String) :
+    QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
 
   private val someQueueName = "some queue name"
   private val someQueueUrl = "some queue url"
@@ -27,7 +29,7 @@ class QueueHealthTest {
   private val someMessagesOnDLQCount = 789
   private val amazonSqs: AmazonSQS = mock()
   private val amazonSqsDLQ: AmazonSQS = mock()
-  private val queueHealth: QueueHealth = QueueHealth(amazonSqs, amazonSqsDLQ, someQueueName, someDLQName)
+  private val queueHealth: QueueHealth = TestQueueHealth(amazonSqs, amazonSqsDLQ, someQueueName, someDLQName)
 
   @Test
   fun `health - queue found - UP`() {

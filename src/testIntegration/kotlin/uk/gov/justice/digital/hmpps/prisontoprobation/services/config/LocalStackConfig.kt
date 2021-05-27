@@ -56,10 +56,30 @@ class LocalStackConfig {
       CreateQueueRequest(queueName).withAttributes(
         mapOf(
           QueueAttributeName.RedrivePolicy.toString() to
-"""{"deadLetterTargetArn":"${dlqArn.attributes["QueueArn"]}","maxReceiveCount":"5"}"""
+            """{"deadLetterTargetArn":"${dlqArn.attributes["QueueArn"]}","maxReceiveCount":"5"}"""
         )
       )
     )
     return awsSqsClient.getQueueUrl(queueName).queueUrl
+  }
+
+  @Bean
+  @Suppress("SpringJavaInjectionPointsAutowiringInspection")
+  fun hmppsQueueUrl(
+    @Autowired hmppsAwsSqsClient: AmazonSQS,
+    @Value("\${sqs.hmpps.queue.name}") queueName: String,
+    @Value("\${sqs.hmpps.dlq.name}") dlqName: String
+  ): String {
+    val result = hmppsAwsSqsClient.createQueue(CreateQueueRequest(dlqName))
+    val dlqArn = hmppsAwsSqsClient.getQueueAttributes(result.queueUrl, listOf(QueueAttributeName.QueueArn.toString()))
+    hmppsAwsSqsClient.createQueue(
+      CreateQueueRequest(queueName).withAttributes(
+        mapOf(
+          QueueAttributeName.RedrivePolicy.toString() to
+            """{"deadLetterTargetArn":"${dlqArn.attributes["QueueArn"]}","maxReceiveCount":"5"}"""
+        )
+      )
+    )
+    return hmppsAwsSqsClient.getQueueUrl(queueName).queueUrl
   }
 }

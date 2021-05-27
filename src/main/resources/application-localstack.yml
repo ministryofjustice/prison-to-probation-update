@@ -3,6 +3,8 @@ graceful:
 
 sqs:
   endpoint.url: http://localhost:4576
+sqs.hmpps:
+  endpoint.url: http://localhost:4576
 
 oauth:
   endpoint.url: http://localhost:8090/auth

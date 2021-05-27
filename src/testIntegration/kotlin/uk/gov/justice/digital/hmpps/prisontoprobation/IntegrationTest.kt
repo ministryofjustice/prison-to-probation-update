@@ -25,8 +25,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.HMPPSPrisonerChangesListenerPusher
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,11 +46,25 @@ abstract class IntegrationTest {
   internal lateinit var queueName: String
 
   @SpyBean
+  @Qualifier("hmppsAwsSqsClient")
+  protected lateinit var hmppsAwsSqsClient: AmazonSQS
+
+  @Value("\${sqs.hmpps.queue.name}")
+  internal lateinit var hmppsQueueName: String
+
+  @SpyBean
   @Qualifier("awsSqsDlqClient")
   internal lateinit var awsSqsDlqClient: AmazonSQS
 
+  @SpyBean
+  @Qualifier("hmppsAwsSqsDlqClient")
+  internal lateinit var hmppsAwsSqsDlqClient: AmazonSQS
+
   @Value("\${sqs.dlq.name}")
   internal lateinit var dlqName: String
+
+  @Value("\${sqs.hmpps.dlq.name}")
+  internal lateinit var hmppsDlqName: String
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
@@ -68,7 +82,7 @@ abstract class IntegrationTest {
   lateinit var webTestClient: WebTestClient
 
   @Autowired(required = false)
-  private lateinit var prisonerChangesListenerPusher: PrisonerChangesListenerPusher
+  private lateinit var prisonerChangesListenerPusher: HMPPSPrisonerChangesListenerPusher
 
   @Autowired
   protected lateinit var messageRepository: MessageRepository
