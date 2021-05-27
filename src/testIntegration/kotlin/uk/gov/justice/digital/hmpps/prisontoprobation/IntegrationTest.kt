@@ -25,8 +25,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.HMPPSPrisonerChangesListenerPusher
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
+import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -82,7 +82,7 @@ abstract class IntegrationTest {
   lateinit var webTestClient: WebTestClient
 
   @Autowired(required = false)
-  private lateinit var prisonerChangesListenerPusher: HMPPSPrisonerChangesListenerPusher
+  private lateinit var prisonerChangesListenerPusher: PrisonerChangesListenerPusher
 
   @Autowired
   protected lateinit var messageRepository: MessageRepository
