@@ -30,11 +30,11 @@ class RetryableEventMetricsServiceTest {
 
     @BeforeEach
     fun `mock counters`() {
-      whenever(meterFactory.registerCounter(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(TOTAL_TYPE)))
+      whenever(meterFactory.registerCounter(any(), eq("ptpu.statusChangeCounter"), anyString(), eq(TOTAL_TYPE)))
         .thenReturn(totalCounter)
-      whenever(meterFactory.registerCounter(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_TYPE)))
+      whenever(meterFactory.registerCounter(any(), eq("ptpu.statusChangeCounter"), anyString(), eq(SUCCESS_TYPE)))
         .thenReturn(successCounter)
-      whenever(meterFactory.registerCounter(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(FAIL_TYPE)))
+      whenever(meterFactory.registerCounter(any(), eq("ptpu.statusChangeCounter"), anyString(), eq(FAIL_TYPE)))
         .thenReturn(failCounter)
       whenever(
         meterFactory.registerRetryDistribution(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
