@@ -96,19 +96,19 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
 
   private val statusChangesTotalCounter = meterFactory.registerCounter(
     meterRegistry,
-    STATUS_CHANGE_METRIC,
+    "${STATUS_CHANGE_METRIC}Counter",
     "The number of status change updates received",
     TOTAL_TYPE
   )
   private val statusChangesFailedCounter = meterFactory.registerCounter(
     meterRegistry,
-    STATUS_CHANGE_METRIC,
+    "${STATUS_CHANGE_METRIC}Counter",
     "The number of failed status change updates ",
     FAIL_TYPE
   )
   private val statusChangesSuccessCounter = meterFactory.registerCounter(
     meterRegistry,
-    STATUS_CHANGE_METRIC,
+    "${STATUS_CHANGE_METRIC}Counter",
     "The number of successful status change updates ",
     SUCCESS_TYPE
   )

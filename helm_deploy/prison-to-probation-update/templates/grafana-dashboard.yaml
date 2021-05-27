@@ -218,19 +218,19 @@ data:
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
+              "expr": "sum(increase(ptpu_statusChangeCounter_total{type=\"total\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Total",
               "refId": "A"
             },
             {
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
+              "expr": "sum(increase(ptpu_statusChangeCounter_total{type=\"success\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Success",
               "refId": "B"
             },
             {
-              "expr": "sum(increase(ptpu_statusChange_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
+              "expr": "sum(increase(ptpu_statusChangeCounter_total{type=\"fail\",namespace=\"{{ .Release.Namespace }}\"}[$__range]))",
               "interval": "",
               "legendFormat": "Fail",
               "refId": "C"
