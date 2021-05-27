@@ -50,6 +50,14 @@ generic-service:
       SQS_AWS_DLQ_ACCESS_KEY_ID: "access_key_id"
       SQS_AWS_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
       SQS_DLQ_NAME: "sqs_ptpu_name"
+    sqs-hmpps-domain-events:
+      HMPPS_SQS_AWS_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_AWS_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_QUEUE_NAME: "sqs_queue_name"
+    sqs-hmpps-domain-events-dlq:
+      HMPPS_SQS_AWS_DLQ_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_AWS_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_DLQ_NAME: "sqs_queue_name"
     message-dynamodb-output:
       DYNAMODB_TABLENAME: "table_name"
       DYNAMODB_AWS_ACCESS_KEY_ID: "access_key_id"

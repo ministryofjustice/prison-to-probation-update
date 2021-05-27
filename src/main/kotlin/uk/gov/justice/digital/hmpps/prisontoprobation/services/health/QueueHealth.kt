@@ -93,16 +93,16 @@ abstract class QueueHealth(
 
 @Component
 class PrisonEventsQueueHealth(
-  @Autowired @Qualifier("awsSqsClient") private val awsSqsClient: AmazonSQS,
-  @Autowired @Qualifier("awsSqsDlqClient") private val awsSqsDlqClient: AmazonSQS,
-  @Value("\${sqs.queue.name}") private val queueName: String,
-  @Value("\${sqs.dlq.name}") private val dlqName: String
+  @Autowired @Qualifier("awsSqsClient") awsSqsClient: AmazonSQS,
+  @Autowired @Qualifier("awsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
+  @Value("\${sqs.queue.name}") queueName: String,
+  @Value("\${sqs.dlq.name}") dlqName: String
 ) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
 
 @Component
 class HMPPSEventsQueueHealth(
-  @Autowired @Qualifier("hmppsAwsSqsClient") private val awsSqsClient: AmazonSQS,
-  @Autowired @Qualifier("hmppsAwsSqsDlqClient") private val awsSqsDlqClient: AmazonSQS,
-  @Value("\${sqs.hmpps.queue.name}") private val queueName: String,
-  @Value("\${sqs.hmpps.dlq.name}") private val dlqName: String
+  @Autowired @Qualifier("hmppsAwsSqsClient") awsSqsClient: AmazonSQS,
+  @Autowired @Qualifier("hmppsAwsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
+  @Value("\${sqs.hmpps.queue.name}") queueName: String,
+  @Value("\${sqs.hmpps.dlq.name}") dlqName: String
 ) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
