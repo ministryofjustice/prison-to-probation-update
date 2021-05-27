@@ -17,12 +17,17 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegration
 @ExtendWith(SpringExtension::class)
 class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   @Autowired
-  private lateinit var queueHealth: QueueHealth
+  private lateinit var prisonEventsQueueHealth: PrisonEventsQueueHealth
+
+  @Autowired
+  private lateinit var hmppsEventsQueueHealth: HMPPSEventsQueueHealth
 
   @AfterEach
   fun tearDown() {
-    ReflectionTestUtils.setField(queueHealth, "queueName", queueName)
-    ReflectionTestUtils.setField(queueHealth, "dlqName", dlqName)
+    ReflectionTestUtils.setField(prisonEventsQueueHealth, "queueName", queueName)
+    ReflectionTestUtils.setField(prisonEventsQueueHealth, "dlqName", dlqName)
+    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "queueName", hmppsQueueName)
+    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "dlqName", hmppsDlqName)
   }
 
   @Test
@@ -91,7 +96,8 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
 
   @Test
   fun `Queue does not exist reports down`() {
-    ReflectionTestUtils.setField(queueHealth, "queueName", "missing_queue")
+    ReflectionTestUtils.setField(prisonEventsQueueHealth, "queueName", "missing_queue")
+    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "queueName", "missing_queue")
     subPing(200)
 
     webTestClient.get()
@@ -100,7 +106,8 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .is5xxServerError
       .expectBody()
-      .jsonPath("components.queueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
       .jsonPath("status").isEqualTo("DOWN")
   }
 
@@ -114,8 +121,10 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("components.queueHealth.status").isEqualTo("UP")
-      .jsonPath("components.queueHealth.status").isEqualTo(DlqStatus.UP.description)
+      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("UP")
+      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo(DlqStatus.UP.description)
+      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("UP")
+      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo(DlqStatus.UP.description)
       .jsonPath("status").isEqualTo("UP")
   }
 
@@ -129,7 +138,8 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("components.queueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
+      .jsonPath("components.prisonEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
   }
 
   @Test
@@ -144,8 +154,10 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .is5xxServerError
       .expectBody()
       .jsonPath("status").isEqualTo("DOWN")
-      .jsonPath("components.queueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
+      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
+      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
   }
 
   @Test
@@ -159,13 +171,15 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .is5xxServerError
       .expectBody()
-      .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
+      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
   }
 
   @Test
   fun `Dlq not found reports dlq down`() {
     subPing(200)
-    ReflectionTestUtils.setField(queueHealth, "dlqName", "missing_queue")
+    ReflectionTestUtils.setField(prisonEventsQueueHealth, "dlqName", "missing_queue")
+    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "dlqName", "missing_queue")
 
     webTestClient.get()
       .uri("/health")
@@ -173,7 +187,8 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .is5xxServerError
       .expectBody()
-      .jsonPath("components.queueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
+      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
   }
 
   @Test
@@ -241,9 +256,13 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   }
 
   private fun mockQueueWithoutRedrivePolicyAttributes() {
-    val queueName = ReflectionTestUtils.getField(queueHealth, "queueName") as String
-    val queueUrl = awsSqsClient.getQueueUrl(queueName)
-    whenever(awsSqsClient.getQueueAttributes(GetQueueAttributesRequest(queueUrl.queueUrl).withAttributeNames(listOf(QueueAttributeName.All.toString()))))
+    val prisonEventsQueueName = ReflectionTestUtils.getField(prisonEventsQueueHealth, "queueName") as String
+    val prisonEventsQueueUrl = awsSqsClient.getQueueUrl(prisonEventsQueueName)
+    whenever(awsSqsClient.getQueueAttributes(GetQueueAttributesRequest(prisonEventsQueueUrl.queueUrl).withAttributeNames(listOf(QueueAttributeName.All.toString()))))
+      .thenReturn(GetQueueAttributesResult())
+    val hmppsEventsQueueName = ReflectionTestUtils.getField(hmppsEventsQueueHealth, "queueName") as String
+    val hmppsEventsQueueUrl = hmppsAwsSqsClient.getQueueUrl(hmppsEventsQueueName)
+    whenever(hmppsAwsSqsClient.getQueueAttributes(GetQueueAttributesRequest(hmppsEventsQueueUrl.queueUrl).withAttributeNames(listOf(QueueAttributeName.All.toString()))))
       .thenReturn(GetQueueAttributesResult())
   }
 }

@@ -8,6 +8,8 @@ aws:
 
 sqs:
   endpoint.url: http://localhost:4576
+sqs.hmpps:
+  endpoint.url: http://localhost:4576
 
 dynamodb:
   endpoint: http://localhost:4569

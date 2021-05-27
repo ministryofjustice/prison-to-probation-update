@@ -37,12 +37,11 @@ enum class QueueAttributes(val awsName: String, val healthName: String) {
   MESSAGES_ON_DLQ(ApproximateNumberOfMessages.toString(), "MessagesOnDLQ")
 }
 
-@Component
-class QueueHealth(
-  @Autowired @Qualifier("awsSqsClient") private val awsSqsClient: AmazonSQS,
-  @Autowired @Qualifier("awsSqsDlqClient") private val awsSqsDlqClient: AmazonSQS,
-  @Value("\${sqs.queue.name}") private val queueName: String,
-  @Value("\${sqs.dlq.name}") private val dlqName: String
+abstract class QueueHealth(
+  private val awsSqsClient: AmazonSQS,
+  private val awsSqsDlqClient: AmazonSQS,
+  private val queueName: String,
+  private val dlqName: String
 ) : HealthIndicator {
 
   companion object {
@@ -91,3 +90,19 @@ class QueueHealth(
   private fun getQueueAttributesRequest(url: GetQueueUrlResult) =
     GetQueueAttributesRequest(url.queueUrl).withAttributeNames(QueueAttributeName.All)
 }
+
+@Component
+class PrisonEventsQueueHealth(
+  @Autowired @Qualifier("awsSqsClient") awsSqsClient: AmazonSQS,
+  @Autowired @Qualifier("awsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
+  @Value("\${sqs.queue.name}") queueName: String,
+  @Value("\${sqs.dlq.name}") dlqName: String
+) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
+
+@Component
+class HMPPSEventsQueueHealth(
+  @Autowired @Qualifier("hmppsAwsSqsClient") awsSqsClient: AmazonSQS,
+  @Autowired @Qualifier("hmppsAwsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
+  @Value("\${sqs.hmpps.queue.name}") queueName: String,
+  @Value("\${sqs.hmpps.dlq.name}") dlqName: String
+) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)

@@ -18,7 +18,19 @@ class JmsLocalStackConfig(private val localStackContainer: LocalStackContainer) 
     .build()
 
   @Bean
+  fun hmppsAwsSqsClient(): AmazonSQS = AmazonSQSClientBuilder.standard()
+    .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+    .withCredentials(localStackContainer.defaultCredentialsProvider)
+    .build()
+
+  @Bean
   fun awsSqsDlqClient(): AmazonSQS = AmazonSQSClientBuilder.standard()
+    .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
+    .withCredentials(localStackContainer.defaultCredentialsProvider)
+    .build()
+
+  @Bean
+  fun hmppsAwsSqsDlqClient(): AmazonSQS = AmazonSQSClientBuilder.standard()
     .withEndpointConfiguration(localStackContainer.getEndpointConfiguration(LocalStackContainer.Service.SQS))
     .withCredentials(localStackContainer.defaultCredentialsProvider)
     .build()

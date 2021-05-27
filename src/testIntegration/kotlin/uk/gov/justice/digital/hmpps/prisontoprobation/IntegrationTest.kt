@@ -46,11 +46,25 @@ abstract class IntegrationTest {
   internal lateinit var queueName: String
 
   @SpyBean
+  @Qualifier("hmppsAwsSqsClient")
+  protected lateinit var hmppsAwsSqsClient: AmazonSQS
+
+  @Value("\${sqs.hmpps.queue.name}")
+  internal lateinit var hmppsQueueName: String
+
+  @SpyBean
   @Qualifier("awsSqsDlqClient")
   internal lateinit var awsSqsDlqClient: AmazonSQS
 
+  @SpyBean
+  @Qualifier("hmppsAwsSqsDlqClient")
+  internal lateinit var hmppsAwsSqsDlqClient: AmazonSQS
+
   @Value("\${sqs.dlq.name}")
   internal lateinit var dlqName: String
+
+  @Value("\${sqs.hmpps.dlq.name}")
+  internal lateinit var hmppsDlqName: String
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
