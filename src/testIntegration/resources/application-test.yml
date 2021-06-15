@@ -6,10 +6,15 @@ graceful:
 aws:
   provider: embedded-localstack
 
-sqs:
-  endpoint.url: http://localhost:4576
-sqs.hmpps:
-  endpoint.url: http://localhost:4576
+hmpps.sqs:
+  provider: localstack
+  localstackUrl: http://localhost:4576
+  dpsQueue:
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
+  hmppsQueue:
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
 
 dynamodb:
   endpoint: http://localhost:4569

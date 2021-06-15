@@ -1,10 +1,14 @@
 graceful:
   shutdown.enabled: false
 
-sqs:
-  endpoint.url: http://localhost:4576
-sqs.hmpps:
-  endpoint.url: http://localhost:4576
+hmpps.sqs:
+  localstackUrl: http://localhost:4576
+  dpsQueue:
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
+  hmppsQueue:
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
 
 oauth:
   endpoint.url: http://localhost:8090/auth
