@@ -140,4 +140,4 @@ data class Conviction(val index: String, val active: Boolean, val sentence: Sent
 
 data class Sentence(val startDate: LocalDate?)
 
-data class PrisonerReceivedDetails(val nomsNumber: String, val reason: String, val source: String?, val details: String?)
+data class PrisonerReceivedDetails(val nomsNumber: String, val reason: String, val source: String? = null, val details: String? = null)

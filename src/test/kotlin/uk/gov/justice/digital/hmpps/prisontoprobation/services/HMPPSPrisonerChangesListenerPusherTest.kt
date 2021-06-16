@@ -25,6 +25,12 @@ class HMPPSPrisonerChangesListenerPusherTest {
   }
 
   @Test
+  fun `will call community api for a prisoner received event with minimum data`() {
+    pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReceivedNoSourceOrDetails.json".readResourceAsText())
+    verify(communityService).prisonerReceived("A5194DY", PrisonerReceivedDetails("A5194DY", "RECALL"))
+  }
+
+  @Test
   internal fun `will not call service for events we don't understand`() {
     pusher.pushHMPPSPrisonUpdateToProbation("/messages/imprisonmentStatusChanged.json".readResourceAsText())
     verifyNoMoreInteractions(communityService)
