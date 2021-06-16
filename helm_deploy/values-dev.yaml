@@ -17,6 +17,7 @@ generic-service:
     PRISONTOPROBATION_MESSAGE_PROCESSOR_DELAY: 1000
     # small delay to aid testing
     PRISONTOPROBATION_HOLD_BACK_DURATION: "1m"
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
 
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service-dev
