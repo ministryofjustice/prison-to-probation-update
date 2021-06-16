@@ -89,6 +89,16 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
       .block()
   }
+
+  fun prisonerReceived(offenderNo: String, prisonerReceived: PrisonerReceivedDetails): OffenderDetail? {
+    return webClient.put()
+      .uri("/secure/offenders/nomsNumber/$offenderNo/received")
+      .bodyValue(prisonerReceived)
+      .retrieve()
+      .bodyToMono(OffenderDetail::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
+      .block()
+  }
 }
 
 data class UpdateOffenderNomsNumber(
@@ -126,3 +136,5 @@ data class ReplaceCustodyKeyDates(
 data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null, val custody: Custody? = null)
 
 data class Sentence(val startDate: LocalDate?)
+
+data class PrisonerReceivedDetails(val nomsNumber: String, val reason: String, val source: String, val details: String)
