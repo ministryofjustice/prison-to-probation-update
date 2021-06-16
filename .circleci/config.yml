@@ -65,6 +65,7 @@ jobs:
       name: hmpps/localstack
       jdk_tag: "16.0"
       services: "sqs,sns,dynamodb"
+      localstack_tag: "0.12.10"
     steps:
       - run-tests:
           gradle-task: testIntegration
@@ -73,6 +74,7 @@ jobs:
       name: hmpps/localstack
       jdk_tag: "16.0"
       services: "sqs,sns,dynamodb"
+      localstack_tag: "0.12.10"
     steps:
       - run-tests:
           gradle-task: testE2e

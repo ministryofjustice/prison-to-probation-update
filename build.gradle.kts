@@ -55,6 +55,7 @@ dependencies {
   testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.5.0")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
+  testImplementation("org.mockito:mockito-inline:3.10.0")
 
   "testE2eImplementation"(sourceSets.getByName("testIntegration").output)
 }
