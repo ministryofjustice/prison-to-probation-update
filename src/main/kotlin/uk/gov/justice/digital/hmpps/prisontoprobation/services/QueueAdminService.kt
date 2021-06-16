@@ -8,8 +8,8 @@ import com.google.gson.Gson
 import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
 import uk.gov.justice.digital.hmpps.prisontoprobation.config.TelemetryEvents
 
 @Service
@@ -17,8 +17,7 @@ class QueueAdminService(
   private val awsSqsClient: AmazonSQS,
   private val awsSqsDlqClient: AmazonSQS,
   private val telemetryClient: TelemetryClient,
-  @Value("\${sqs.queue.name}") private val eventQueueName: String,
-  @Value("\${sqs.dlq.name}") private val eventDlqName: String,
+  private val sqsConfigProperties: SqsConfigProperties,
   private val gson: Gson
 ) {
 
@@ -26,6 +25,8 @@ class QueueAdminService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
+  val eventQueueName: String by lazy { sqsConfigProperties.dpsQueue.queueName }
+  val eventDlqName: String by lazy { sqsConfigProperties.dpsQueue.dlqName }
   val eventQueueUrl: String by lazy { awsSqsClient.getQueueUrl(eventQueueName).queueUrl }
   val eventDlqUrl: String by lazy { awsSqsDlqClient.getQueueUrl(eventDlqName).queueUrl }
 

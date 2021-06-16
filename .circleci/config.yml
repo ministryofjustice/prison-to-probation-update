@@ -13,13 +13,10 @@ commands:
       - hmpps/install_aws_cli
       - run:
           name: Wait for SQS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4576
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4566
       - run:
           name: Wait for SNS to be ready
-          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4575
-      - run:
-          name: Set up queues
-          command: src/testIntegration/resources/localstack/setup-sns.sh
+          command: curl -4 --connect-timeout 30 --retry-connrefused --retry 20 --retry-delay 5 http://localhost:4566
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}

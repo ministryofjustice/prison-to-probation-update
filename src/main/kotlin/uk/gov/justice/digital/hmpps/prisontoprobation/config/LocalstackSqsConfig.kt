@@ -3,6 +3,9 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.config
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.AnonymousAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
+import com.amazonaws.services.sns.AmazonSNS
+import com.amazonaws.services.sns.AmazonSNSClientBuilder
+import com.amazonaws.services.sns.model.SubscribeRequest
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
 import com.amazonaws.services.sqs.model.CreateQueueRequest
@@ -19,37 +22,98 @@ class LocalstackSqsConfig {
     private val log = LoggerFactory.getLogger(this::class.java)
   }
 
-  @Bean("awsSqsClient")
-  fun awsSqsClientLocalstack(sqsConfigProperties: SqsConfigProperties, awsSqsDlqClient: AmazonSQS): AmazonSQS =
+  @Bean
+  fun awsSnsClient(sqsConfigProperties: SqsConfigProperties): AmazonSNS =
     with(sqsConfigProperties) {
-      localstackAmazonSQS(localstackUrl, region)
-        .also { sqsClient -> createMainQueue(sqsClient, awsSqsDlqClient, dpsQueue.queueName, dpsQueue.dlqName) }
-        .also { log.info("Created localstack sqs client for queue ${dpsQueue.queueName}") }
+      localstackAmazonSNS(snsUrl, region)
+        .also { snsClient -> snsClient.createTopic(dpsQueue.topicName) }
+        .also { log.info("Created localstack sns topic with name ${dpsQueue.topicName}") }
     }
 
-  @Bean("hmppsAwsSqsClient")
-  fun hmppsAwsSqsClientLocalstack(sqsConfigProperties: SqsConfigProperties, hmppsAwsSqsDlqClient: AmazonSQS): AmazonSQS =
+  @Bean("awsSqsClient")
+  fun awsSqsClient(
+    sqsConfigProperties: SqsConfigProperties,
+    awsSqsDlqClient: AmazonSQS,
+    awsSnsClient: AmazonSNS,
+  ): AmazonSQS =
     with(sqsConfigProperties) {
-      localstackAmazonSQS(localstackUrl, region)
-        .also { sqsClient -> createMainQueue(sqsClient, hmppsAwsSqsDlqClient, hmppsQueue.queueName, hmppsQueue.dlqName) }
-        .also { log.info("Created localstack sqs client for queue ${hmppsQueue.queueName}") }
+      localstackAmazonSQS(sqsUrl, region)
+        .also { sqsClient -> createMainQueue(sqsClient, awsSqsDlqClient, dpsQueue.queueName, dpsQueue.dlqName) }
+        .also { log.info("Created localstack sqs client for queue ${dpsQueue.queueName}") }
+        .also {
+          subscribeToTopic(
+            awsSnsClient, snsUrl, region, dpsQueue.topicName, dpsQueue.queueName,
+            mapOf("FilterPolicy" to """{"eventType":[ "EXTERNAL_MOVEMENT_RECORD-INSERTED", "IMPRISONMENT_STATUS-CHANGED", "SENTENCE_DATES-CHANGED", "BOOKING_NUMBER-CHANGED"] }""")
+          )
+        }
+        .also { log.info("Queue ${dpsQueue.queueName} has subscribed to dps topic ${dpsQueue.topicName}") }
     }
 
   @Bean("awsSqsDlqClient")
-  fun awsSqsDlqClientLocalstack(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
+  fun awsSqsDlqClient(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
     with(sqsConfigProperties) {
-      localstackAmazonSQS(localstackUrl, region)
+      localstackAmazonSQS(sqsUrl, region)
         .also { dlqSqsClient -> dlqSqsClient.createQueue(dpsQueue.dlqName) }
         .also { log.info("Created localstack dlq sqs client for dlq ${dpsQueue.dlqName}") }
     }
 
-  @Bean("hmppsAwsSqsDlqClient")
-  fun hmppsAwsSqsDlqClientLocalstack(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
+  @Bean
+  fun hmppsAwsSnsClient(sqsConfigProperties: SqsConfigProperties): AmazonSNS =
     with(sqsConfigProperties) {
-      localstackAmazonSQS(localstackUrl, region)
+      localstackAmazonSNS(sqsConfigProperties.snsUrl, sqsConfigProperties.region)
+        .also { snsClient -> snsClient.createTopic(hmppsQueue.topicName) }
+        .also { log.info("Created localstack sns topic with name ${hmppsQueue.topicName}") }
+    }
+
+  @Bean("hmppsAwsSqsClient")
+  fun hmppsAwsSqsClient(
+    sqsConfigProperties: SqsConfigProperties,
+    hmppsAwsSqsDlqClient: AmazonSQS,
+    hmppsAwsSnsClient: AmazonSNS,
+  ): AmazonSQS =
+    with(sqsConfigProperties) {
+      localstackAmazonSQS(sqsUrl, region)
+        .also { sqsClient -> createMainQueue(sqsClient, hmppsAwsSqsDlqClient, hmppsQueue.queueName, hmppsQueue.dlqName) }
+        .also { log.info("Created localstack sqs client for queue ${hmppsQueue.queueName}") }
+        .also {
+          subscribeToTopic(
+            hmppsAwsSnsClient, snsUrl, region, hmppsQueue.topicName, hmppsQueue.queueName,
+            mapOf("FilterPolicy" to """{"eventType":[ "PRISONER_RELEASED", "PRISONER_RECEIVED"] }""")
+          )
+        }
+        .also { log.info("Queue ${hmppsQueue.queueName} has subscribed to hmpps topic ${hmppsQueue.topicName}") }
+    }
+
+  @Bean("hmppsAwsSqsDlqClient")
+  fun hmppsAwsSqsDlqClient(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
+    with(sqsConfigProperties) {
+      localstackAmazonSQS(sqsUrl, region)
         .also { dlqSqsClient -> dlqSqsClient.createQueue(hmppsQueue.dlqName) }
         .also { log.info("Created localstack dlq sqs client for dlq ${hmppsQueue.dlqName}") }
     }
+
+  private fun subscribeToTopic(
+    awsSnsClient: AmazonSNS,
+    snsUrl: String,
+    region: String,
+    topicName: String,
+    queueName: String,
+    attributes: Map<String, String>
+  ) =
+    awsSnsClient.subscribe(
+      SubscribeRequest()
+        .withTopicArn(localstackTopicArn(region, topicName))
+        .withProtocol("sqs")
+        .withEndpoint("$snsUrl/queue/$queueName")
+        .withAttributes(attributes)
+    )
+
+  private fun localstackTopicArn(region: String, topicName: String) = "arn:aws:sns:$region:000000000000:$topicName"
+
+  private fun localstackAmazonSNS(localstackUrl: String, region: String) =
+    AmazonSNSClientBuilder.standard()
+      .withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration(localstackUrl, region))
+      .build()
 
   private fun localstackAmazonSQS(localstackUrl: String, region: String) =
     AmazonSQSClientBuilder.standard()

@@ -229,7 +229,7 @@ internal class MessageRetryServiceTest {
 
     verify(messageRepository).save(
       check {
-        assertThat(it.processedDate).isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
+        assertThat(it.processedDate).isCloseTo(LocalDateTime.now(), byLessThan(1, ChronoUnit.SECONDS))
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
           LocalDate.now().plusDays(30)
         )

@@ -126,16 +126,16 @@ hmpps.sqs:
     dlqAccessKeyId: ${sqs.hmpps.aws.dlq.access.key.id}
     dlqSecretAccessKey: ${sqs.hmpps.aws.dlq.secret.access.key}
 
-sqs:
-  provider: ${aws.provider}
-  queue.name: prison_to_probation_queue
-  dlq.name: prison_to_probation_dlq
-  endpoint.region: ${aws.region}
-sqs.hmpps:
-  provider: ${aws.provider}
-  queue.name: prison_to_probation_hmpps_queue
-  dlq.name: prison_to_probation_hmpps_dlq
-  endpoint.region: ${aws.region}
+#sqs:
+#  provider: ${aws.provider}
+#  queue.name: prison_to_probation_queue
+#  dlq.name: prison_to_probation_dlq
+#  endpoint.region: ${aws.region}
+#sqs.hmpps:
+#  provider: ${aws.provider}
+#  queue.name: prison_to_probation_hmpps_queue
+#  dlq.name: prison_to_probation_hmpps_dlq
+#  endpoint.region: ${aws.region}
 
 dynamodb:
   region: ${aws.region}

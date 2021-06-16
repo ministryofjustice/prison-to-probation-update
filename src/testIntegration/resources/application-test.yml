@@ -4,20 +4,24 @@ graceful:
   shutdown.enabled: false
 
 aws:
-  provider: embedded-localstack
+#  provider: embedded-localstack TODO reinstate to test testcontainers localstack
+  provider: localstack
 
 hmpps.sqs:
-  provider: localstack
-  localstackUrl: http://localhost:4576
+  provider: ${aws.provider}
+  sqsUrl: http://localhost:4566
+  snsUrl: http://localhost:4566
   dpsQueue:
+    topicName: ${random.uuid}
     queueName: ${random.uuid}
     dlqName: ${random.uuid}
   hmppsQueue:
+    topicName: ${random.uuid}
     queueName: ${random.uuid}
     dlqName: ${random.uuid}
 
 dynamodb:
-  endpoint: http://localhost:4569
+  endpoint: http://localhost:4566
   tableName: cp-message
   schedule:
     tableName: cp-schedule

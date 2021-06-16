@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.Build
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput
+import com.amazonaws.services.dynamodbv2.model.ResourceInUseException
 import com.amazonaws.services.dynamodbv2.model.TimeToLiveSpecification
 import com.amazonaws.services.dynamodbv2.model.UpdateTimeToLiveRequest
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBUtils
@@ -93,7 +94,11 @@ class DynamoDBConfig {
       .withEndpointConfiguration(EndpointConfiguration(amazonDynamoDBEndpoint, amazonDynamoDBRegion))
       .build()
 
-    DynamoDBUtils.createLockTable(dynamoDB, tableName, ProvisionedThroughput(1L, 1L))
+    try {
+      DynamoDBUtils.createLockTable(dynamoDB, tableName, ProvisionedThroughput(1L, 1L))
+    } catch (e: ResourceInUseException) {
+      // ignoring - this means the table already exists which is fine
+    }
     return dynamoDB
   }
 
@@ -121,15 +126,19 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
   val tableRequest: CreateTableRequest = dynamoDBMapper
     .generateCreateTableRequest(Message::class.java)
   tableRequest.provisionedThroughput = ProvisionedThroughput(1L, 1L)
-  tableRequest.tableName = tableName
-  dynamoDB.createTable(tableRequest)
-  dynamoDB.updateTimeToLive(
-    UpdateTimeToLiveRequest()
-      .withTableName(tableName)
-      .withTimeToLiveSpecification(
-        TimeToLiveSpecification()
-          .withAttributeName("deleteBy")
-          .withEnabled(true)
-      )
-  )
+  try {
+    tableRequest.tableName = tableName
+    dynamoDB.createTable(tableRequest)
+    dynamoDB.updateTimeToLive(
+      UpdateTimeToLiveRequest()
+        .withTableName(tableName)
+        .withTimeToLiveSpecification(
+          TimeToLiveSpecification()
+            .withAttributeName("deleteBy")
+            .withEnabled(true)
+        )
+    )
+  } catch (e: ResourceInUseException) {
+    // Ignoring - this means the table already exists which is fine
+  }
 }

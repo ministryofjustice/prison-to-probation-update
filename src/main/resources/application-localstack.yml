@@ -2,11 +2,14 @@ graceful:
   shutdown.enabled: false
 
 hmpps.sqs:
-  localstackUrl: http://localhost:4576
+  sqsUrl: http://localhost:4566
+  snsUrl: http://localhost:4566
   dpsQueue:
+    topicName: ${random.uuid}
     queueName: ${random.uuid}
     dlqName: ${random.uuid}
   hmppsQueue:
+    topicName: ${random.uuid}
     queueName: ${random.uuid}
     dlqName: ${random.uuid}
 
@@ -23,7 +26,7 @@ offender-search:
   endpoint.url: http://localhost:8097
 
 dynamodb:
-  endpoint: http://localhost:4569
+  endpoint: http://localhost:4566
   tableName: cp-message
   schedule:
     tableName: cp-schedule
