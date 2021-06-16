@@ -90,7 +90,9 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .block()
   }
 
-  fun prisonerReceived(offenderNo: String, prisonerReceived: PrisonerReceivedDetails): OffenderDetail? {
+  fun prisonerReceived(offenderNo: String, prisonerReceived: PrisonerReceivedDetails) {
+    // TODO (Reinstate call to community api when it has been written)
+    /*
     return webClient.put()
       .uri("/secure/offenders/nomsNumber/$offenderNo/received")
       .bodyValue(prisonerReceived)
@@ -98,6 +100,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .bodyToMono(OffenderDetail::class.java)
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
       .block()
+    */
   }
 }
 

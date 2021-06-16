@@ -19,10 +19,9 @@ class ExternalMovementService(
 
   fun processPrisonerReceived(message: String) {
     val offenderMessage = gson.fromJson(message, OffenderMessage::class.java)
-    // TODO (Reinstate call to community api when written)
-    //  communityService.prisonerReceived(
-    //  offenderMessage.additionalInformation.nomsNumber,offenderMessage.additionalInformation
-    // )
+    communityService.prisonerReceived(
+      offenderMessage.additionalInformation.nomsNumber, offenderMessage.additionalInformation
+    )
     telemetryClient.trackEvent(
       "P2PPrisonerReceived",
       mapOf(
