@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("!no-queue-listener")
-class HMPPSPrisonerChangesListenerPusher() {
+class HMPPSPrisonerChangesListenerPusher(
+  private val externalMovementService: ExternalMovementService,
+) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     val gson: Gson = GsonBuilder().create()
@@ -22,6 +24,11 @@ class HMPPSPrisonerChangesListenerPusher() {
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, HMPPSMessage::class.java)
     val eventType = messageAttributes.eventType.Value
     log.info("Received message $message $messageId type $eventType")
+
+    when (eventType) {
+      "prison-offender-events.prisoner.received" -> externalMovementService.processPrisonerReceived(message)
+      else -> log.info("Received a message wasn't expected $eventType")
+    }
   }
 }
 
