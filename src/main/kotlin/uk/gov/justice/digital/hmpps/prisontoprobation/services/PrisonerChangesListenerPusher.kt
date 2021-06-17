@@ -20,7 +20,7 @@ class PrisonerChangesListenerPusher(
     val gson: Gson = GsonBuilder().create()
   }
 
-  @JmsListener(destination = "#{@'hmpps.sqs-uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties'.dpsQueue.queueName}")
+  @JmsListener(destination = "#{@'hmpps.sqs-uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties'.dpsQueue.queueName}", containerFactory = "jmsListenerContainerFactory")
   fun pushPrisonUpdateToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
