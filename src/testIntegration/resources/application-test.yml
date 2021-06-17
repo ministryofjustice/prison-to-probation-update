@@ -20,11 +20,11 @@ hmpps.sqs:
     queueName: ${random.uuid}
     dlqName: ${random.uuid}
 
-dynamodb:
-  endpoint: http://localhost:4566
-  tableName: cp-message
-  schedule:
-    tableName: cp-schedule
+hmpps.dynamodb:
+  provider: ${aws.provider}
+  localstackUrl: http://localhost:4566
+  tableName: ${random.uuid}
+  scheduleTableName: ${random.uuid}
 
 prisontoprobation:
   client:

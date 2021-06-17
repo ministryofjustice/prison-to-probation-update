@@ -2,6 +2,7 @@ graceful:
   shutdown.enabled: false
 
 hmpps.sqs:
+  provider: ${aws.provider}
   sqsUrl: http://localhost:4566
   snsUrl: http://localhost:4566
   dpsQueue:
@@ -25,11 +26,11 @@ community:
 offender-search:
   endpoint.url: http://localhost:8097
 
-dynamodb:
-  endpoint: http://localhost:4566
-  tableName: cp-message
-  schedule:
-    tableName: cp-schedule
+hmpps.dynamodb:
+  provider: ${aws.provider}
+  localstackUrl: http://localhost:4566
+  tableName: ${random.uuid}
+  scheduleTableName: ${random.uuid}
 
 aws:
   provider: localstack
