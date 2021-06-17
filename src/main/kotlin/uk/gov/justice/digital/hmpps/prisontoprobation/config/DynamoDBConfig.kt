@@ -51,7 +51,6 @@ class DynamoDBConfig {
         .withEndpointConfiguration(EndpointConfiguration(localstackUrl, region))
         .build()
       createTable(tableName, dynamoDB)
-      log.info("Created main DynamoDB table $tableName")
       return dynamoDB
     }
   }
@@ -78,9 +77,9 @@ class DynamoDBConfig {
 
       try {
         DynamoDBUtils.createLockTable(dynamoDB, scheduleTableName, ProvisionedThroughput(1L, 1L))
-        log.info("Created DynamoDB lock table $tableName")
+        log.info("Created DynamoDB lock table $scheduleTableName")
       } catch (e: ResourceInUseException) {
-        log.warn("We are using a random lock table name within each Spring context - so not expecting tables to already exist. Please investigate!")
+        log.warn("Failed to create table $scheduleTableName as it already exists - expected when running locally but could indicate an error in tests")
       }
       return dynamoDB
     }
@@ -101,6 +100,7 @@ class DynamoDBConfig {
   }
 }
 
+val createTableLog = LoggerFactory.getLogger("createTable")
 fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
   val dynamoDBMapper = DynamoDBMapper(dynamoDB)
   val tableRequest: CreateTableRequest = dynamoDBMapper
@@ -109,6 +109,7 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
   try {
     tableRequest.tableName = tableName
     dynamoDB.createTable(tableRequest)
+    createTableLog.info("Created DynamoDB table $tableName")
     dynamoDB.updateTimeToLive(
       UpdateTimeToLiveRequest()
         .withTableName(tableName)
@@ -119,6 +120,6 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
         )
     )
   } catch (e: ResourceInUseException) {
-    DynamoDBConfig.log.warn("We are using random table names within each Spring context - so not expecting tables to already exist. Please investigate!")
+    createTableLog.warn("Failed to create table $tableName as it already exists - expected when running locally but could indicate an error in tests")
   }
 }

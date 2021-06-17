@@ -3,22 +3,21 @@ graceful:
 
 hmpps.sqs:
   provider: ${aws.provider}
-  sqsUrl: http://localhost:4566
-  snsUrl: http://localhost:4566
+  localstackUrl: http://localhost:4566
   dpsQueue:
-    topicName: ${random.uuid}
-    queueName: ${random.uuid}
-    dlqName: ${random.uuid}
+    topicName: dps-topic
+    queueName: dps-queue
+    dlqName: dps-dlq
   hmppsQueue:
-    topicName: ${random.uuid}
-    queueName: ${random.uuid}
-    dlqName: ${random.uuid}
+    topicName: hmpps-topic
+    queueName: hmpps-queue
+    dlqName: hmpps-dlq
 
 hmpps.dynamodb:
   provider: ${aws.provider}
   localstackUrl: http://localhost:4566
-  tableName: ${random.uuid}
-  scheduleTableName: ${random.uuid}
+  tableName: main-table
+  scheduleTableName: schedule-table
 
 oauth:
   endpoint.url: http://localhost:8090/auth
