@@ -8,7 +8,7 @@ Self-contained fat-jar micro-service to listen for events from Prison systems (N
 
 ### Pre-requisite
 
-`Docker` Even when running the tests docker is used by the integration test to load `localstack` (for AWS services). The build will automatically download and run `localstack` on your behalf.
+`Docker` is used to run `localstack` for both running locally and integration tests
 
 ### Building
 
@@ -16,17 +16,16 @@ Self-contained fat-jar micro-service to listen for events from Prison systems (N
 
 ### Running
 
-`localstack` is used to emulate the AWS SQS service. When running the integration test this will be started automatically. If you want the tests to use an already running version of `locastack` run the tests with the environment `AWS_PROVIDER=localstack`. This has the benefit of running the test quicker without the overhead of starting the `localstack` container.
-
-Any commands in `src/testIntegraton/resources/localstack/setup-sns.sh` will be run when `localstack` starts, so this should contain commands to create the appropriate queues.
-
-Localstack, AWS and localstack in TestContainers all use different bean config functions. So for each AWSSQSClient there will be 3 versions of this config. The TestContainers version only gets used in tests therefore it is defined in JmsLocalStackConfig as a test resource class.
+Localstack and AWS use different bean config functions. So for each AWSSQSClient there will be 2 versions of this
+config.
 
 Running all services locally:
+
 ```bash
 TMPDIR=/private$TMPDIR docker-compose up 
 ```
-Queues and topics will automatically be created when the `localstack` container starts.
+
+Queues, topics and the tables will automatically be created when the `localstack` container starts.
 
 Running all services except this application (hence allowing you to run this in the IDE)
 
@@ -36,21 +35,45 @@ TMPDIR=/private$TMPDIR docker-compose up --scale prison-to-probation-update=0
 
 Check the docker-compose file for sample environment variables to run the application locally.
 
-Or to just run `localstack` which is useful when running against an a non-local test system
+Or to just run `localstack` which is useful when running against a non-local test system
 
 ```bash
 TMPDIR=/private$TMPDIR docker-compose up localstack 
 ```
 
-In all of the above the application should use the host network to communicate with `localstack` since AWS Client will try to read messages from localhost rather than the `localstack` network.
+In all of the above the application should use the host network to communicate with `localstack` since AWS Client will
+try to read messages from localhost rather than the `localstack` network.
+
+#### IMPORTANT
+
+*TL;DR* When running locally with `localstack` we assign random names to queues, topics and tables. Check the
+application log output to find the values if required for manual testing.
+
+There is an issue with Spring such that when a test requires a new context (e.g. when configuration properties change),
+the old (cached) context continues to a) read messages using the JMS listener and b) run scheduled jobs that read from
+the DynamoDB database.
+
+To workaround this issue we use random queue names, topic names and table names every time we start the application.
+This means that tests running in different Spring contexts cannot interfere with each other.
+
+So if you get tempted to remove the random names be aware that you are walking into a world of testing pain. Don't do
+it.
+
+There is a downside to using random names as it becomes hard to find the queue / topic / table if you wish to perform
+some manual testing. In this case please check the log output where the random names should be announced. See classes
+`LocalstackSqsConfig` and `DynamoDBConfig` to find the log outputs.
+
 ### Experimenting with messages
 
-There are two handy scripts to add messages to the queue with data that matches either the T3 test environment or data in the test Docker version of the apps
+There are two handy scripts to add messages to the queue with data that matches either the T3 test environment or data
+in the test Docker version of the apps
 
 T3 test data:
+
 ```bash
 ./create-prison-movements-messages-t3.bash 
 ```
+
 local test data:
 ```bash
 ./create-prison-movements-messages-local.bash 
@@ -58,8 +81,8 @@ local test data:
 
 ### Testing
 
-There are 4 source sets to handle the unit, integration, e2e and smoke tests. Note that `check` only runs the unit tests
-and you have to run the integration and e2e tests manually.
+There are 3 source sets to handle the unit, integration and smoke tests. Note that `check` only runs the unit tests and
+you have to run the integration tests manually.
 
 #### Unit Tests
 
@@ -71,46 +94,10 @@ The source set `testIntegration` contains the integration tests. These are run w
 command `./gradlew testIntegration` but are NOT included in the check when running command `./gradlew check` and so must
 be run manually.
 
-Note that the integration tests currently use TestContainers to start localstack and so you do not need to start
-localstack manually.
-
-If you DO wish to run localstack manually (as is done in the Circle build) then you must:
+You first need to run localstack manually (as is done in the Circle build):
 
 * start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
-* run the tests with command `AWS_PROVIDER=localstack ./gradlew testIntegration`
-
-##### IMPORTANT
-
-TL;DR - Integration tests do not start the JMS listener and do not start the scheduled DynamoDB message processor. If
-you need these then write an E2E test.
-
-There is an issue with Spring such that when a test requires a new context (e.g. when configuration properties change),
-the old (cached) context continues to a) read messages using the JMS listener and b) run scheduled jobs that read from
-the DynamoDB database. The proper "Spring way" to handle this issue is to use `@DirtiesContext` to stop the old context.
-Unfortunately a separate issue exists where using `@DirtiesContext` causes the Netty executor pool to be closed and the
-new context is unable to make any outbound requests.
-
-The upshot of this unfortunate combination of issues is that tests that require the JMS listener / DynamoDB scheduler to
-NOT run are corrupted by the JMS listener / DynamoDB scheduler running in the cached context.
-
-Therefore you mustn't add any tests to the `testIntegration` test module that use the real JMS listener or DynamoDB
-scheduler - these should be added to the `testE2e` test module.
-
-#### E2e Tests
-
-The source set `testE2e` contains end to end tests. These are defined as tests that require a real JMS listener and real
-DynamoDB scheduled tasks to run.
-
-These tests are run with command `./gradlew testE2e` but are NOT included in the check when running
-command `./gradlew check` and so must be run manually.
-
-Note that the end to end tests currently use TestContainers to start localstack and so you do not need to start
-localstack manually.
-
-If you DO wish to run localstack manually (as is done in the Circle build) then you must:
-
-* start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
-* run the tests with command `AWS_PROVIDER=localstack ./gradlew testE2e`
+* run the tests with command `./gradlew testIntegration`
 
 #### Smoke Tests
 

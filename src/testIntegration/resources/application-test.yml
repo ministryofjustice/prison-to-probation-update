@@ -4,7 +4,6 @@ graceful:
   shutdown.enabled: false
 
 aws:
-#  provider: embedded-localstack TODO reinstate to test testcontainers localstack
   provider: localstack
 
 hmpps.sqs:

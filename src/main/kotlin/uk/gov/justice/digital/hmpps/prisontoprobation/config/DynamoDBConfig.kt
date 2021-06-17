@@ -51,6 +51,7 @@ class DynamoDBConfig {
         .withEndpointConfiguration(EndpointConfiguration(localstackUrl, region))
         .build()
       createTable(tableName, dynamoDB)
+      log.info("Created main DynamoDB table $tableName")
       return dynamoDB
     }
   }
@@ -77,6 +78,7 @@ class DynamoDBConfig {
 
       try {
         DynamoDBUtils.createLockTable(dynamoDB, scheduleTableName, ProvisionedThroughput(1L, 1L))
+        log.info("Created DynamoDB lock table $tableName")
       } catch (e: ResourceInUseException) {
         log.warn("We are using a random lock table name within each Spring context - so not expecting tables to already exist. Please investigate!")
       }
