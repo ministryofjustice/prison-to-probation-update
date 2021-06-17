@@ -23,6 +23,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
@@ -38,19 +39,20 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
 
+  @Autowired
+  protected lateinit var sqsConfigProperties: SqsConfigProperties
+
   @SpyBean
   @Qualifier("awsSqsClient")
   protected lateinit var awsSqsClient: AmazonSQS
 
-  @Value("\${sqs.queue.name}")
-  internal lateinit var queueName: String
+  internal val queueName: String by lazy { sqsConfigProperties.dpsQueue.queueName }
 
   @SpyBean
   @Qualifier("hmppsAwsSqsClient")
   protected lateinit var hmppsAwsSqsClient: AmazonSQS
 
-  @Value("\${sqs.hmpps.queue.name}")
-  internal lateinit var hmppsQueueName: String
+  internal val hmppsQueueName: String by lazy { sqsConfigProperties.hmppsQueue.queueName }
 
   @SpyBean
   @Qualifier("awsSqsDlqClient")
@@ -60,11 +62,9 @@ abstract class IntegrationTest {
   @Qualifier("hmppsAwsSqsDlqClient")
   internal lateinit var hmppsAwsSqsDlqClient: AmazonSQS
 
-  @Value("\${sqs.dlq.name}")
-  internal lateinit var dlqName: String
+  internal val dlqName: String by lazy { sqsConfigProperties.dpsQueue.dlqName }
 
-  @Value("\${sqs.hmpps.dlq.name}")
-  internal lateinit var hmppsDlqName: String
+  internal val hmppsDlqName: String by lazy { sqsConfigProperties.hmppsQueue.dlqName }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor

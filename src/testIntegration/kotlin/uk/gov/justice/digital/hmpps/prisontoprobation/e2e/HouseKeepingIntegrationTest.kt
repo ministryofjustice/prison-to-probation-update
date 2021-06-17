@@ -9,15 +9,10 @@ import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import javax.inject.Inject
 
 class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
-
-  @Inject
-  private lateinit var queueAdminService: QueueAdminService
 
   @Test
   fun `housekeeping will consume a booking changed message on the dlq and return to main queue`() {

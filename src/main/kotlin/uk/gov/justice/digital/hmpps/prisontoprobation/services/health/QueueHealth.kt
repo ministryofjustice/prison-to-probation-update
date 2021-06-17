@@ -12,11 +12,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.Health.Builder
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_ATTACHED
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_AVAILABLE
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.health.DlqStatus.NOT_FOUND
@@ -95,14 +95,12 @@ abstract class QueueHealth(
 class PrisonEventsQueueHealth(
   @Autowired @Qualifier("awsSqsClient") awsSqsClient: AmazonSQS,
   @Autowired @Qualifier("awsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
-  @Value("\${sqs.queue.name}") queueName: String,
-  @Value("\${sqs.dlq.name}") dlqName: String
-) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
+  sqsConfigProperties: SqsConfigProperties,
+) : QueueHealth(awsSqsClient, awsSqsDlqClient, sqsConfigProperties.dpsQueue.queueName, sqsConfigProperties.dpsQueue.dlqName)
 
 @Component
 class HMPPSEventsQueueHealth(
   @Autowired @Qualifier("hmppsAwsSqsClient") awsSqsClient: AmazonSQS,
   @Autowired @Qualifier("hmppsAwsSqsDlqClient") awsSqsDlqClient: AmazonSQS,
-  @Value("\${sqs.hmpps.queue.name}") queueName: String,
-  @Value("\${sqs.hmpps.dlq.name}") dlqName: String
-) : QueueHealth(awsSqsClient, awsSqsDlqClient, queueName, dlqName)
+  sqsConfigProperties: SqsConfigProperties,
+) : QueueHealth(awsSqsClient, awsSqsDlqClient, sqsConfigProperties.hmppsQueue.queueName, sqsConfigProperties.hmppsQueue.dlqName)

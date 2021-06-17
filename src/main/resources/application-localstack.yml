@@ -1,10 +1,24 @@
 graceful:
   shutdown.enabled: false
 
-sqs:
-  endpoint.url: http://localhost:4576
-sqs.hmpps:
-  endpoint.url: http://localhost:4576
+hmpps.sqs:
+  provider: ${aws.provider}
+  sqsUrl: http://localhost:4566
+  snsUrl: http://localhost:4566
+  dpsQueue:
+    topicName: ${random.uuid}
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
+  hmppsQueue:
+    topicName: ${random.uuid}
+    queueName: ${random.uuid}
+    dlqName: ${random.uuid}
+
+hmpps.dynamodb:
+  provider: ${aws.provider}
+  localstackUrl: http://localhost:4566
+  tableName: ${random.uuid}
+  scheduleTableName: ${random.uuid}
 
 oauth:
   endpoint.url: http://localhost:8090/auth
@@ -17,12 +31,6 @@ community:
 
 offender-search:
   endpoint.url: http://localhost:8097
-
-dynamodb:
-  endpoint: http://localhost:4569
-  tableName: cp-message
-  schedule:
-    tableName: cp-schedule
 
 aws:
   provider: localstack

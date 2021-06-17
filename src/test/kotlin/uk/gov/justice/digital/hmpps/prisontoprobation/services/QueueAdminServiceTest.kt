@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
 import uk.gov.justice.digital.hmpps.prisontoprobation.config.TelemetryEvents
 
 internal class QueueAdminServiceTest {
@@ -27,18 +28,25 @@ internal class QueueAdminServiceTest {
   private val eventAwsSqsClient = mock<AmazonSQS>()
   private val eventAwsSqsDlqClient = mock<AmazonSQS>()
   private val telemetryClient = mock<TelemetryClient>()
+  private val sqsConfigProperties = mock<SqsConfigProperties>()
+  private val dpsQueueConfig = mock<SqsConfigProperties.QueueConfig>()
   private lateinit var queueAdminService: QueueAdminService
+
+  init {
+    whenever(sqsConfigProperties.dpsQueue).thenReturn(dpsQueueConfig)
+  }
 
   @BeforeEach
   internal fun setUp() {
     whenever(eventAwsSqsClient.getQueueUrl("event-queue")).thenReturn(GetQueueUrlResult().withQueueUrl("arn:eu-west-1:event-queue"))
     whenever(eventAwsSqsDlqClient.getQueueUrl("event-dlq")).thenReturn(GetQueueUrlResult().withQueueUrl("arn:eu-west-1:event-dlq"))
+    whenever(dpsQueueConfig.queueName).thenReturn("event-queue")
+    whenever(dpsQueueConfig.dlqName).thenReturn("event-dlq")
     queueAdminService = QueueAdminService(
       awsSqsClient = eventAwsSqsClient,
       awsSqsDlqClient = eventAwsSqsDlqClient,
       telemetryClient = telemetryClient,
-      eventQueueName = "event-queue",
-      eventDlqName = "event-dlq",
+      sqsConfigProperties = sqsConfigProperties,
       gson = Gson()
     )
   }

@@ -7,7 +7,6 @@ import net.javacrumbs.shedlock.core.LockProvider
 import net.javacrumbs.shedlock.provider.dynamodb.DynamoDBLockProvider
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -17,16 +16,15 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "PT20M")class ScheduleConfiguration {
   @Bean
   fun tableLockProvider(
+    dynamoDbConfigProperties: DynamoDbConfigProperties,
     @Qualifier("scheduleDynamoDB")
     scheduleDynamoDB: AmazonDynamoDB,
-    @Value("\${dynamodb.schedule.tableName}")
-    tableName: String
   ): Table {
-    return DynamoDB(scheduleDynamoDB).getTable(tableName)
+    return DynamoDB(scheduleDynamoDB).getTable(dynamoDbConfigProperties.scheduleTableName)
   }
 
   @Bean
-  fun lockProvider(table: Table): LockProvider {
-    return DynamoDBLockProvider(table)
+  fun lockProvider(tableLockProvider: Table): LockProvider {
+    return DynamoDBLockProvider(tableLockProvider)
   }
 }

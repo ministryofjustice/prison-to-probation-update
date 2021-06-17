@@ -7,7 +7,7 @@ spring:
 
 prisontoprobation:
   client:
-    client-id: prisontoprobation-api-client
+    client-id: prison-to-probation-update-api-client
     client-secret: clientsecret
     access-token-uri: http://localhost:8090/auth/oauth/token
   message-processor:

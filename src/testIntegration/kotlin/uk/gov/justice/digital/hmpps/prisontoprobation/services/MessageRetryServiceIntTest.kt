@@ -79,7 +79,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       .hasSize(0)
 
     assertThat(messageRepository.findByBookingId(33L).first().processedDate)
-      .isCloseToUtcNow(byLessThan(1, ChronoUnit.SECONDS))
+      .isCloseTo(LocalDateTime.now(), byLessThan(1, ChronoUnit.SECONDS))
   }
 
   @Test
