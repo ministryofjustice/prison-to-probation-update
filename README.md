@@ -68,14 +68,22 @@ some manual testing. In this case please check the log output where the random n
 There are two handy scripts to add messages to the queue with data that matches either the T3 test environment or data
 in the test Docker version of the apps
 
-T3 test data:
+#### T3 test data:
 
 ```bash
 ./create-prison-movements-messages-t3.bash 
 ```
 
-local test data:
+#### local test data:
+
+First get the topic name from the application logs - look for the first instance
+of `Created localstack sns topic with name`
+and copy the UUID.
+
+Then run the following commands replacing <topic-arn> with the value copied above:
+
 ```bash
+export TOPIC_ARN=<topic-arn>
 ./create-prison-movements-messages-local.bash 
 ```
 
