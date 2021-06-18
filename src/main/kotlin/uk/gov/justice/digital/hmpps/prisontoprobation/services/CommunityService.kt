@@ -60,7 +60,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
     if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
 
   fun errorMessageWhenNotFound(exception: WebClientResponseException): Mono<Ignore<String>> =
-    if (exception.rawStatusCode == NOT_FOUND.value()) Mono.just(Ignore(exception.responseBodyAsString!!)) else Mono.error(exception)
+    if (exception.rawStatusCode == NOT_FOUND.value()) Mono.just(Ignore(exception.responseBodyAsString)) else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()
@@ -90,17 +90,15 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .block()
   }
 
-  fun prisonerReceived(offenderNo: String, prisonerReceived: PrisonerReceivedDetails) {
-    // TODO (Reinstate call to community api when it has been written)
-    /*
+  fun prisonerRecalled(offenderNo: String, prisonerRecalled: PrisonerRecalled): Custody? {
     return webClient.put()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/received")
-      .bodyValue(prisonerReceived)
+      .uri("/secure/offenders/nomsNumber/$offenderNo/recall")
+      .bodyValue(prisonerRecalled.details ?: { Mono.empty<String>() })
       .retrieve()
-      .bodyToMono(OffenderDetail::class.java)
+      .bodyToMono(Custody::class.java)
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
+      .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
       .block()
-    */
   }
 }
 
@@ -140,4 +138,4 @@ data class Conviction(val index: String, val active: Boolean, val sentence: Sent
 
 data class Sentence(val startDate: LocalDate?)
 
-data class PrisonerReceivedDetails(val nomsNumber: String, val reason: String, val source: String? = null, val details: String? = null)
+data class PrisonerRecalled(val nomsNumber: String, val reason: String, val source: String? = null, val details: String? = null)
