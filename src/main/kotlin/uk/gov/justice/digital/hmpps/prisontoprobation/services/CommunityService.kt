@@ -92,7 +92,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
 
   fun prisonerRecalled(offenderNo: String, prisonerRecalled: PrisonerRecalled): Custody? {
     return webClient.put()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/recall")
+      .uri("/secure/offenders/nomsNumber/$offenderNo/recalled")
       .bodyValue(prisonerRecalled.details ?: { Mono.empty<String>() })
       .retrieve()
       .bodyToMono(Custody::class.java)
