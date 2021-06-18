@@ -89,6 +89,7 @@ abstract class IntegrationTest {
 
   val queueUrl: String by lazy { awsSqsClient.getQueueUrl(queueName).queueUrl }
   val dlqUrl: String by lazy { awsSqsDlqClient.getQueueUrl(dlqName).queueUrl }
+  val hmppsQueueUrl: String by lazy { hmppsAwsSqsClient.getQueueUrl(hmppsQueueName).queueUrl }
 
   @BeforeEach
   fun `Debug bean information`() {
