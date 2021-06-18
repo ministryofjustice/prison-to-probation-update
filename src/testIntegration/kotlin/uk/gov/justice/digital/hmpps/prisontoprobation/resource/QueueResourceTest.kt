@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.resource
 
-import com.nhaarman.mockitokotlin2.doNothing
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.check
+import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -10,6 +13,10 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
+import uk.gov.justice.hmpps.sqs.HmppsQueue
+import uk.gov.justice.hmpps.sqs.PurgeQueueRequest
+import uk.gov.justice.hmpps.sqs.PurgeQueueResult
+import uk.gov.justice.hmpps.sqs.RetryDlqResult
 
 class QueueResourceTest : NoQueueListenerIntegrationTest() {
 
@@ -18,8 +25,8 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
   inner class SecureEndpoints {
     private fun secureEndpoints() =
       listOf(
-        "/queue-admin/purge-event-dlq",
-        "/queue-admin/transfer-event-dlq",
+        "/queue-admin/purge-queue/any",
+        "/queue-admin/retry-dlq/any",
       )
 
     @ParameterizedTest
@@ -45,30 +52,45 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
 
     @Test
     internal fun `purge - satisfies the correct role`() {
-      doNothing().whenever(queueAdminService).clearAllDlqMessagesForEvent()
+      val queueName = "any queue"
+      val dlqName = "any dlq"
+      doReturn(PurgeQueueRequest(dlqName, awsSqsClient, "any url")).whenever(hmppsQueueService).findQueueToPurge(any())
+      doReturn(HmppsQueue(awsSqsClient, queueName, awsSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
+      doReturn(PurgeQueueResult(0)).whenever(hmppsQueueService).purgeQueue(any())
 
       webTestClient.put()
-        .uri("/queue-admin/purge-event-dlq")
+        .uri("/queue-admin/purge-queue/$dlqName")
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isOk
 
-      verify(queueAdminService).clearAllDlqMessagesForEvent()
+      verify(hmppsQueueService).purgeQueue(
+        check {
+          assertThat(it.queueName).isEqualTo(dlqName)
+        }
+      )
     }
 
     @Test
     internal fun `transfer - satisfies the correct role`() {
-      doNothing().whenever(queueAdminService).transferEventMessages()
+      val queueName = "any queue"
+      val dlqName = "any dlq"
+      doReturn(HmppsQueue(awsSqsClient, queueName, awsSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
+      doReturn(RetryDlqResult(0, listOf())).whenever(hmppsQueueService).retryDlqMessages(any())
 
       webTestClient.put()
-        .uri("/queue-admin/transfer-event-dlq")
+        .uri("/queue-admin/retry-dlq/$dlqName")
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
         .accept(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isOk
 
-      verify(queueAdminService).transferEventMessages()
+      verify(hmppsQueueService).retryDlqMessages(
+        check {
+          assertThat(it.hmppsQueue.dlqName).isEqualTo(dlqName)
+        }
+      )
     }
   }
 }

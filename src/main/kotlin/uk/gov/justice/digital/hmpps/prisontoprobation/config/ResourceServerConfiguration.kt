@@ -22,7 +22,7 @@ class ResourceServerConfiguration : WebSecurityConfigurerAdapter() {
           "/health/**", "/info", "/ping",
           "/prometheus/**",
           "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-          "/queue-admin/queue-housekeeping"
+          "/queue-admin/retry-all-dlqs"
         )
           .permitAll().anyRequest().authenticated()
       }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())

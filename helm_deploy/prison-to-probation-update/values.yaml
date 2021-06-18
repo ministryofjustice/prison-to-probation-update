@@ -19,7 +19,7 @@ generic-service:
           deny all;
           return 401;
         }
-        location /queue-admin/queue-housekeeping {
+        location /queue-admin/retry-all-dlqs {
           deny all;
           return 401;
         }

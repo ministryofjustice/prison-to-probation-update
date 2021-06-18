@@ -22,6 +22,11 @@ class QueueListenerIntegrationTest : IntegrationTest() {
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
+  fun getNumberOfMessagesCurrentlyOnDlq(): Int? {
+    val queueAttributes = awsSqsDlqClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
+    return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
+  }
+
   fun eliteRequestCountFor(url: String) = prisonMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
   fun communityPutCountFor(url: String) = communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
