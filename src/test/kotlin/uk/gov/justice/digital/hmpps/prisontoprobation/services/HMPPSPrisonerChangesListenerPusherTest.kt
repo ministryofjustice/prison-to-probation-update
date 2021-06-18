@@ -10,24 +10,30 @@ import org.junit.jupiter.api.Test
 class HMPPSPrisonerChangesListenerPusherTest {
   private val communityService: CommunityService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val externalMovementService = ExternalMovementService(communityService, telemetryClient)
+  private val releaseAndRecallService = ReleaseAndRecallService(communityService, telemetryClient)
   private lateinit var pusher: HMPPSPrisonerChangesListenerPusher
 
   @BeforeEach
   fun before() {
-    pusher = HMPPSPrisonerChangesListenerPusher(externalMovementService)
+    pusher = HMPPSPrisonerChangesListenerPusher(releaseAndRecallService)
   }
 
   @Test
-  fun `will call community api for a prisoner received event`() {
+  fun `will call community api for a prisoner received recall event`() {
     pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReceived.json".readResourceAsText())
-    verify(communityService).prisonerReceived("A5194DY", PrisonerReceivedDetails("A5194DY", "RECALL", "PROBATION", "Recall referral date 2021-05-12"))
+    verify(communityService).prisonerRecalled("A5194DY", PrisonerRecalled("A5194DY", "RECALL", "PROBATION", "Recall referral date 2021-05-12"))
   }
 
   @Test
   fun `will call community api for a prisoner received event with minimum data`() {
     pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReceivedNoSourceOrDetails.json".readResourceAsText())
-    verify(communityService).prisonerReceived("A5194DY", PrisonerReceivedDetails("A5194DY", "RECALL"))
+    verify(communityService).prisonerRecalled("A5194DY", PrisonerRecalled("A5194DY", "RECALL"))
+  }
+
+  @Test
+  fun `will not call community api for a prisoner received non-recall event`() {
+    pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReceivedReturnFromCourt.json".readResourceAsText())
+    verifyNoMoreInteractions(communityService)
   }
 
   @Test
