@@ -41,6 +41,16 @@ class QueueHealthTest {
   }
 
   @Test
+  fun `health - queue names - included in health status`() {
+    mockHealthyQueue()
+
+    val health = queueHealth.health()
+
+    assertThat(health.details["queueName"]).isEqualTo(someQueueName)
+    assertThat(health.details["dlqName"]).isEqualTo(someDLQName)
+  }
+
+  @Test
   fun `health - attributes returned - included in health status`() {
     mockHealthyQueue()
 

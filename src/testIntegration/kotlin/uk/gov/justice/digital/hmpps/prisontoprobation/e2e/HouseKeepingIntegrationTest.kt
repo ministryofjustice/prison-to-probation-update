@@ -21,12 +21,12 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, message)
 
     webTestClient.put()
-      .uri("/queue-admin/queue-housekeeping")
+      .uri("/queue-admin/retry-all-dlqs")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
 
-    await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
+    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 0 }
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -43,14 +43,13 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, "{}")
 
     webTestClient.put()
-      .uri("/queue-admin/purge-event-dlq")
+      .uri("/queue-admin/purge-queue/${sqsConfigProperties.dpsQueue.dlqName}")
       .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
 
-    await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
-    assertThat(getNumberOfMessagesCurrentlyOnQueue()).isEqualTo(0)
+    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 0 }
 
     // Nothing to process
     prisonMockServer.verify(0, WireMock.anyRequestedFor(WireMock.anyUrl()))
@@ -66,13 +65,13 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, message)
 
     webTestClient.put()
-      .uri("/queue-admin/transfer-event-dlq")
+      .uri("/queue-admin/retry-dlq/${sqsConfigProperties.dpsQueue.dlqName}")
       .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
 
-    await untilCallTo { queueAdminService.getEventDlqMessageCount() } matches { it == 0 }
+    await untilCallTo { getNumberOfMessagesCurrentlyOnDlq() } matches { it == 0 }
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }

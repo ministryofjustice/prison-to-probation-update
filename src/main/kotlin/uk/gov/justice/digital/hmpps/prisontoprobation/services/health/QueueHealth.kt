@@ -49,17 +49,19 @@ abstract class QueueHealth(
   }
 
   override fun health(): Health {
+    val details = mutableMapOf<String, Any?>(
+      "queueName" to queueName,
+      "dlqName" to dlqName,
+    )
     val queueAttributes = try {
       val url = awsSqsClient.getQueueUrl(queueName)
       awsSqsClient.getQueueAttributes(getQueueAttributesRequest(url))
     } catch (e: Exception) {
       log.error("Unable to retrieve queue attributes for queue '{}' due to exception:", queueName, e)
-      return Builder().down().withException(e).build()
+      return Builder().down().withDetails(details).withException(e).build()
     }
-    val details = mutableMapOf<String, Any?>(
-      MESSAGES_ON_QUEUE.healthName to queueAttributes.attributes[MESSAGES_ON_QUEUE.awsName]?.toInt(),
-      MESSAGES_IN_FLIGHT.healthName to queueAttributes.attributes[MESSAGES_IN_FLIGHT.awsName]?.toInt()
-    )
+    details += MESSAGES_ON_QUEUE.healthName to queueAttributes.attributes[MESSAGES_ON_QUEUE.awsName]?.toInt()
+    details += MESSAGES_IN_FLIGHT.healthName to queueAttributes.attributes[MESSAGES_IN_FLIGHT.awsName]?.toInt()
 
     val health = Builder().up().withDetails(details).addDlqHealth(queueAttributes).build()
 

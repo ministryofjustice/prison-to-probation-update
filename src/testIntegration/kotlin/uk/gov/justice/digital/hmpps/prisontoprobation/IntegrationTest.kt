@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.QueueAdminService
+import uk.gov.justice.hmpps.sqs.HmppsQueueService
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -70,7 +70,7 @@ abstract class IntegrationTest {
   internal lateinit var messageProcessor: MessageProcessor
 
   @SpyBean
-  internal lateinit var queueAdminService: QueueAdminService
+  internal lateinit var hmppsQueueService: HmppsQueueService
 
   @Autowired
   private lateinit var objectMapper: ObjectMapper
