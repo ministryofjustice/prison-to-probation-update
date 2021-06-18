@@ -8,8 +8,7 @@ aws:
 
 hmpps.sqs:
   provider: ${aws.provider}
-  sqsUrl: http://localhost:4566
-  snsUrl: http://localhost:4566
+  localstackUrl: http://localhost:4566
   dpsQueue:
     topicName: ${random.uuid}
     queueName: ${random.uuid}

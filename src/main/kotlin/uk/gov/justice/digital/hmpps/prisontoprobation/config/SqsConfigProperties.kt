@@ -8,8 +8,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class SqsConfigProperties(
   val region: String,
   val provider: String,
-  val sqsUrl: String = "",
-  val snsUrl: String = "",
+  val localstackUrl: String = "",
   val dpsQueue: QueueConfig,
   val hmppsQueue: QueueConfig,
 ) {

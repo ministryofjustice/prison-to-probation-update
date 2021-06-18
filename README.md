@@ -44,25 +44,6 @@ TMPDIR=/private$TMPDIR docker-compose up localstack
 In all of the above the application should use the host network to communicate with `localstack` since AWS Client will
 try to read messages from localhost rather than the `localstack` network.
 
-#### IMPORTANT
-
-*TL;DR* When running locally with `localstack` we assign random names to queues, topics and tables. Check the
-application log output to find the values if required for manual testing.
-
-There is an issue with Spring such that when a test requires a new context (e.g. when configuration properties change),
-the old (cached) context continues to a) read messages using the JMS listener and b) run scheduled jobs that read from
-the DynamoDB database.
-
-To workaround this issue we use random queue names, topic names and table names every time we start the application.
-This means that tests running in different Spring contexts cannot interfere with each other.
-
-So if you get tempted to remove the random names be aware that you are walking into a world of testing pain. Don't do
-it.
-
-There is a downside to using random names as it becomes hard to find the queue / topic / table if you wish to perform
-some manual testing. In this case please check the log output where the random names should be announced. See classes
-`LocalstackSqsConfig` and `DynamoDBConfig` to find the log outputs.
-
 ### Experimenting with messages
 
 There are two handy scripts to add messages to the queue with data that matches either the T3 test environment or data
@@ -76,14 +57,7 @@ in the test Docker version of the apps
 
 #### local test data:
 
-First get the topic name from the application logs - look for the first instance
-of `Created localstack sns topic with name`
-and copy the UUID.
-
-Then run the following commands replacing <topic-arn> with the value copied above:
-
 ```bash
-export TOPIC_ARN=<topic-arn>
 ./create-prison-movements-messages-local.bash 
 ```
 
@@ -106,6 +80,21 @@ You first need to run localstack manually (as is done in the Circle build):
 
 * start localstack with command `TMPDIR=/private$TMPDIR docker-compose up localstack`
 * run the tests with command `./gradlew testIntegration`
+
+#### IMPORTANT
+
+*TL;DR* When testing with `localstack` we assign random names to queues, topics and tables.
+
+There is an issue with Spring such that when a test requires a new context (e.g. when configuration properties change),
+the old (cached) context continues to a) read messages using the JMS listener and b) run scheduled jobs that read from
+the DynamoDB database.
+
+To workaround this issue we use random queue names, topic names and table names every time we start the application.
+This means that tests running in different Spring contexts cannot interfere with each other. Note that we log the random
+names during application startup.
+
+So if you get tempted to remove the random names be aware that you are walking into a world of testing pain. Don't do
+it.
 
 #### Smoke Tests
 
