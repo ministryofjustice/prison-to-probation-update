@@ -20,5 +20,5 @@ spec:
               args:
                 - /bin/sh
                 - -c
-                - curl -XPUT http://prison-to-probation-update/queue-admin/queue-housekeeping
+                - curl -XPUT http://prison-to-probation-update/queue-admin/retry-all-dlqs
           restartPolicy: Never

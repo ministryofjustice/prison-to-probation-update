@@ -138,7 +138,11 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .isOk
       .expectBody()
+      .jsonPath("components.prisonEventsQueueHealth.details.queueName").isEqualTo(queueName)
+      .jsonPath("components.prisonEventsQueueHealth.details.dlqName").isEqualTo(dlqName)
       .jsonPath("components.prisonEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.queueName").isEqualTo(hmppsQueueName)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqName").isEqualTo(hmppsDlqName)
       .jsonPath("components.HMPPSEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
   }
 
@@ -158,6 +162,26 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
       .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
       .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
+  }
+
+  @Test
+  fun `Dlq and queue down still shows queue names`() {
+    subPing(200)
+    mockQueueWithoutRedrivePolicyAttributes()
+
+    webTestClient.get()
+      .uri("/health")
+      .exchange()
+      .expectStatus()
+      .is5xxServerError
+      .expectBody()
+      .jsonPath("status").isEqualTo("DOWN")
+      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.prisonEventsQueueHealth.details.queueName").isEqualTo(queueName)
+      .jsonPath("components.prisonEventsQueueHealth.details.dlqName").isEqualTo(dlqName)
+      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
+      .jsonPath("components.HMPPSEventsQueueHealth.details.queueName").isEqualTo(hmppsQueueName)
+      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqName").isEqualTo(hmppsDlqName)
   }
 
   @Test
