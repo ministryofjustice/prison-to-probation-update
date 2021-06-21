@@ -27,6 +27,11 @@ class QueueListenerIntegrationTest : IntegrationTest() {
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
+  fun getNumberOfMessagesCurrentlyOnHmppsQueue(): Int? {
+    val queueAttributes = hmppsAwsSqsClient.getQueueAttributes(hmppsQueueUrl, listOf("ApproximateNumberOfMessages"))
+    return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
+  }
+
   fun eliteRequestCountFor(url: String) = prisonMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 
   fun communityPutCountFor(url: String) = communityMockServer.findAll(putRequestedFor(urlEqualTo(url))).count()
