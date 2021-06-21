@@ -120,6 +120,19 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
     assertThat(processedMessage?.status).isEqualTo("COMPLETED")
   }
+
+  @Test
+  fun `will consume a hmpps prisoner recalled message and update probation`() {
+    val message = "/messages/prisonerRecalled.json".readResourceAsText()
+
+    // wait until our queue has been purged
+    await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
+
+    hmppsAwsSqsClient.sendMessage(hmppsQueueUrl, message)
+
+    await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
+    await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5194DY/recalled") } matches { it == 1 }
+  }
 }
 
 private fun String.readResourceAsText(): String {
