@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 @Profile("!no-queue-listener")
@@ -27,16 +28,28 @@ class HMPPSPrisonerChangesListenerPusher(
 
     when (eventType) {
       "prison-offender-events.prisoner.received" -> {
-        val offenderMessage = gson.fromJson(message, OffenderMessage::class.java)
-        if (offenderMessage.additionalInformation.reason == "RECALL") releaseAndRecallService.prisonerRecalled(offenderMessage)
+        val hmppsDomainEvent = gson.fromJson(message, HMPPSDomainEvent::class.java)
+        when (hmppsDomainEvent.additionalInformation.reason) {
+          "RECALL" -> {
+            releaseAndRecallService.prisonerRecalled(
+              hmppsDomainEvent.additionalInformation.nomsNumber,
+              LocalDateTime.parse(hmppsDomainEvent.occurredAt).toLocalDate()
+            )
+          }
+        }
       }
       else -> log.info("Received a message wasn't expected $eventType")
     }
   }
 }
 
-data class OffenderMessage(val version: String, val description: String, val additionalInformation: PrisonerRecalled)
+data class AdditionalInformation(val nomsNumber: String, val reason: String)
+data class HMPPSDomainEvent(val occurredAt: String, val additionalInformation: AdditionalInformation)
 
-internal data class HMPPSEventType(val Value: String)
-internal data class HMPPSMessageAttributes(val eventType: HMPPSEventType)
-internal data class HMPPSMessage(val Message: String, val MessageId: String, val MessageAttributes: HMPPSMessageAttributes)
+data class HMPPSEventType(val Value: String)
+data class HMPPSMessageAttributes(val eventType: HMPPSEventType)
+data class HMPPSMessage(
+  val Message: String,
+  val MessageId: String,
+  val MessageAttributes: HMPPSMessageAttributes
+)
