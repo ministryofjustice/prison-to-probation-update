@@ -100,6 +100,17 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
       .block()
   }
+
+  fun prisonerReleased(offenderNo: String, occurred: LocalDate): Custody? {
+    return webClient.put()
+      .uri("/secure/offenders/nomsNumber/$offenderNo/released")
+      .bodyValue(PrisonerRecalled(occurred))
+      .retrieve()
+      .bodyToMono(Custody::class.java)
+      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
+      .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
+      .block()
+  }
 }
 
 data class UpdateOffenderNomsNumber(

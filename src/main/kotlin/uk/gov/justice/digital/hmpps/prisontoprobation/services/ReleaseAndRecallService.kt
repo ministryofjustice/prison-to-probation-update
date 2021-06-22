@@ -29,4 +29,18 @@ class ReleaseAndRecallService(
         )
       }
       ?: telemetryClient.trackEvent("P2PPrisonerNotRecalled", mapOf("nomsNumber" to nomsNumber), null)
+
+  fun prisonerReleased(nomsNumber: String, occurred: LocalDate) =
+    communityService.prisonerReleased(nomsNumber, occurred)
+      ?.let {
+        telemetryClient.trackEvent(
+          "P2PPrisonerReleased",
+          mapOf(
+            "nomsNumber" to nomsNumber,
+            "occurred" to occurred.format(DateTimeFormatter.ISO_DATE)
+          ),
+          null
+        )
+      }
+      ?: telemetryClient.trackEvent("P2PPrisonerNotReleased", mapOf("nomsNumber" to nomsNumber), null)
 }
