@@ -9,8 +9,7 @@ data class SqsConfigProperties(
   val region: String,
   val provider: String,
   val localstackUrl: String = "",
-  val dpsQueue: QueueConfig,
-  val hmppsQueue: QueueConfig,
+  val queues: Map<String, QueueConfig>,
 ) {
   data class QueueConfig(
     val topicName: String = "",
@@ -22,3 +21,7 @@ data class SqsConfigProperties(
     val dlqSecretAccessKey: String = "",
   )
 }
+
+fun SqsConfigProperties.prisonEventQueue() = queues["prisonEventQueue"] ?: throw MissingQueueException("prisonEventQueue has not been loaded from configuration properties")
+fun SqsConfigProperties.hmppsDomainEventQueue() = queues["hmppsDomainEventQueue"] ?: throw MissingQueueException("hmppsDomainEventQueue has not been loaded from configuration properties")
+class MissingQueueException(message: String) : RuntimeException(message)

@@ -4,14 +4,15 @@ graceful:
 hmpps.sqs:
   provider: ${aws.provider}
   localstackUrl: http://localhost:4566
-  dpsQueue:
-    topicName: dps-topic
-    queueName: dps-queue
-    dlqName: dps-dlq
-  hmppsQueue:
-    topicName: hmpps-topic
-    queueName: hmpps-queue
-    dlqName: hmpps-dlq
+  queues:
+    prisonEventQueue:
+      topicName: dps-topic
+      queueName: dps-queue
+      dlqName: dps-dlq
+    hmppsDomainEventQueue:
+      topicName: hmpps-topic
+      queueName: hmpps-queue
+      dlqName: hmpps-dlq
 
 hmpps.dynamodb:
   provider: ${aws.provider}

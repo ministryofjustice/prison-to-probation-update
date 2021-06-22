@@ -9,14 +9,15 @@ aws:
 hmpps.sqs:
   provider: ${aws.provider}
   localstackUrl: http://localhost:4566
-  dpsQueue:
-    topicName: ${random.uuid}
-    queueName: ${random.uuid}
-    dlqName: ${random.uuid}
-  hmppsQueue:
-    topicName: ${random.uuid}
-    queueName: ${random.uuid}
-    dlqName: ${random.uuid}
+  queues:
+    prisonEventQueue:
+      topicName: ${random.uuid}
+      queueName: ${random.uuid}
+      dlqName: ${random.uuid}
+    hmppsDomainEventQueue:
+      topicName: ${random.uuid}
+      queueName: ${random.uuid}
+      dlqName: ${random.uuid}
 
 hmpps.dynamodb:
   provider: ${aws.provider}
