@@ -105,9 +105,11 @@ abstract class IntegrationTest {
   fun `Reset resources`() {
     messageRepository.deleteAll()
     awsSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    awsSqsDlqClient.purgeQueue(PurgeQueueRequest(dlqUrl))
+    awsSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+    hmppsAwsSqsClient.purgeQueue(PurgeQueueRequest(hmppsQueueUrl))
     await untilCallTo { awsSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
     await untilCallTo { awsSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
+    await untilCallTo { hmppsAwsSqsClient.activeMessageCount(hmppsQueueUrl) } matches { it == 0 }
   }
 
   companion object {
