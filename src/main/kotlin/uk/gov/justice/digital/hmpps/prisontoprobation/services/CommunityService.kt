@@ -90,10 +90,10 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .block()
   }
 
-  fun prisonerRecalled(offenderNo: String, prisonerRecalled: PrisonerRecalled): Custody? {
+  fun prisonerRecalled(offenderNo: String, occurred: LocalDate): Custody? {
     return webClient.put()
       .uri("/secure/offenders/nomsNumber/$offenderNo/recalled")
-      .bodyValue(prisonerRecalled.details ?: { Mono.empty<String>() })
+      .bodyValue(PrisonerRecalled(occurred))
       .retrieve()
       .bodyToMono(Custody::class.java)
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
@@ -138,4 +138,4 @@ data class Conviction(val index: String, val active: Boolean, val sentence: Sent
 
 data class Sentence(val startDate: LocalDate?)
 
-data class PrisonerRecalled(val nomsNumber: String, val reason: String, val source: String? = null, val details: String? = null)
+data class PrisonerRecalled(val occurred: LocalDate)

@@ -10,6 +10,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class ReleaseAndRecallServiceTest {
   private val communityService: CommunityService = mock()
@@ -24,17 +25,17 @@ class ReleaseAndRecallServiceTest {
 
   @Test
   internal fun `prisoner will be recalled`() {
-    val prisonerRecalled = PrisonerRecalled("A5194DY", "RECALL", "Recall referral date 2021-05-12", "Recall referral date 2021-05-12")
-    whenever(communityService.prisonerRecalled("A5194DY", prisonerRecalled)).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+    val occurred = LocalDate.of(2021, 5, 12)
+    whenever(communityService.prisonerRecalled("A5194DY", occurred)).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
 
-    service.prisonerRecalled(OffenderMessage("V1.0", "A prisoner has been received into prison", prisonerRecalled))
+    service.prisonerRecalled("A5194DY", occurred)
 
-    verify(communityService).prisonerRecalled("A5194DY", prisonerRecalled)
+    verify(communityService).prisonerRecalled("A5194DY", occurred)
     verify(telemetryClient).trackEvent(
       eq("P2PPrisonerRecalled"),
       check {
         assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
-        assertThat(it["details"]).isEqualTo("Recall referral date 2021-05-12")
+        assertThat(it["occurred"]).isEqualTo(occurred.toString())
       },
       isNull()
     )
@@ -42,12 +43,18 @@ class ReleaseAndRecallServiceTest {
 
   @Test
   internal fun `prisoner not recalled`() {
-    val prisonerRecalled = PrisonerRecalled("A5194DY", "RECALL", "Recall referral date 2021-05-12", "Recall referral date 2021-05-12")
-    whenever(communityService.prisonerRecalled("A5194DY", prisonerRecalled)).thenReturn(null)
+    val occurred = LocalDate.of(2021, 5, 12)
+    whenever(communityService.prisonerRecalled("A5194DY", occurred)).thenReturn(null)
 
-    service.prisonerRecalled(OffenderMessage("V1.0", "A prisoner has been received into prison", prisonerRecalled))
+    service.prisonerRecalled("A5194DY", occurred)
 
-    verify(communityService).prisonerRecalled("A5194DY", prisonerRecalled)
-    verify(telemetryClient).trackEvent("P2PPrisonerNotRecalled")
+    verify(communityService).prisonerRecalled("A5194DY", occurred)
+    verify(telemetryClient).trackEvent(
+      eq("P2PPrisonerNotRecalled"),
+      check {
+        assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
+      },
+      isNull()
+    )
   }
 }
