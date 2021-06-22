@@ -22,6 +22,6 @@ data class SqsConfigProperties(
   )
 }
 
-fun SqsConfigProperties.dpsQueue() = queues["dpsQueue"] ?: throw MissingQueueException("dpsQueue has not been loaded from configuration properties")
-fun SqsConfigProperties.hmppsQueue() = queues["hmppsQueue"] ?: throw MissingQueueException("hmppsQueue has not been loaded from configuration properties")
+fun SqsConfigProperties.prisonEventQueue() = queues["prisonEventQueue"] ?: throw MissingQueueException("prisonEventQueue has not been loaded from configuration properties")
+fun SqsConfigProperties.hmppsDomainEventQueue() = queues["hmppsDomainEventQueue"] ?: throw MissingQueueException("hmppsDomainEventQueue has not been loaded from configuration properties")
 class MissingQueueException(message: String) : RuntimeException(message)

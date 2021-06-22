@@ -24,8 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.dpsQueue
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.hmppsQueue
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.hmppsDomainEventQueue
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.prisonEventQueue
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
@@ -48,13 +48,13 @@ abstract class IntegrationTest {
   @Qualifier("awsSqsClient")
   protected lateinit var awsSqsClient: AmazonSQS
 
-  internal val queueName: String by lazy { sqsConfigProperties.dpsQueue().queueName }
+  internal val queueName: String by lazy { sqsConfigProperties.prisonEventQueue().queueName }
 
   @SpyBean
   @Qualifier("hmppsAwsSqsClient")
   protected lateinit var hmppsAwsSqsClient: AmazonSQS
 
-  internal val hmppsQueueName: String by lazy { sqsConfigProperties.hmppsQueue().queueName }
+  internal val hmppsQueueName: String by lazy { sqsConfigProperties.hmppsDomainEventQueue().queueName }
 
   @SpyBean
   @Qualifier("awsSqsDlqClient")
@@ -64,9 +64,9 @@ abstract class IntegrationTest {
   @Qualifier("hmppsAwsSqsDlqClient")
   internal lateinit var hmppsAwsSqsDlqClient: AmazonSQS
 
-  internal val dlqName: String by lazy { sqsConfigProperties.dpsQueue().dlqName }
+  internal val dlqName: String by lazy { sqsConfigProperties.prisonEventQueue().dlqName }
 
-  internal val hmppsDlqName: String by lazy { sqsConfigProperties.hmppsQueue().dlqName }
+  internal val hmppsDlqName: String by lazy { sqsConfigProperties.hmppsDomainEventQueue().dlqName }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor

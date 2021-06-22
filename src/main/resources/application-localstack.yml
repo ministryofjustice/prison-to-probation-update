@@ -5,11 +5,11 @@ hmpps.sqs:
   provider: ${aws.provider}
   localstackUrl: http://localhost:4566
   queues:
-    dpsQueue:
+    prisonEventQueue:
       topicName: dps-topic
       queueName: dps-queue
       dlqName: dps-dlq
-    hmppsQueue:
+    hmppsDomainEventQueue:
       topicName: hmpps-topic
       queueName: hmpps-queue
       dlqName: hmpps-dlq

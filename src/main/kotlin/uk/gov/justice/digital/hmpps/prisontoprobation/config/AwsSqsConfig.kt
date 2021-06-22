@@ -20,31 +20,31 @@ class AwsSqsConfig(private val hmppsQueueService: HmppsQueueService) {
   @Bean
   fun awsSqsClient(sqsConfigProperties: SqsConfigProperties, awsSqsDlqClient: AmazonSQS): AmazonSQS =
     with(sqsConfigProperties) {
-      amazonSQS(dpsQueue().queueAccessKeyId, dpsQueue().queueSecretAccessKey, region)
-        .also { log.info("Created aws sqs client for queue ${dpsQueue().queueName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, dpsQueue().queueName, awsSqsDlqClient, dpsQueue().dlqName) }
+      amazonSQS(prisonEventQueue().queueAccessKeyId, prisonEventQueue().queueSecretAccessKey, region)
+        .also { log.info("Created aws sqs client for queue ${prisonEventQueue().queueName}") }
+        .also { hmppsQueueService.registerHmppsQueue(it, prisonEventQueue().queueName, awsSqsDlqClient, prisonEventQueue().dlqName) }
     }
 
   @Bean
   fun hmppsAwsSqsClient(sqsConfigProperties: SqsConfigProperties, hmppsAwsSqsDlqClient: AmazonSQS): AmazonSQS =
     with(sqsConfigProperties) {
-      amazonSQS(hmppsQueue().queueAccessKeyId, hmppsQueue().queueSecretAccessKey, region)
-        .also { log.info("Created aws sqs client for queue ${hmppsQueue().queueName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, hmppsQueue().queueName, hmppsAwsSqsDlqClient, hmppsQueue().dlqName) }
+      amazonSQS(hmppsDomainEventQueue().queueAccessKeyId, hmppsDomainEventQueue().queueSecretAccessKey, region)
+        .also { log.info("Created aws sqs client for queue ${hmppsDomainEventQueue().queueName}") }
+        .also { hmppsQueueService.registerHmppsQueue(it, hmppsDomainEventQueue().queueName, hmppsAwsSqsDlqClient, hmppsDomainEventQueue().dlqName) }
     }
 
   @Bean
   fun awsSqsDlqClient(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
     with(sqsConfigProperties) {
-      amazonSQS(dpsQueue().dlqAccessKeyId, dpsQueue().dlqSecretAccessKey, region)
-        .also { log.info("Created aws dlq sqs client for dlq ${dpsQueue().dlqName}") }
+      amazonSQS(prisonEventQueue().dlqAccessKeyId, prisonEventQueue().dlqSecretAccessKey, region)
+        .also { log.info("Created aws dlq sqs client for dlq ${prisonEventQueue().dlqName}") }
     }
 
   @Bean
   fun hmppsAwsSqsDlqClient(sqsConfigProperties: SqsConfigProperties): AmazonSQS =
     with(sqsConfigProperties) {
-      amazonSQS(hmppsQueue().dlqAccessKeyId, hmppsQueue().dlqSecretAccessKey, region)
-        .also { log.info("Created aws dlq sqs client for dlq ${hmppsQueue().dlqName}") }
+      amazonSQS(hmppsDomainEventQueue().dlqAccessKeyId, hmppsDomainEventQueue().dlqSecretAccessKey, region)
+        .also { log.info("Created aws dlq sqs client for dlq ${hmppsDomainEventQueue().dlqName}") }
     }
 
   private fun amazonSQS(accessKeyId: String, secretAccessKey: String, region: String) =

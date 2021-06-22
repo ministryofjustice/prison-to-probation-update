@@ -8,7 +8,7 @@ import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.dpsQueue
+import uk.gov.justice.digital.hmpps.prisontoprobation.config.prisonEventQueue
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -44,7 +44,7 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, "{}")
 
     webTestClient.put()
-      .uri("/queue-admin/purge-queue/${sqsConfigProperties.dpsQueue().dlqName}")
+      .uri("/queue-admin/purge-queue/${sqsConfigProperties.prisonEventQueue().dlqName}")
       .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
@@ -66,7 +66,7 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
     awsSqsClient.sendMessage(dlqUrl, message)
 
     webTestClient.put()
-      .uri("/queue-admin/retry-dlq/${sqsConfigProperties.dpsQueue().dlqName}")
+      .uri("/queue-admin/retry-dlq/${sqsConfigProperties.prisonEventQueue().dlqName}")
       .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
