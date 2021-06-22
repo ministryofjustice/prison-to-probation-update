@@ -111,20 +111,21 @@ hmpps.sqs:
   provider: ${aws.provider}
   region: ${aws.region}
   queueAdminRole: ROLE_PTPU_QUEUE_ADMIN
-  dpsQueue:
-    queueName: ${sqs.queue.name}
-    queueAccessKeyId: ${sqs.aws.access.key.id}
-    queueSecretAccessKey: ${sqs.aws.secret.access.key}
-    dlqName: ${sqs.dlq.name}
-    dlqAccessKeyId: ${sqs.aws.dlq.access.key.id}
-    dlqSecretAccessKey: ${sqs.aws.dlq.secret.access.key}
-  hmppsQueue:
-    queueName: ${sqs.hmpps.queue.name}
-    queueAccessKeyId: ${sqs.hmpps.aws.access.key.id}
-    queueSecretAccessKey: ${sqs.hmpps.aws.secret.access.key}
-    dlqName: ${sqs.hmpps.dlq.name}
-    dlqAccessKeyId: ${sqs.hmpps.aws.dlq.access.key.id}
-    dlqSecretAccessKey: ${sqs.hmpps.aws.dlq.secret.access.key}
+  queues:
+    dpsQueue:
+      queueName: ${sqs.queue.name}
+      queueAccessKeyId: ${sqs.aws.access.key.id}
+      queueSecretAccessKey: ${sqs.aws.secret.access.key}
+      dlqName: ${sqs.dlq.name}
+      dlqAccessKeyId: ${sqs.aws.dlq.access.key.id}
+      dlqSecretAccessKey: ${sqs.aws.dlq.secret.access.key}
+    hmppsQueue:
+      queueName: ${sqs.hmpps.queue.name}
+      queueAccessKeyId: ${sqs.hmpps.aws.access.key.id}
+      queueSecretAccessKey: ${sqs.hmpps.aws.secret.access.key}
+      dlqName: ${sqs.hmpps.dlq.name}
+      dlqAccessKeyId: ${sqs.hmpps.aws.dlq.access.key.id}
+      dlqSecretAccessKey: ${sqs.hmpps.aws.dlq.secret.access.key}
 
 hmpps.dynamodb:
   region: ${aws.region}
