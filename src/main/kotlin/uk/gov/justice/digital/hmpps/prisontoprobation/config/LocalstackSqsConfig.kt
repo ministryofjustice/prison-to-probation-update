@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 
 @Configuration
@@ -49,16 +48,7 @@ class LocalstackSqsConfig(private val hmppsQueueService: HmppsQueueService) {
           )
         }
         .also { log.info("Queue ${dpsQueue.queueName} has subscribed to dps topic ${dpsQueue.topicName}") }
-        .also {
-          hmppsQueueService.registerHmppsQueue(
-            HmppsQueue(
-              it,
-              sqsConfigProperties.dpsQueue.queueName,
-              awsSqsDlqClient,
-              sqsConfigProperties.dpsQueue.dlqName
-            )
-          )
-        }
+        .also { hmppsQueueService.registerHmppsQueue(it, dpsQueue.queueName, awsSqsDlqClient, dpsQueue.dlqName) }
     }
 
   @Bean("awsSqsDlqClient")
@@ -94,16 +84,7 @@ class LocalstackSqsConfig(private val hmppsQueueService: HmppsQueueService) {
           )
         }
         .also { log.info("Queue ${hmppsQueue.queueName} has subscribed to hmpps topic ${hmppsQueue.topicName}") }
-        .also {
-          hmppsQueueService.registerHmppsQueue(
-            HmppsQueue(
-              it,
-              sqsConfigProperties.hmppsQueue.queueName,
-              hmppsAwsSqsDlqClient,
-              sqsConfigProperties.hmppsQueue.dlqName
-            )
-          )
-        }
+        .also { hmppsQueueService.registerHmppsQueue(it, hmppsQueue.queueName, hmppsAwsSqsDlqClient, hmppsQueue.dlqName) }
     }
 
   @Bean("hmppsAwsSqsDlqClient")

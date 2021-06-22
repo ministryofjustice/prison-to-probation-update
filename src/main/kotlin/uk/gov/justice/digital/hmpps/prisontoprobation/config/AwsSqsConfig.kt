@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 
 @Configuration
@@ -23,16 +22,7 @@ class AwsSqsConfig(private val hmppsQueueService: HmppsQueueService) {
     with(sqsConfigProperties) {
       amazonSQS(dpsQueue.queueAccessKeyId, dpsQueue.queueSecretAccessKey, region)
         .also { log.info("Created aws sqs client for queue ${dpsQueue.queueName}") }
-        .also {
-          hmppsQueueService.registerHmppsQueue(
-            HmppsQueue(
-              it,
-              sqsConfigProperties.dpsQueue.queueName,
-              awsSqsDlqClient,
-              sqsConfigProperties.dpsQueue.dlqName
-            )
-          )
-        }
+        .also { hmppsQueueService.registerHmppsQueue(it, dpsQueue.queueName, awsSqsDlqClient, dpsQueue.dlqName) }
     }
 
   @Bean
@@ -40,16 +30,7 @@ class AwsSqsConfig(private val hmppsQueueService: HmppsQueueService) {
     with(sqsConfigProperties) {
       amazonSQS(hmppsQueue.queueAccessKeyId, hmppsQueue.queueSecretAccessKey, region)
         .also { log.info("Created aws sqs client for queue ${hmppsQueue.queueName}") }
-        .also {
-          hmppsQueueService.registerHmppsQueue(
-            HmppsQueue(
-              it,
-              sqsConfigProperties.hmppsQueue.queueName,
-              hmppsAwsSqsDlqClient,
-              sqsConfigProperties.hmppsQueue.dlqName
-            )
-          )
-        }
+        .also { hmppsQueueService.registerHmppsQueue(it, hmppsQueue.queueName, hmppsAwsSqsDlqClient, hmppsQueue.dlqName) }
     }
 
   @Bean
