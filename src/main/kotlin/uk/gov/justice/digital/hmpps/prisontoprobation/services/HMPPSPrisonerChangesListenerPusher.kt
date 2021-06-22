@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 @Profile("!no-queue-listener")
 class HMPPSPrisonerChangesListenerPusher(
   private val releaseAndRecallService: ReleaseAndRecallService,
-  private val objectMapper: ObjectMapper,
+  private val objectMapper: ObjectMapper
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -34,6 +34,17 @@ class HMPPSPrisonerChangesListenerPusher(
         when (hmppsDomainEvent.additionalInformation.reason) {
           "RECALL" -> {
             releaseAndRecallService.prisonerRecalled(
+              hmppsDomainEvent.additionalInformation.nomsNumber,
+              hmppsDomainEvent.occurredAt.toLocalDate()
+            )
+          }
+        }
+      }
+      "prison-offender-events.prisoner.released" -> {
+        val hmppsDomainEvent = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
+        when (hmppsDomainEvent.additionalInformation.reason) {
+          "RELEASED", "RELEASED_HOSPITAL" -> {
+            releaseAndRecallService.prisonerReleased(
               hmppsDomainEvent.additionalInformation.nomsNumber,
               hmppsDomainEvent.occurredAt.toLocalDate()
             )

@@ -57,4 +57,39 @@ class ReleaseAndRecallServiceTest {
       isNull()
     )
   }
+
+  @Test
+  internal fun `prisoner will be released`() {
+    val occurred = LocalDate.of(2021, 5, 12)
+    whenever(communityService.prisonerReleased("A5194DY", occurred)).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+
+    service.prisonerReleased("A5194DY", occurred)
+
+    verify(communityService).prisonerReleased("A5194DY", occurred)
+    verify(telemetryClient).trackEvent(
+      eq("P2PPrisonerReleased"),
+      check {
+        assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
+        assertThat(it["occurred"]).isEqualTo(occurred.toString())
+      },
+      isNull()
+    )
+  }
+
+  @Test
+  internal fun `prisoner not released`() {
+    val occurred = LocalDate.of(2021, 5, 12)
+    whenever(communityService.prisonerReleased("A5194DY", occurred)).thenReturn(null)
+
+    service.prisonerReleased("A5194DY", occurred)
+
+    verify(communityService).prisonerReleased("A5194DY", occurred)
+    verify(telemetryClient).trackEvent(
+      eq("P2PPrisonerNotReleased"),
+      check {
+        assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
+      },
+      isNull()
+    )
+  }
 }

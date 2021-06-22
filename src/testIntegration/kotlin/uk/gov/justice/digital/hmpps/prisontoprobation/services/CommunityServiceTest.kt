@@ -444,6 +444,95 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
     }
   }
 
+  @Nested
+  internal inner class PrisonerReleased {
+    @Test
+    internal fun `prisoner will be released`() {
+      val expectedCustody = Custody(Institution("HMP Brixton"), "38339A")
+      val occurred = LocalDate.of(2021, 5, 12)
+
+      communityMockServer.stubFor(
+        put(anyUrl())
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withBody(expectedCustody.asJson())
+              .withStatus(HTTP_OK)
+          )
+      )
+
+      val custody = service.prisonerReleased("A5194DY", occurred)
+
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
+          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+      )
+      assertThat(custody).isEqualTo(expectedCustody)
+    }
+
+    @Test
+    internal fun `prisoner not found`() {
+      val occurred = LocalDate.of(2021, 5, 12)
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\": \"not found\"}")
+            .withStatus(HTTP_NOT_FOUND)
+        )
+      )
+
+      val custody = service.prisonerReleased("A5194DY", occurred)
+
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
+          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+      )
+      assertThat(custody).isNull()
+    }
+
+    @Test
+    internal fun `prisoner does not have single conviction`() {
+      val occurred = LocalDate.of(2021, 5, 12)
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody("{\"error\": \"not found\"}")
+            .withStatus(HTTP_CONFLICT)
+        )
+      )
+
+      val custody = service.prisonerReleased("A5194DY", occurred)
+
+      communityMockServer.verify(
+        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Content-Type", equalTo("application/json"))
+          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+      )
+      assertThat(custody).isNull()
+    }
+
+    @Test
+    fun `will throw exception for other types of http responses`() {
+      val occurred = LocalDate.of(2021, 5, 12)
+      communityMockServer.stubFor(
+        put(anyUrl()).willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(HTTP_BAD_REQUEST)
+        )
+      )
+
+      assertThatThrownBy { service.prisonerReleased("A5194DY", occurred) }.isInstanceOf(BadRequest::class.java)
+    }
+  }
+
   private fun createUpdatedCustody() = Custody(
     institution = Institution("Doncaster"),
     bookingNumber = "38353A"
