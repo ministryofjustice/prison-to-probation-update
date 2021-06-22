@@ -1,5 +1,9 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.microsoft.applicationinsights.TelemetryClient
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
@@ -13,10 +17,14 @@ class HMPPSPrisonerChangesListenerPusherTest {
   private val telemetryClient: TelemetryClient = mock()
   private val releaseAndRecallService = ReleaseAndRecallService(communityService, telemetryClient)
   private lateinit var pusher: HMPPSPrisonerChangesListenerPusher
+  private val objectMapper: ObjectMapper = ObjectMapper().registerKotlinModule().apply {
+    this.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    this.registerModule(JavaTimeModule())
+  }
 
   @BeforeEach
   fun before() {
-    pusher = HMPPSPrisonerChangesListenerPusher(releaseAndRecallService)
+    pusher = HMPPSPrisonerChangesListenerPusher(releaseAndRecallService, objectMapper)
   }
 
   @Test
