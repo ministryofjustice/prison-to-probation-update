@@ -18,10 +18,7 @@ class HMPPSPrisonerChangesListenerPusher(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  @JmsListener(
-    destination = "#{@'hmpps.sqs-uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties'.hmppsQueue.queueName}",
-    containerFactory = "hmppsJmsListenerContainerFactory"
-  )
+  @JmsListener(destination = "#{@'hmpps.sqs-uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties'.queues['hmppsQueue'].queueName}", containerFactory = "hmppsJmsListenerContainerFactory")
   fun pushHMPPSPrisonUpdateToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = objectMapper.readValue(requestJson, HMPPSMessage::class.java)
