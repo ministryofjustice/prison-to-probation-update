@@ -50,13 +50,13 @@ class HMPPSPrisonerChangesListenerPusherTest {
     @Test
     fun `will call community api for a prisoner released event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleased.json".readResourceAsText())
-      verify(communityService).prisonerReleased("A5194DY", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
     }
 
     @Test
     fun `will call community api for a prisoner released to hospital event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleasedToHospital.json".readResourceAsText())
-      verify(communityService).prisonerReleased("A5194DY", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
     }
 
     @Test

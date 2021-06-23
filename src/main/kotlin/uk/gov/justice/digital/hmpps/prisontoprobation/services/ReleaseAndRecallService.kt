@@ -41,17 +41,16 @@ class ReleaseAndRecallService(
       "prisonId" to prisonId,
       "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE)
     )
-    communityService . prisonerReleased (nomsNumber, releaseDate)
-    ?.let {
-      telemetryClient.trackEvent(
-        "P2PPrisonerReleased",
-        mapOf(
-          "nomsNumber" to nomsNumber,
-          "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE)
-        ),
-        null
-      )
-    }
-      ?: telemetryClient.trackEvent("P2PPrisonerNotReleased", mapOf("nomsNumber" to nomsNumber), null)
+    communityService.prisonerReleased(nomsNumber, releaseDate)
+      ?.let {
+        telemetryClient.trackEvent(
+          "P2PPrisonerReleased",
+          mapOf(
+            "nomsNumber" to nomsNumber,
+            "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE)
+          ),
+          null
+        )
+      } ?: telemetryClient.trackEvent("P2PPrisonerNotReleased", telemetryProperties, null)
   }
 }
