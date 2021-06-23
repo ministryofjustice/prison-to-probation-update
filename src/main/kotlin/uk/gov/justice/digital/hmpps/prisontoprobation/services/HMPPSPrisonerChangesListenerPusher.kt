@@ -32,6 +32,7 @@ class HMPPSPrisonerChangesListenerPusher(
           "RECALL" -> {
             releaseAndRecallService.prisonerRecalled(
               hmppsDomainEvent.additionalInformation.nomsNumber,
+              hmppsDomainEvent.additionalInformation.prisonId,
               hmppsDomainEvent.occurredAt.toLocalDate()
             )
           }
@@ -53,7 +54,7 @@ class HMPPSPrisonerChangesListenerPusher(
   }
 }
 
-data class AdditionalInformation(val nomsNumber: String, val reason: String)
+data class AdditionalInformation(val nomsNumber: String, val reason: String, val prisonId: String)
 data class HMPPSDomainEvent(val occurredAt: LocalDateTime, val additionalInformation: AdditionalInformation)
 
 data class HMPPSEventType(val Value: String, val Type: String)
