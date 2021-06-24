@@ -22,7 +22,7 @@ class AwsSqsConfig(private val hmppsQueueService: HmppsQueueService) {
     with(sqsConfigProperties) {
       amazonSQS(prisonEventQueue().queueAccessKeyId, prisonEventQueue().queueSecretAccessKey, region)
         .also { log.info("Created aws sqs client for queue ${prisonEventQueue().queueName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, prisonEventQueue().queueName, awsSqsDlqClient, prisonEventQueue().dlqName) }
+        .also { hmppsQueueService.registerHmppsQueue("prisonEventQueue", it, prisonEventQueue().queueName, awsSqsDlqClient, prisonEventQueue().dlqName) }
     }
 
   @Bean
@@ -30,7 +30,7 @@ class AwsSqsConfig(private val hmppsQueueService: HmppsQueueService) {
     with(sqsConfigProperties) {
       amazonSQS(hmppsDomainEventQueue().queueAccessKeyId, hmppsDomainEventQueue().queueSecretAccessKey, region)
         .also { log.info("Created aws sqs client for queue ${hmppsDomainEventQueue().queueName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, hmppsDomainEventQueue().queueName, hmppsAwsSqsDlqClient, hmppsDomainEventQueue().dlqName) }
+        .also { hmppsQueueService.registerHmppsQueue("hmppsDomainEventQueue", it, hmppsDomainEventQueue().queueName, hmppsAwsSqsDlqClient, hmppsDomainEventQueue().dlqName) }
     }
 
   @Bean
