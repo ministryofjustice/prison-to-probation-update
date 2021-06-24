@@ -48,7 +48,7 @@ class LocalstackSqsConfig(private val hmppsQueueService: HmppsQueueService) {
           )
         }
         .also { log.info("Queue ${prisonEventQueue().queueName} has subscribed to dps topic ${prisonEventQueue().topicName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, prisonEventQueue().queueName, awsSqsDlqClient, prisonEventQueue().dlqName) }
+        .also { hmppsQueueService.registerHmppsQueue("prisonEventQueue", it, prisonEventQueue().queueName, awsSqsDlqClient, prisonEventQueue().dlqName) }
     }
 
   @Bean("awsSqsDlqClient")
@@ -84,7 +84,7 @@ class LocalstackSqsConfig(private val hmppsQueueService: HmppsQueueService) {
           )
         }
         .also { log.info("Queue ${hmppsDomainEventQueue().queueName} has subscribed to hmpps topic ${hmppsDomainEventQueue().topicName}") }
-        .also { hmppsQueueService.registerHmppsQueue(it, hmppsDomainEventQueue().queueName, hmppsAwsSqsDlqClient, hmppsDomainEventQueue().dlqName) }
+        .also { hmppsQueueService.registerHmppsQueue("hmppsDomainEventQueue", it, hmppsDomainEventQueue().queueName, hmppsAwsSqsDlqClient, hmppsDomainEventQueue().dlqName) }
     }
 
   @Bean("hmppsAwsSqsDlqClient")
