@@ -41,7 +41,7 @@ class ReleaseAndRecallService(
       "prisonId" to prisonId,
       "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE)
     )
-    communityService.prisonerReleased(nomsNumber, releaseDate)
+    communityService.prisonerReleased(nomsNumber, prisonId, releaseDate)
       ?.let {
         telemetryClient.trackEvent(
           "P2PPrisonerReleased",
