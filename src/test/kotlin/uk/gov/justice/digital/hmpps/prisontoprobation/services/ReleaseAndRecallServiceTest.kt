@@ -54,6 +54,8 @@ class ReleaseAndRecallServiceTest {
       eq("P2PPrisonerNotRecalled"),
       check {
         assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
+        assertThat(it["prisonId"]).isEqualTo("MDI")
+        assertThat(it["recallDate"]).isEqualTo(recallDate.toString())
       },
       isNull()
     )
@@ -90,6 +92,8 @@ class ReleaseAndRecallServiceTest {
       eq("P2PPrisonerNotReleased"),
       check {
         assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
+        assertThat(it["prisonId"]).isEqualTo("MDI")
+        assertThat(it["releaseDate"]).isEqualTo(releaseDate.toString())
       },
       isNull()
     )
