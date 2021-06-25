@@ -18,19 +18,20 @@ class ReleaseAndRecallService(
 
   fun prisonerRecalled(nomsNumber: String, prisonId: String, recallDate: LocalDate) {
 
+    val telemetryProperties = mapOf(
+      "nomsNumber" to nomsNumber,
+      "prisonId" to prisonId,
+      "recallDate" to recallDate.format(DateTimeFormatter.ISO_DATE)
+    )
     communityService.prisonerRecalled(nomsNumber, prisonId, recallDate)
       ?.let {
         telemetryClient.trackEvent(
           "P2PPrisonerRecalled",
-          mapOf(
-            "nomsNumber" to nomsNumber,
-            "prisonId" to prisonId,
-            "recallDate" to recallDate.format(DateTimeFormatter.ISO_DATE)
-          ),
+          telemetryProperties,
           null
         )
       }
-      ?: telemetryClient.trackEvent("P2PPrisonerNotRecalled", mapOf("nomsNumber" to nomsNumber), null)
+      ?: telemetryClient.trackEvent("P2PPrisonerNotRecalled", telemetryProperties, null)
   }
 
   fun prisonerReleased(nomsNumber: String, occurred: LocalDate) =
