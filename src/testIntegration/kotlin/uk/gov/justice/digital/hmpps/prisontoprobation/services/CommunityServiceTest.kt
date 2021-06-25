@@ -360,7 +360,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
     @Test
     internal fun `prisoner will be recalled`() {
       val expectedCustody = Custody(Institution("HMP Brixton"), "38339A")
-      val occurred = LocalDate.of(2021, 5, 12)
+      val recallDate = LocalDate.of(2021, 5, 12)
 
       communityMockServer.stubFor(
         put(anyUrl())
@@ -372,20 +372,23 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", occurred)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+          .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
+          .withRequestBody(
+            MatchesJsonPathPattern("recallDate", matching(".*"))
+          )
       )
       assertThat(custody).isEqualTo(expectedCustody)
     }
 
     @Test
     internal fun `prisoner not found`() {
-      val occurred = LocalDate.of(2021, 5, 12)
+      val recallDate = LocalDate.of(2021, 5, 12)
       communityMockServer.stubFor(
         put(anyUrl()).willReturn(
           aResponse()
@@ -395,20 +398,21 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", occurred)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+          .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
+          .withRequestBody(MatchesJsonPathPattern("recallDate", matching(".*")))
       )
       assertThat(custody).isNull()
     }
 
     @Test
     internal fun `prisoner does not have single conviction`() {
-      val occurred = LocalDate.of(2021, 5, 12)
+      val recallDate = LocalDate.of(2021, 5, 12)
       communityMockServer.stubFor(
         put(anyUrl()).willReturn(
           aResponse()
@@ -418,20 +422,21 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", occurred)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withRequestBody(MatchesJsonPathPattern("occurred", matching(".*")))
+          .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
+          .withRequestBody(MatchesJsonPathPattern("recallDate", matching(".*")))
       )
       assertThat(custody).isNull()
     }
 
     @Test
     fun `will throw exception for other types of http responses`() {
-      val occurred = LocalDate.of(2021, 5, 12)
+      val recallDate = LocalDate.of(2021, 5, 12)
       communityMockServer.stubFor(
         put(anyUrl()).willReturn(
           aResponse()
@@ -440,7 +445,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      assertThatThrownBy { service.prisonerRecalled("A5194DY", occurred) }.isInstanceOf(BadRequest::class.java)
+      assertThatThrownBy { service.prisonerRecalled("A5194DY", "MDI", recallDate) }.isInstanceOf(BadRequest::class.java)
     }
   }
 
