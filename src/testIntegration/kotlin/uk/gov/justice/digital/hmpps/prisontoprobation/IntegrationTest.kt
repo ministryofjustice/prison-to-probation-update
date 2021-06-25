@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.prisontoprobation
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -177,5 +178,43 @@ abstract class IntegrationTest {
     val msgsOnQueue = queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt() ?: 0
     val msgsInFlight = queueAttributes.attributes["ApproximateNumberOfMessagesNotVisible"]?.toInt() ?: 0
     return msgsOnQueue + msgsInFlight
+  }
+
+  protected fun subPing(status: Int) {
+    oauthMockServer.stubFor(
+      WireMock.get("/auth/health/ping").willReturn(
+        WireMock.aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) "pong" else "some error")
+          .withStatus(status)
+      )
+    )
+
+    prisonMockServer.stubFor(
+      WireMock.get("/health/ping").willReturn(
+        WireMock.aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) "pong" else "some error")
+          .withStatus(status)
+      )
+    )
+
+    communityMockServer.stubFor(
+      WireMock.get("/health/ping").willReturn(
+        WireMock.aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) "pong" else "some error")
+          .withStatus(status)
+      )
+    )
+
+    searchMockServer.stubFor(
+      WireMock.get("/health/ping").willReturn(
+        WireMock.aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withBody(if (status == 200) "pong" else "some error")
+          .withStatus(status)
+      )
+    )
   }
 }

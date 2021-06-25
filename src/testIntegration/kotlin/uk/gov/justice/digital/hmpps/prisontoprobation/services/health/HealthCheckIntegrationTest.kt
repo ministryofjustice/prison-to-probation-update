@@ -1,34 +1,12 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services.health
 
-import com.amazonaws.services.sqs.model.GetQueueAttributesRequest
-import com.amazonaws.services.sqs.model.GetQueueAttributesResult
-import com.amazonaws.services.sqs.model.QueueAttributeName
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.nhaarman.mockitokotlin2.whenever
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.util.ReflectionTestUtils
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
 
 @ExtendWith(SpringExtension::class)
 class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
-  @Autowired
-  private lateinit var prisonEventsQueueHealth: PrisonEventsQueueHealth
-
-  @Autowired
-  private lateinit var hmppsEventsQueueHealth: HMPPSEventsQueueHealth
-
-  @AfterEach
-  fun tearDown() {
-    ReflectionTestUtils.setField(prisonEventsQueueHealth, "queueName", queueName)
-    ReflectionTestUtils.setField(prisonEventsQueueHealth, "dlqName", dlqName)
-    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "queueName", hmppsQueueName)
-    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "dlqName", hmppsDlqName)
-  }
 
   @Test
   fun `Health page reports ok`() {
@@ -95,24 +73,7 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   }
 
   @Test
-  fun `Queue does not exist reports down`() {
-    ReflectionTestUtils.setField(prisonEventsQueueHealth, "queueName", "missing_queue")
-    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "queueName", "missing_queue")
-    subPing(200)
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody()
-      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("status").isEqualTo("DOWN")
-  }
-
-  @Test
-  fun `Queue health ok and dlq health ok, reports everything up`() {
+  fun `Prison events queue health reports UP`() {
     subPing(200)
 
     webTestClient.get()
@@ -121,15 +82,17 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("UP")
-      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo(DlqStatus.UP.description)
-      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("UP")
-      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo(DlqStatus.UP.description)
       .jsonPath("status").isEqualTo("UP")
+      .jsonPath("components.prisonEventQueue-health.details.queueName").isEqualTo(queueName)
+      .jsonPath("components.prisonEventQueue-health.details.messagesOnQueue").isEqualTo(0)
+      .jsonPath("components.prisonEventQueue-health.details.messagesInFlight").isEqualTo(0)
+      .jsonPath("components.prisonEventQueue-health.details.dlqName").isEqualTo(dlqName)
+      .jsonPath("components.prisonEventQueue-health.details.dlqStatus").isEqualTo("UP")
+      .jsonPath("components.prisonEventQueue-health.details.messagesOnDlq").isEqualTo(0)
   }
 
   @Test
-  fun `Dlq health reports interesting attributes`() {
+  fun `HMPPS domain events queue health reports UP`() {
     subPing(200)
 
     webTestClient.get()
@@ -138,81 +101,13 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .expectStatus()
       .isOk
       .expectBody()
-      .jsonPath("components.prisonEventsQueueHealth.details.queueName").isEqualTo(queueName)
-      .jsonPath("components.prisonEventsQueueHealth.details.dlqName").isEqualTo(dlqName)
-      .jsonPath("components.prisonEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.queueName").isEqualTo(hmppsQueueName)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqName").isEqualTo(hmppsDlqName)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.${QueueAttributes.MESSAGES_ON_DLQ.healthName}").isEqualTo(0)
-  }
-
-  @Test
-  fun `Dlq down brings main health and queue health down`() {
-    subPing(200)
-    mockQueueWithoutRedrivePolicyAttributes()
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody()
-      .jsonPath("status").isEqualTo("DOWN")
-      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-  }
-
-  @Test
-  fun `Dlq and queue down still shows queue names`() {
-    subPing(200)
-    mockQueueWithoutRedrivePolicyAttributes()
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody()
-      .jsonPath("status").isEqualTo("DOWN")
-      .jsonPath("components.prisonEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.prisonEventsQueueHealth.details.queueName").isEqualTo(queueName)
-      .jsonPath("components.prisonEventsQueueHealth.details.dlqName").isEqualTo(dlqName)
-      .jsonPath("components.HMPPSEventsQueueHealth.status").isEqualTo("DOWN")
-      .jsonPath("components.HMPPSEventsQueueHealth.details.queueName").isEqualTo(hmppsQueueName)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqName").isEqualTo(hmppsDlqName)
-  }
-
-  @Test
-  fun `Main queue has no redrive policy reports dlq down`() {
-    subPing(200)
-    mockQueueWithoutRedrivePolicyAttributes()
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody()
-      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_ATTACHED.description)
-  }
-
-  @Test
-  fun `Dlq not found reports dlq down`() {
-    subPing(200)
-    ReflectionTestUtils.setField(prisonEventsQueueHealth, "dlqName", "missing_queue")
-    ReflectionTestUtils.setField(hmppsEventsQueueHealth, "dlqName", "missing_queue")
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .is5xxServerError
-      .expectBody()
-      .jsonPath("components.prisonEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
-      .jsonPath("components.HMPPSEventsQueueHealth.details.dlqStatus").isEqualTo(DlqStatus.NOT_FOUND.description)
+      .jsonPath("status").isEqualTo("UP")
+      .jsonPath("components.hmppsDomainEventQueue-health.details.queueName").isEqualTo(hmppsQueueName)
+      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesOnQueue").isEqualTo(0)
+      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesInFlight").isEqualTo(0)
+      .jsonPath("components.hmppsDomainEventQueue-health.details.dlqName").isEqualTo(hmppsDlqName)
+      .jsonPath("components.hmppsDomainEventQueue-health.details.dlqStatus").isEqualTo("UP")
+      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesOnDlq").isEqualTo(0)
   }
 
   @Test
@@ -239,54 +134,5 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .isOk
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
-  }
-
-  private fun subPing(status: Int) {
-    oauthMockServer.stubFor(
-      get("/auth/health/ping").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
-    )
-
-    prisonMockServer.stubFor(
-      get("/health/ping").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
-    )
-
-    communityMockServer.stubFor(
-      get("/health/ping").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
-    )
-
-    searchMockServer.stubFor(
-      get("/health/ping").willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
-    )
-  }
-
-  private fun mockQueueWithoutRedrivePolicyAttributes() {
-    val prisonEventsQueueName = ReflectionTestUtils.getField(prisonEventsQueueHealth, "queueName") as String
-    val prisonEventsQueueUrl = awsSqsClient.getQueueUrl(prisonEventsQueueName)
-    whenever(awsSqsClient.getQueueAttributes(GetQueueAttributesRequest(prisonEventsQueueUrl.queueUrl).withAttributeNames(listOf(QueueAttributeName.All.toString()))))
-      .thenReturn(GetQueueAttributesResult())
-    val hmppsEventsQueueName = ReflectionTestUtils.getField(hmppsEventsQueueHealth, "queueName") as String
-    val hmppsEventsQueueUrl = hmppsAwsSqsClient.getQueueUrl(hmppsEventsQueueName)
-    whenever(hmppsAwsSqsClient.getQueueAttributes(GetQueueAttributesRequest(hmppsEventsQueueUrl.queueUrl).withAttributeNames(listOf(QueueAttributeName.All.toString()))))
-      .thenReturn(GetQueueAttributesResult())
   }
 }

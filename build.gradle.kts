@@ -40,7 +40,7 @@ dependencies {
   implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.1020"))
   implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
   implementation("com.amazonaws:aws-java-sdk-sns")
-  implementation("uk.gov.justice.service.hmpps:hmpps-spring-boot-sqs:0.3.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-spring-boot-sqs:0.4.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
