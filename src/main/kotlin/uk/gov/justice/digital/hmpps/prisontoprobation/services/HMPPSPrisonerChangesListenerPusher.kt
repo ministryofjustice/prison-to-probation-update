@@ -44,6 +44,7 @@ class HMPPSPrisonerChangesListenerPusher(
           "RELEASED", "RELEASED_HOSPITAL" -> {
             releaseAndRecallService.prisonerReleased(
               hmppsDomainEvent.additionalInformation.nomsNumber,
+              hmppsDomainEvent.additionalInformation.prisonId,
               hmppsDomainEvent.occurredAt.toLocalDate()
             )
           }
