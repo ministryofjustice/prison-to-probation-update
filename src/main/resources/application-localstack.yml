@@ -2,17 +2,20 @@ graceful:
   shutdown.enabled: false
 
 hmpps.sqs:
-  provider: ${aws.provider}
-  localstackUrl: http://localhost:4566
   queues:
-    prisonEventQueue:
-      topicName: dps-topic
+    prisoneventqueue:
       queueName: dps-queue
       dlqName: dps-dlq
-    hmppsDomainEventQueue:
-      topicName: hmpps-topic
+    hmppseventqueue:
       queueName: hmpps-queue
       dlqName: hmpps-dlq
+
+hmpps.sns:
+  topics:
+    prisonEventTopic:
+      topicArn: arn:aws:sns:eu-west-2:000000000000:prison-event-topic
+    hmppsEventTopic:
+      topicArn: arn:aws:sns:eu-west-2:000000000000:hmpps-event-topic
 
 hmpps.dynamodb:
   provider: ${aws.provider}

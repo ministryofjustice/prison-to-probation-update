@@ -83,12 +83,12 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .isOk
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
-      .jsonPath("components.prisonEventQueue-health.details.queueName").isEqualTo(queueName)
-      .jsonPath("components.prisonEventQueue-health.details.messagesOnQueue").isEqualTo(0)
-      .jsonPath("components.prisonEventQueue-health.details.messagesInFlight").isEqualTo(0)
-      .jsonPath("components.prisonEventQueue-health.details.dlqName").isEqualTo(dlqName)
-      .jsonPath("components.prisonEventQueue-health.details.dlqStatus").isEqualTo("UP")
-      .jsonPath("components.prisonEventQueue-health.details.messagesOnDlq").isEqualTo(0)
+      .jsonPath("components.prisoneventqueue-health.details.queueName").isEqualTo(queueName)
+      .jsonPath("components.prisoneventqueue-health.details.messagesOnQueue").isEqualTo(0)
+      .jsonPath("components.prisoneventqueue-health.details.messagesInFlight").isEqualTo(0)
+      .jsonPath("components.prisoneventqueue-health.details.dlqName").isEqualTo(dlqName)
+      .jsonPath("components.prisoneventqueue-health.details.dlqStatus").isEqualTo("UP")
+      .jsonPath("components.prisoneventqueue-health.details.messagesOnDlq").isEqualTo(0)
   }
 
   @Test
@@ -102,12 +102,12 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .isOk
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
-      .jsonPath("components.hmppsDomainEventQueue-health.details.queueName").isEqualTo(hmppsQueueName)
-      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesOnQueue").isEqualTo(0)
-      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesInFlight").isEqualTo(0)
-      .jsonPath("components.hmppsDomainEventQueue-health.details.dlqName").isEqualTo(hmppsDlqName)
-      .jsonPath("components.hmppsDomainEventQueue-health.details.dlqStatus").isEqualTo("UP")
-      .jsonPath("components.hmppsDomainEventQueue-health.details.messagesOnDlq").isEqualTo(0)
+      .jsonPath("components.hmppseventqueue-health.details.queueName").isEqualTo(hmppsQueueName)
+      .jsonPath("components.hmppseventqueue-health.details.messagesOnQueue").isEqualTo(0)
+      .jsonPath("components.hmppseventqueue-health.details.messagesInFlight").isEqualTo(0)
+      .jsonPath("components.hmppseventqueue-health.details.dlqName").isEqualTo(hmppsDlqName)
+      .jsonPath("components.hmppseventqueue-health.details.dlqStatus").isEqualTo("UP")
+      .jsonPath("components.hmppseventqueue-health.details.messagesOnDlq").isEqualTo(0)
   }
 
   @Test

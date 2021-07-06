@@ -44,21 +44,21 @@ generic-service:
       OAUTH_CLIENT_ID: "PRISON_TO_PROBATION_CLIENT_ID"
       OAUTH_CLIENT_SECRET: "PRISON_TO_PROBATION_CLIENT_SECRET"
     ptpu-sqs-instance-output:
-      SQS_AWS_ACCESS_KEY_ID: "access_key_id"
-      SQS_AWS_SECRET_ACCESS_KEY: "secret_access_key"
-      SQS_QUEUE_NAME: "sqs_ptpu_name"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_NAME: "sqs_ptpu_name"
     ptpu-sqs-dl-instance-output:
-      SQS_AWS_DLQ_ACCESS_KEY_ID: "access_key_id"
-      SQS_AWS_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
-      SQS_DLQ_NAME: "sqs_ptpu_name"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_NAME: "sqs_ptpu_name"
     sqs-hmpps-domain-events:
-      SQS_HMPPS_AWS_ACCESS_KEY_ID: "access_key_id"
-      SQS_HMPPS_AWS_SECRET_ACCESS_KEY: "secret_access_key"
-      SQS_HMPPS_QUEUE_NAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_QUEUE_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_QUEUE_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_QUEUE_NAME: "sqs_queue_name"
     sqs-hmpps-domain-events-dlq:
-      SQS_HMPPS_AWS_DLQ_ACCESS_KEY_ID: "access_key_id"
-      SQS_HMPPS_AWS_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
-      SQS_HMPPS_DLQ_NAME: "sqs_queue_name"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_DLQ_ACCESS_KEY_ID: "access_key_id"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
+      HMPPS_SQS_QUEUES_HMPPSEVENTQUEUE_DLQ_NAME: "sqs_queue_name"
     message-dynamodb-output:
       DYNAMODB_TABLENAME: "table_name"
       DYNAMODB_AWS_ACCESS_KEY_ID: "access_key_id"
