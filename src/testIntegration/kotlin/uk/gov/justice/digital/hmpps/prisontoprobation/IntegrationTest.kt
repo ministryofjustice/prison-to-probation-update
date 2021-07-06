@@ -12,14 +12,10 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.context.ApplicationContext
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -31,13 +27,11 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
-import uk.gov.justice.hmpps.sqs.HmppsQueueFactory
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(IntegrationTest.SqsConfig::class)
 @ActiveProfiles("test")
 abstract class IntegrationTest {
   @Value("\${token}")
@@ -58,29 +52,14 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var hmppsSqsProperties: HmppsSqsProperties
 
-  @SpyBean
-  @Qualifier("prisoneventqueue-sqs-client")
-  protected lateinit var prisonEventQueueSqsClient: AmazonSQS
+  protected val prisonEventQueueSqsClient by lazy { prisonEventQueue.sqsClient }
+  protected val hmppsEventQueueSqsClient by lazy { hmppsEventQueue.sqsClient }
+  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient }
 
-  internal val queueName: String by lazy { prisonEventQueue.queueName }
-
-  @SpyBean
-  @Qualifier("hmppseventqueue-sqs-client")
-  protected lateinit var hmppsEventQueueSqsClient: AmazonSQS
-
-  internal val hmppsQueueName: String by lazy { hmppsEventQueue.queueName }
-
-  @SpyBean
-  @Qualifier("prisoneventqueue-sqs-dlq-client")
-  internal lateinit var prisonEventSqsDlqClient: AmazonSQS
-
-  @SpyBean
-  @Qualifier("hmppseventqueue-sqs-dlq-client")
-  internal lateinit var hmppsEventSqsDlqClient: AmazonSQS
-
-  internal val dlqName: String by lazy { prisonEventQueue.dlqName }
-
-  internal val hmppsDlqName: String by lazy { hmppsEventQueue.dlqName }
+  internal val prisonEventQueueName: String by lazy { prisonEventQueue.queueName }
+  internal val hmppsEventQueueName: String by lazy { hmppsEventQueue.queueName }
+  internal val prisonEventDlqName: String by lazy { prisonEventQueue.dlqName }
+  internal val hmppsEventDlqName: String by lazy { hmppsEventQueue.dlqName }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
@@ -103,9 +82,9 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var messageRepository: MessageRepository
 
-  val queueUrl: String by lazy { prisonEventQueueSqsClient.getQueueUrl(queueName).queueUrl }
-  val dlqUrl: String by lazy { prisonEventSqsDlqClient.getQueueUrl(dlqName).queueUrl }
-  val hmppsQueueUrl: String by lazy { hmppsEventQueueSqsClient.getQueueUrl(hmppsQueueName).queueUrl }
+  val queueUrl: String by lazy { prisonEventQueueSqsClient.getQueueUrl(prisonEventQueueName).queueUrl }
+  val dlqUrl: String by lazy { prisonEventSqsDlqClient.getQueueUrl(prisonEventDlqName).queueUrl }
+  val hmppsQueueUrl: String by lazy { hmppsEventQueueSqsClient.getQueueUrl(hmppsEventQueueName).queueUrl }
 
   @BeforeEach
   fun `Debug bean information`() {
@@ -229,36 +208,5 @@ abstract class IntegrationTest {
           .withStatus(status)
       )
     )
-  }
-
-  @TestConfiguration
-  class SqsConfig(private val hmppsQueueFactory: HmppsQueueFactory, private val hmppsSqsProperties: HmppsSqsProperties) {
-
-    val prisonEventConfig = hmppsSqsProperties.queues["prisoneventqueue"]
-      ?: throw MissingQueueException("HmppsSqsProperties config for prisoneventqueue not found")
-    val hmppsEventConfig = hmppsSqsProperties.queues["hmppseventqueue"]
-      ?: throw MissingQueueException("HmppsSqsProperties config for hmppseventqueue not found")
-
-    @Bean("prisoneventqueue-sqs-dlq-client")
-    fun prisonEventQueueSqsDlqClient(): AmazonSQS =
-      hmppsQueueFactory.createSqsDlqClient(prisonEventConfig, hmppsSqsProperties)
-
-    @Bean("prisoneventqueue-sqs-client")
-    fun prisonEventQueueSqsClient(
-      hmppsSqsProperties: HmppsSqsProperties,
-      @Qualifier("prisoneventqueue-sqs-dlq-client") prisonEventQueueSqsDlqClient: AmazonSQS
-    ): AmazonSQS =
-      hmppsQueueFactory.createSqsClient(prisonEventConfig, hmppsSqsProperties, prisonEventQueueSqsDlqClient)
-
-    @Bean("hmppseventqueue-sqs-dlq-client")
-    fun hmppsEventQueueSqsDlqClient(): AmazonSQS =
-      hmppsQueueFactory.createSqsDlqClient(hmppsEventConfig, hmppsSqsProperties)
-
-    @Bean("hmppseventqueue-sqs-client")
-    fun hmppsEventQueueSqsClient(
-      hmppsSqsProperties: HmppsSqsProperties,
-      @Qualifier("hmppseventqueue-sqs-dlq-client") hmppsEventQueueSqsDlqClient: AmazonSQS
-    ): AmazonSQS =
-      hmppsQueueFactory.createSqsClient(hmppsEventConfig, hmppsSqsProperties, hmppsEventQueueSqsDlqClient)
   }
 }

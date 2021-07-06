@@ -83,10 +83,10 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .isOk
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
-      .jsonPath("components.prisoneventqueue-health.details.queueName").isEqualTo(queueName)
+      .jsonPath("components.prisoneventqueue-health.details.queueName").isEqualTo(prisonEventQueueName)
       .jsonPath("components.prisoneventqueue-health.details.messagesOnQueue").isEqualTo(0)
       .jsonPath("components.prisoneventqueue-health.details.messagesInFlight").isEqualTo(0)
-      .jsonPath("components.prisoneventqueue-health.details.dlqName").isEqualTo(dlqName)
+      .jsonPath("components.prisoneventqueue-health.details.dlqName").isEqualTo(prisonEventDlqName)
       .jsonPath("components.prisoneventqueue-health.details.dlqStatus").isEqualTo("UP")
       .jsonPath("components.prisoneventqueue-health.details.messagesOnDlq").isEqualTo(0)
   }
@@ -102,10 +102,10 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .isOk
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
-      .jsonPath("components.hmppseventqueue-health.details.queueName").isEqualTo(hmppsQueueName)
+      .jsonPath("components.hmppseventqueue-health.details.queueName").isEqualTo(hmppsEventQueueName)
       .jsonPath("components.hmppseventqueue-health.details.messagesOnQueue").isEqualTo(0)
       .jsonPath("components.hmppseventqueue-health.details.messagesInFlight").isEqualTo(0)
-      .jsonPath("components.hmppseventqueue-health.details.dlqName").isEqualTo(hmppsDlqName)
+      .jsonPath("components.hmppseventqueue-health.details.dlqName").isEqualTo(hmppsEventDlqName)
       .jsonPath("components.hmppseventqueue-health.details.dlqStatus").isEqualTo("UP")
       .jsonPath("components.hmppseventqueue-health.details.messagesOnDlq").isEqualTo(0)
   }
