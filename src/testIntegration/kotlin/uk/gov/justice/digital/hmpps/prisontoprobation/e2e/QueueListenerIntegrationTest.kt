@@ -18,17 +18,17 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 class QueueListenerIntegrationTest : IntegrationTest() {
 
   fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
-    val queueAttributes = awsSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
+    val queueAttributes = prisonEventQueueSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
   fun getNumberOfMessagesCurrentlyOnDlq(): Int? {
-    val queueAttributes = awsSqsDlqClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
+    val queueAttributes = prisonEventSqsDlqClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 
   fun getNumberOfMessagesCurrentlyOnHmppsQueue(): Int? {
-    val queueAttributes = hmppsAwsSqsClient.getQueueAttributes(hmppsQueueUrl, listOf("ApproximateNumberOfMessages"))
+    val queueAttributes = hmppsEventQueueSqsClient.getQueueAttributes(hmppsQueueUrl, listOf("ApproximateNumberOfMessages"))
     return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
   }
 

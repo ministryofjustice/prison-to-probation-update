@@ -19,7 +19,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    awsSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/movement/1") } matches { it == 2 }
@@ -40,7 +40,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    awsSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 2 }
@@ -68,7 +68,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    awsSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -88,7 +88,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    awsSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -108,7 +108,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    awsSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }
@@ -128,7 +128,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
 
-    hmppsAwsSqsClient.sendMessage(hmppsQueueUrl, message)
+    hmppsEventQueueSqsClient.sendMessage(hmppsQueueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5194DY/recalled") } matches { it == 1 }
@@ -141,7 +141,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
 
-    hmppsAwsSqsClient.sendMessage(hmppsQueueUrl, message)
+    hmppsEventQueueSqsClient.sendMessage(hmppsQueueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnHmppsQueue() } matches { it == 0 }
     await untilCallTo { communityPutCountFor("/secure/offenders/nomsNumber/A5194DY/released") } matches { it == 1 }

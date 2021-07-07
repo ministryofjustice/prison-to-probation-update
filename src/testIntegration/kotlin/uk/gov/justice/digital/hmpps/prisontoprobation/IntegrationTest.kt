@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
@@ -24,14 +23,13 @@ import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.SqsConfigProperties
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.hmppsDomainEventQueue
-import uk.gov.justice.digital.hmpps.prisontoprobation.config.prisonEventQueue
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesListenerPusher
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
+import uk.gov.justice.hmpps.sqs.MissingQueueException
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -42,32 +40,26 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthHelper
 
+  fun HmppsSqsProperties.prisonEventQueueConfig() =
+    queues["prisoneventqueue"] ?: throw MissingQueueException("prisoneventqueue has not been loaded from configuration properties")
+
+  fun HmppsSqsProperties.hmppsEventQueueConfig() =
+    queues["hmppseventqueue"] ?: throw MissingQueueException("hmppseventqueue has not been loaded from configuration properties")
+
+  protected val prisonEventQueue by lazy { hmppsQueueService.findByQueueId("prisoneventqueue") ?: throw MissingQueueException("HmppsQueue prisoneventqueue not found") }
+  protected val hmppsEventQueue by lazy { hmppsQueueService.findByQueueId("hmppseventqueue") ?: throw MissingQueueException("HmppsQueue hmppseventqueue not found") }
+
   @Autowired
-  protected lateinit var sqsConfigProperties: SqsConfigProperties
+  protected lateinit var hmppsSqsProperties: HmppsSqsProperties
 
-  @SpyBean
-  @Qualifier("awsSqsClient")
-  protected lateinit var awsSqsClient: AmazonSQS
+  protected val prisonEventQueueSqsClient by lazy { prisonEventQueue.sqsClient }
+  protected val hmppsEventQueueSqsClient by lazy { hmppsEventQueue.sqsClient }
+  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient }
 
-  internal val queueName: String by lazy { sqsConfigProperties.prisonEventQueue().queueName }
-
-  @SpyBean
-  @Qualifier("hmppsAwsSqsClient")
-  protected lateinit var hmppsAwsSqsClient: AmazonSQS
-
-  internal val hmppsQueueName: String by lazy { sqsConfigProperties.hmppsDomainEventQueue().queueName }
-
-  @SpyBean
-  @Qualifier("awsSqsDlqClient")
-  internal lateinit var awsSqsDlqClient: AmazonSQS
-
-  @SpyBean
-  @Qualifier("hmppsAwsSqsDlqClient")
-  internal lateinit var hmppsAwsSqsDlqClient: AmazonSQS
-
-  internal val dlqName: String by lazy { sqsConfigProperties.prisonEventQueue().dlqName }
-
-  internal val hmppsDlqName: String by lazy { sqsConfigProperties.hmppsDomainEventQueue().dlqName }
+  internal val prisonEventQueueName: String by lazy { prisonEventQueue.queueName }
+  internal val hmppsEventQueueName: String by lazy { hmppsEventQueue.queueName }
+  internal val prisonEventDlqName: String by lazy { prisonEventQueue.dlqName }
+  internal val hmppsEventDlqName: String by lazy { hmppsEventQueue.dlqName }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
@@ -90,9 +82,9 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var messageRepository: MessageRepository
 
-  val queueUrl: String by lazy { awsSqsClient.getQueueUrl(queueName).queueUrl }
-  val dlqUrl: String by lazy { awsSqsDlqClient.getQueueUrl(dlqName).queueUrl }
-  val hmppsQueueUrl: String by lazy { hmppsAwsSqsClient.getQueueUrl(hmppsQueueName).queueUrl }
+  val queueUrl: String by lazy { prisonEventQueueSqsClient.getQueueUrl(prisonEventQueueName).queueUrl }
+  val dlqUrl: String by lazy { prisonEventSqsDlqClient.getQueueUrl(prisonEventDlqName).queueUrl }
+  val hmppsQueueUrl: String by lazy { hmppsEventQueueSqsClient.getQueueUrl(hmppsEventQueueName).queueUrl }
 
   @BeforeEach
   fun `Debug bean information`() {
@@ -107,12 +99,12 @@ abstract class IntegrationTest {
   @BeforeEach
   fun `Reset resources`() {
     messageRepository.deleteAll()
-    awsSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    awsSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    hmppsAwsSqsClient.purgeQueue(PurgeQueueRequest(hmppsQueueUrl))
-    await untilCallTo { awsSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
-    await untilCallTo { awsSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
-    await untilCallTo { hmppsAwsSqsClient.activeMessageCount(hmppsQueueUrl) } matches { it == 0 }
+    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
+    hmppsEventQueueSqsClient.purgeQueue(PurgeQueueRequest(hmppsQueueUrl))
+    await untilCallTo { prisonEventQueueSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
+    await untilCallTo { prisonEventSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
+    await untilCallTo { hmppsEventQueueSqsClient.activeMessageCount(hmppsQueueUrl) } matches { it == 0 }
   }
 
   companion object {
