@@ -6,7 +6,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeParseException
 
 @Service
 @Profile("!no-queue-listener")
@@ -33,7 +36,7 @@ class HMPPSPrisonerChangesListenerPusher(
             releaseAndRecallService.prisonerRecalled(
               hmppsDomainEvent.additionalInformation.nomsNumber,
               hmppsDomainEvent.additionalInformation.prisonId,
-              hmppsDomainEvent.occurredAt.toLocalDate()
+              hmppsDomainEvent.occurredAtLocalDate()
             )
           }
         }
@@ -45,7 +48,7 @@ class HMPPSPrisonerChangesListenerPusher(
             releaseAndRecallService.prisonerReleased(
               hmppsDomainEvent.additionalInformation.nomsNumber,
               hmppsDomainEvent.additionalInformation.prisonId,
-              hmppsDomainEvent.occurredAt.toLocalDate()
+              hmppsDomainEvent.occurredAtLocalDate()
             )
           }
         }
@@ -56,7 +59,21 @@ class HMPPSPrisonerChangesListenerPusher(
 }
 
 data class AdditionalInformation(val nomsNumber: String, val reason: String, val prisonId: String)
-data class HMPPSDomainEvent(val occurredAt: LocalDateTime, val additionalInformation: AdditionalInformation)
+data class HMPPSDomainEvent(val occurredAt: String, val additionalInformation: AdditionalInformation) {
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
+  }
+
+  fun occurredAtLocalDate(): LocalDate {
+    // to allow for breaking change to date format try to parse as offset iso date and iso date
+    return try {
+      OffsetDateTime.parse(occurredAt).toLocalDate()
+    } catch (e: DateTimeParseException) {
+      log.warn("Message contained old style local date $occurredAt")
+      LocalDateTime.parse(occurredAt).toLocalDate()
+    }
+  }
+}
 
 data class HMPPSEventType(val Value: String, val Type: String)
 data class HMPPSMessageAttributes(val eventType: HMPPSEventType)
