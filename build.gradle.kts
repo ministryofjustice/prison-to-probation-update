@@ -36,11 +36,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-ui:1.5.8")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.5.8")
 
-  implementation("org.springframework:spring-jms")
-  implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.1020"))
-  implementation("com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8")
-  implementation("com.amazonaws:aws-java-sdk-sns")
-  implementation("uk.gov.justice.service.hmpps:hmpps-spring-boot-sqs:0.7.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:0.8.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
