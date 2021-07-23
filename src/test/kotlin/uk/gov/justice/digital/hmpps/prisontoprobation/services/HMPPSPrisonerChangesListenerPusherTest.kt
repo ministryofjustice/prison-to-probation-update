@@ -33,7 +33,7 @@ class HMPPSPrisonerChangesListenerPusherTest {
   inner class PrisonerReceivedEvents {
 
     @Test
-    fun `will call community api for a prisoner received recall event`() {
+    fun `will call community api for a prisoner received admission event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerRecalled.json".readResourceAsText())
       verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
     }
@@ -105,7 +105,7 @@ private fun messageThatOccurredAt(occurredAt: String) = """
     "Type": "Notification",
     "MessageId": "ee46cb90-a2de-57bf-86ba-9d2eba64645a",
     "TopicArn": "arn:aws:sns:eu-west-2:754256621582:cloud-platform-Digital-Prison-Services-f221e27fcfcf78f6ab4f4c3cc165eee7",
-    "Message":"{\"version\":\"1.0\", \"occurredAt\":\"$occurredAt\", \"publishedAt\":\"2020-02-12T15:15:09.902048716Z\", \"description\":\"A prisoner has been received into prison\", \"additionalInformation\":{\"nomsNumber\":\"A5194DY\", \"prisonId\":\"MDI\", \"reason\":\"RECALL\", \"source\":\"PROBATION\", \"details\":\"Recall referral date 2021-05-12\"}}",
+    "Message":"{\"version\":\"1.0\", \"occurredAt\":\"$occurredAt\", \"publishedAt\":\"2020-02-12T15:15:09.902048716Z\", \"description\":\"A prisoner has been received into prison\", \"additionalInformation\":{\"nomsNumber\":\"A5194DY\", \"prisonId\":\"MDI\", \"reason\":\"ADMISSION\", \"probableCause\":\"RECALL\", \"source\":\"PROBATION\", \"details\":\"Recall referral date 2021-05-12\"}}",
     "Timestamp": "2020-02-12T15:15:06.239Z",
     "SignatureVersion": "1",
     "Signature": "E0oesISQOBGaDjgOg3wEFfCFcIMNN4GyOdCtLRuhXB8QOzFt5XhzhfhcypPyXvIN+G5+Ky79BK0SlXDWxv9vSw2tOSojNwH1vvbXApInAiqyAgIBNYgUk3l1MzKmkqoH5lWmgmo5U4szk5jKbL0LVVc4BYRY6pIq2ZWt4pPoX47Z5oibjfXZZhKsR6k5VCTnUD7lqa2hkWWqaqZIsoeCG5g83Xb5d7s+LlN5iV74gwP/lgZT0E/uSnRCk8Nx0UUPEvpk/04V5yaW6W9YP/hwKMNep873tYzTcFGilyKoU5ucy4vVMulwT+EL3iOmumQEoFcCd/BQotjU2+wQ4wL3/Q==",

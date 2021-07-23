@@ -28,7 +28,7 @@ class ReleaseAndRecallServiceTest {
     val recallDate = LocalDate.of(2021, 5, 12)
     whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate)).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
 
-    service.prisonerRecalled("A5194DY", "MDI", recallDate)
+    service.prisonerRecalled("A5194DY", "MDI", recallDate, "RECALL")
 
     verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate)
     verify(telemetryClient).trackEvent(
@@ -37,6 +37,7 @@ class ReleaseAndRecallServiceTest {
         assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
         assertThat(it["prisonId"]).isEqualTo("MDI")
         assertThat(it["recallDate"]).isEqualTo(recallDate.toString())
+        assertThat(it["probableCause"]).isEqualTo("RECALL")
       },
       isNull()
     )
@@ -47,7 +48,7 @@ class ReleaseAndRecallServiceTest {
     val recallDate = LocalDate.of(2021, 5, 12)
     whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate)).thenReturn(null)
 
-    service.prisonerRecalled("A5194DY", "MDI", recallDate)
+    service.prisonerRecalled("A5194DY", "MDI", recallDate, "REMAND")
 
     verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate)
     verify(telemetryClient).trackEvent(
@@ -56,6 +57,7 @@ class ReleaseAndRecallServiceTest {
         assertThat(it["nomsNumber"]).isEqualTo("A5194DY")
         assertThat(it["prisonId"]).isEqualTo("MDI")
         assertThat(it["recallDate"]).isEqualTo(recallDate.toString())
+        assertThat(it["probableCause"]).isEqualTo("REMAND")
       },
       isNull()
     )
