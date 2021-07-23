@@ -16,12 +16,13 @@ class ReleaseAndRecallService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  fun prisonerRecalled(nomsNumber: String, prisonId: String, recallDate: LocalDate) {
+  fun prisonerRecalled(nomsNumber: String, prisonId: String, recallDate: LocalDate, probableCause: String) {
 
     val telemetryProperties = mapOf(
       "nomsNumber" to nomsNumber,
       "prisonId" to prisonId,
-      "recallDate" to recallDate.format(DateTimeFormatter.ISO_DATE)
+      "recallDate" to recallDate.format(DateTimeFormatter.ISO_DATE),
+      "probableCause" to probableCause
     )
     communityService.prisonerRecalled(nomsNumber, prisonId, recallDate)
       ?.let { telemetryClient.trackEvent("P2PPrisonerRecalled", telemetryProperties, null) }
