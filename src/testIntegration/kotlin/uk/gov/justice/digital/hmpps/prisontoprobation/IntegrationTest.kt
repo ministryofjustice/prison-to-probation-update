@@ -54,12 +54,12 @@ abstract class IntegrationTest {
 
   protected val prisonEventQueueSqsClient by lazy { prisonEventQueue.sqsClient }
   protected val hmppsEventQueueSqsClient by lazy { hmppsEventQueue.sqsClient }
-  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient }
+  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient as AmazonSQS }
 
-  internal val prisonEventQueueName: String by lazy { prisonEventQueue.queueName }
-  internal val hmppsEventQueueName: String by lazy { hmppsEventQueue.queueName }
-  internal val prisonEventDlqName: String by lazy { prisonEventQueue.dlqName }
-  internal val hmppsEventDlqName: String by lazy { hmppsEventQueue.dlqName }
+  internal val prisonEventQueueName by lazy { prisonEventQueue.queueName }
+  internal val hmppsEventQueueName by lazy { hmppsEventQueue.queueName }
+  internal val prisonEventDlqName by lazy { prisonEventQueue.dlqName as String }
+  internal val hmppsEventDlqName by lazy { hmppsEventQueue.dlqName as String }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
