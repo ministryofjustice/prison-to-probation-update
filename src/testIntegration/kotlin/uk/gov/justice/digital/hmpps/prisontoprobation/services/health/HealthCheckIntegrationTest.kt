@@ -16,7 +16,7 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
       .uri("/health")
       .exchange()
       .expectStatus()
-      .isOk()
+      .isOk
       .expectBody()
       .jsonPath("components.OAuthApiHealth.details.HttpStatus").isEqualTo("OK")
       .jsonPath("components.prisonApiHealth.details.HttpStatus").isEqualTo("OK")
