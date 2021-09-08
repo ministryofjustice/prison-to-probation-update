@@ -53,6 +53,12 @@ dependencies {
   testImplementation("org.mockito:mockito-inline:3.12.4")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions.jvmTarget = "16"
+java {
+  toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+}
+
+tasks {
+  withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "16"
+  }
 }
