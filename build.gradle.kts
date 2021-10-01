@@ -1,6 +1,6 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.8"
-  kotlin("plugin.spring") version "1.5.30"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.9"
+  kotlin("plugin.spring") version "1.5.31"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
 }
@@ -23,14 +23,14 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.26.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.26.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.28.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.28.0")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
   implementation("com.google.code.gson:gson:2.8.8")
 
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.5")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0")
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.10")
   implementation("org.springdoc:springdoc-openapi-ui:1.5.10")
