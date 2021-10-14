@@ -16,9 +16,6 @@ generic-service:
     PRISONTOPROBATION_MESSAGE_PROCESSOR_DELAY: 10000
     PRISONTOPROBATION_HOLD_BACK_DURATION: "60m"
 
-generic-prometheus-alerts:
-  alertSeverity: digital-prison-service
-
-# CloudPlatform AlertManager receiver to route promethues alerts to slack
+# CloudPlatform AlertManager receiver to route promethues alerts to slack
 generic-prometheus-alerts:
   alertSeverity: hmpps_tech
