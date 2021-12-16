@@ -4,10 +4,10 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.model.DescribeTableResult
 import com.amazonaws.services.dynamodbv2.model.TableDescription
 import com.amazonaws.services.dynamodbv2.model.TableStatus.ACTIVE
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import org.springframework.boot.actuate.health.Status
 
 internal class DynamoDBHealthCheckTest {
