@@ -1,6 +1,6 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.16"
-  kotlin("plugin.spring") version "1.5.31"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.0"
+  kotlin("plugin.spring") version "1.6.0"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
 }
@@ -23,20 +23,20 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.28.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.28.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.30.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.30.0")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.google.code.gson:gson:2.8.8")
+  implementation("com.google.code.gson:gson:2.8.9")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0")
 
-  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.10")
-  implementation("org.springdoc:springdoc-openapi-ui:1.5.10")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.5.10")
+  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.1")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.1")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.1")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.2")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.0.3")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
@@ -47,10 +47,10 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
+  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.5.2")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("org.mockito:mockito-inline:3.12.4")
+  testImplementation("org.mockito:mockito-inline:4.2.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
