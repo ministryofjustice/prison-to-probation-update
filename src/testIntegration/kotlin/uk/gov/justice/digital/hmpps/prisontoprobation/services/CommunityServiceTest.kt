@@ -466,7 +466,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           )
       )
 
-      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate,"RELEASED")
+      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
