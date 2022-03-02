@@ -466,7 +466,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           )
       )
 
-      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate)
+      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate,"RELEASED")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
@@ -490,7 +490,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate)
+      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
@@ -514,7 +514,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate)
+      val custody = service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/released"))
@@ -537,7 +537,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      assertThatThrownBy { service.prisonerReleased("A5194DY", "MDI", releaseDate) }.isInstanceOf(BadRequest::class.java)
+      assertThatThrownBy { service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED") }.isInstanceOf(BadRequest::class.java)
     }
   }
 
