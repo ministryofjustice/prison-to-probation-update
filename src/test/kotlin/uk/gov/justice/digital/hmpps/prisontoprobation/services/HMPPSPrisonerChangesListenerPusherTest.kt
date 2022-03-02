@@ -51,18 +51,24 @@ class HMPPSPrisonerChangesListenerPusherTest {
     @Test
     fun `will call community api for a prisoner released event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleased.json".readResourceAsText())
-      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "RELEASED")
     }
 
     @Test
     fun `will call community api for a prisoner released to hospital event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleasedToHospital.json".readResourceAsText())
-      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "RELEASED_TO_HOSPITAL")
+    }
+
+    @Test
+    fun `will call community api for a prisoner released on temporary absence`() {
+      pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleasedOnTemporaryAbsence.json".readResourceAsText())
+      verify(communityService).prisonerReleased("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "TEMPORARY_ABSENCE_RELEASE")
     }
 
     @Test
     fun `will not call community api for a prisoner released event we are not interested in`() {
-      pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleasedOnTemporaryAbsence.json".readResourceAsText())
+      pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerReleasedUnknown.json".readResourceAsText())
       verifyNoMoreInteractions(communityService)
     }
   }

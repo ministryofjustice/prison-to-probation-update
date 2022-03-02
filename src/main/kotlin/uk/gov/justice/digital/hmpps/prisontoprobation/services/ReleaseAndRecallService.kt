@@ -29,14 +29,15 @@ class ReleaseAndRecallService(
       ?: telemetryClient.trackEvent("P2PPrisonerNotRecalled", telemetryProperties, null)
   }
 
-  fun prisonerReleased(nomsNumber: String, prisonId: String, releaseDate: LocalDate) {
+  fun prisonerReleased(nomsNumber: String, prisonId: String, releaseDate: LocalDate, reason: String) {
 
     val telemetryProperties = mapOf(
       "nomsNumber" to nomsNumber,
       "prisonId" to prisonId,
-      "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE)
+      "releaseDate" to releaseDate.format(DateTimeFormatter.ISO_DATE),
+      "reason" to reason
     )
-    communityService.prisonerReleased(nomsNumber, prisonId, releaseDate)
+    communityService.prisonerReleased(nomsNumber, prisonId, releaseDate, reason)
       ?.let { telemetryClient.trackEvent("P2PPrisonerReleased", telemetryProperties, null) }
       ?: telemetryClient.trackEvent("P2PPrisonerNotReleased", telemetryProperties, null)
   }
