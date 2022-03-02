@@ -45,11 +45,13 @@ class HMPPSPrisonerChangesListenerPusher(
       "prison-offender-events.prisoner.released" -> {
         val hmppsDomainEvent = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
         when (hmppsDomainEvent.additionalInformation.reason) {
-          "RELEASED", "RELEASED_HOSPITAL" -> {
+          "RELEASED", "RELEASED_TO_HOSPITAL", "TEMPORARY_ABSENCE_RELEASE" -> {
             releaseAndRecallService.prisonerReleased(
               hmppsDomainEvent.additionalInformation.nomsNumber,
               hmppsDomainEvent.additionalInformation.prisonId,
-              hmppsDomainEvent.occurredAtLocalDate()
+              hmppsDomainEvent.occurredAtLocalDate(),
+              hmppsDomainEvent.additionalInformation.reason
+
             )
           }
         }
