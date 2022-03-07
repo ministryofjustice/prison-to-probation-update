@@ -35,7 +35,7 @@ class HMPPSPrisonerChangesListenerPusherTest {
     @Test
     fun `will call community api for a prisoner received admission event`() {
       pusher.pushHMPPSPrisonUpdateToProbation("/messages/prisonerRecalled.json".readResourceAsText())
-      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "RECALL", "ADMISSION")
     }
 
     @Test
@@ -85,19 +85,19 @@ class HMPPSPrisonerChangesListenerPusherTest {
     @DisplayName("can read dates in iso local date format")
     internal fun `can read dates in local date format`() {
       pusher.pushHMPPSPrisonUpdateToProbation(messageThatOccurredAt("2020-02-12T15:14:24.125533"))
-      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "RECALL", "ADMISSION")
     }
 
     @Test
     internal fun `can read dates in iso offset format`() {
       pusher.pushHMPPSPrisonUpdateToProbation(messageThatOccurredAt("2020-02-12T15:14:24.125533Z"))
-      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12))
+      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 2, 12), "RECALL", "ADMISSION")
     }
 
     @Test
     internal fun `can read dates in iso offset format in the summer`() {
       pusher.pushHMPPSPrisonUpdateToProbation(messageThatOccurredAt("2020-07-12T15:14:24.125533+01:00"))
-      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 7, 12))
+      verify(communityService).prisonerRecalled("A5194DY", "MDI", LocalDate.of(2020, 7, 12), "RECALL", "ADMISSION")
     }
   }
 }
