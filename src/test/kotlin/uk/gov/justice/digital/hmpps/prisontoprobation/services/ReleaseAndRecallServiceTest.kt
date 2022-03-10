@@ -26,11 +26,11 @@ class ReleaseAndRecallServiceTest {
   @Test
   internal fun `prisoner will be recalled`() {
     val recallDate = LocalDate.of(2021, 5, 12)
-    whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate)).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
+    whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate, "RECALL", "TEMPORARY_ABSENCE_RETURN")).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
 
-    service.prisonerRecalled("A5194DY", "MDI", recallDate, "RECALL")
+    service.prisonerRecalled("A5194DY", "MDI", recallDate, "RECALL", "TEMPORARY_ABSENCE_RETURN")
 
-    verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate)
+    verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate, "RECALL", "TEMPORARY_ABSENCE_RETURN")
     verify(telemetryClient).trackEvent(
       eq("P2PPrisonerRecalled"),
       check {
@@ -46,11 +46,11 @@ class ReleaseAndRecallServiceTest {
   @Test
   internal fun `prisoner not recalled`() {
     val recallDate = LocalDate.of(2021, 5, 12)
-    whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate)).thenReturn(null)
+    whenever(communityService.prisonerRecalled("A5194DY", "MDI", recallDate, "REMAND", "TEMPORARY_ABSENCE_RETURN")).thenReturn(null)
 
-    service.prisonerRecalled("A5194DY", "MDI", recallDate, "REMAND")
+    service.prisonerRecalled("A5194DY", "MDI", recallDate, "REMAND", "TEMPORARY_ABSENCE_RETURN")
 
-    verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate)
+    verify(communityService).prisonerRecalled("A5194DY", "MDI", recallDate, "REMAND", "TEMPORARY_ABSENCE_RETURN")
     verify(telemetryClient).trackEvent(
       eq("P2PPrisonerNotRecalled"),
       check {
