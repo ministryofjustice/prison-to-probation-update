@@ -372,7 +372,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
@@ -398,7 +398,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
@@ -422,7 +422,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate)
+      val custody = service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN")
 
       communityMockServer.verify(
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A5194DY/recalled"))
@@ -445,7 +445,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      assertThatThrownBy { service.prisonerRecalled("A5194DY", "MDI", recallDate) }.isInstanceOf(BadRequest::class.java)
+      assertThatThrownBy { service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN") }.isInstanceOf(BadRequest::class.java)
     }
   }
 
