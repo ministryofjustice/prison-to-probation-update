@@ -14,6 +14,8 @@ configurations {
   implementation { exclude(group = "tomcat-jdbc") }
 }
 
+ext["jackson.version.databind"] = "2.13.2.2" // Overriding Jackson databind version to fix CVE-2020-36518
+
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
