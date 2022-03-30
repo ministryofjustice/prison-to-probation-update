@@ -28,7 +28,7 @@ dependencies {
 
   implementation("javax.transaction:javax.transaction-api:1.3")
   implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.google.code.gson:gson:2.8.9")
+  implementation("com.google.code.gson:gson:2.9.0")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0")
 
