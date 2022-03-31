@@ -1,6 +1,6 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.1"
-  kotlin("plugin.spring") version "1.6.0"
+  kotlin("plugin.spring") version "1.6.10"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
 }
@@ -42,12 +42,12 @@ dependencies {
 
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("io.micrometer:micrometer-core")
-  implementation("com.opencsv:opencsv:5.5.2")
+  implementation("com.opencsv:opencsv:5.6")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
+  testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.5.2")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("org.mockito:mockito-inline:4.2.0")
