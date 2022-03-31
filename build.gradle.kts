@@ -23,7 +23,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.30.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.33.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.30.0")
 
   implementation("javax.transaction:javax.transaction-api:1.3")
@@ -34,7 +34,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.1")
   implementation("org.springdoc:springdoc-openapi-ui:1.6.1")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.1")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.6")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.2")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
