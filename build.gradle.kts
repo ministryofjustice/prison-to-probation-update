@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.2"
   kotlin("plugin.spring") version "1.6.10"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
@@ -26,11 +26,11 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:4.33.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.30.0")
 
-  implementation("javax.transaction:javax.transaction-api:1.3")
-  implementation("javax.xml.bind:jaxb-api:2.3.1")
-  implementation("com.google.code.gson:gson:2.8.9")
+  implementation("javax.transaction:javax.transaction-api")
+  implementation("javax.xml.bind:jaxb-api")
+  implementation("com.google.code.gson:gson")
 
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.1")
   implementation("org.springdoc:springdoc-openapi-ui:1.6.1")
@@ -47,10 +47,10 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.5.2")
+  testImplementation("org.awaitility:awaitility-kotlin")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("org.mockito:mockito-inline:4.2.0")
+  testImplementation("org.mockito:mockito-inline")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 }
 
