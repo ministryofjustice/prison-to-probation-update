@@ -33,7 +33,7 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.6")
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.6")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.7")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.6")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.3")
