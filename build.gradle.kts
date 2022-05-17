@@ -23,7 +23,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.34.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.35.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.34.0")
 
   implementation("javax.transaction:javax.transaction-api")
