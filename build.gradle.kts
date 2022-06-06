@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.7"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.2.1"
   kotlin("plugin.spring") version "1.6.21"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   idea
@@ -34,7 +34,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.8")
   implementation("org.springdoc:springdoc-openapi-ui:1.6.8")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.8")
+  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.3")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
