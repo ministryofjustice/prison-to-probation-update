@@ -383,12 +383,11 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
       messageRepository.save(
         aMessage(4, LocalDateTime.now(), "NO_MATCH", processedDate = LocalDateTime.now())
       )
-      assertThat(
-        messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
-          listOf("NO_MATCH", "NO_MATCH_WITH_SENTENCE_DATE"),
-          LocalDateTime.now()
-        )
-      ).flatExtracting(Message::bookingId).containsExactlyInAnyOrder(1L, 2L)
+      val messages = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
+        listOf("NO_MATCH", "NO_MATCH_WITH_SENTENCE_DATE"),
+        LocalDateTime.now()
+      )
+      assertThat(messages.map(Message::bookingId)).containsExactlyInAnyOrder(1L, 2L)
     }
 
     @Test
