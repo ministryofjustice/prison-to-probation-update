@@ -403,8 +403,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
       )
 
       val messages1 = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
-      listOf("NO_MATCH"),
-      LocalDateTime.now()
+        listOf("NO_MATCH"),
+        LocalDateTime.now()
       )
       assertThat(messages1.map(Message::bookingId)).containsExactlyInAnyOrder(1L, 2L, 3L)
 
