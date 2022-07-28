@@ -102,8 +102,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .bodyValue(PrisonerRecalled(prisonId, recallDate, probableCause, reason))
       .retrieve()
       .bodyToMono(Custody::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
+      .onErrorResume(Exception::class.java) { Mono.empty() }
       .block()
   }
 
@@ -113,8 +112,7 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .bodyValue(PrisonerReleased(prisonId, releaseDate, reason))
       .retrieve()
       .bodyToMono(Custody::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
+      .onErrorResume(Exception::class.java) { Mono.empty() }
       .block()
   }
 }
