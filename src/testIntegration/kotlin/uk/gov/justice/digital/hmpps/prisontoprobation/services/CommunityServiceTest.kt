@@ -14,8 +14,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.matching.MatchesJsonPathPattern
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.doesNotHave
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
@@ -435,7 +437,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
     }
 
     @Test
-    fun `will throw exception for other types of http responses`() {
+    fun `will not throw exception for other types of http responses`() {
       val recallDate = LocalDate.of(2021, 5, 12)
       communityMockServer.stubFor(
         put(anyUrl()).willReturn(
@@ -445,7 +447,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      assertThatThrownBy { service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN") }.isInstanceOf(BadRequest::class.java)
+      assertDoesNotThrow { service.prisonerRecalled("A5194DY", "MDI", recallDate, "probableCause", "TEMPORARY_ABSENCE_RETURN") }
     }
   }
 
@@ -527,7 +529,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
     }
 
     @Test
-    fun `will throw exception for other types of http responses`() {
+    fun `will not throw exception for other types of http responses`() {
       val releaseDate = LocalDate.of(2021, 5, 12)
       communityMockServer.stubFor(
         put(anyUrl()).willReturn(
@@ -537,7 +539,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         )
       )
 
-      assertThatThrownBy { service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED") }.isInstanceOf(BadRequest::class.java)
+      assertDoesNotThrow { service.prisonerReleased("A5194DY", "MDI", releaseDate, "RELEASED") }
     }
   }
 

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -15,54 +16,87 @@ import java.time.format.DateTimeParseException
 @Profile("!no-queue-listener")
 class HMPPSPrisonerChangesListenerPusher(
   private val releaseAndRecallService: ReleaseAndRecallService,
-  private val objectMapper: ObjectMapper
+  private val objectMapper: ObjectMapper,
+  private val telemetryClient: TelemetryClient
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
   @JmsListener(destination = "hmppseventqueue", containerFactory = "hmppsQueueContainerFactoryProxy")
-  fun pushHMPPSPrisonUpdateToProbation(requestJson: String?) {
-    log.debug(requestJson)
-    val (message, messageId, messageAttributes) = objectMapper.readValue(requestJson, HMPPSMessage::class.java)
-    val eventType = messageAttributes.eventType.Value
-    log.info("Received message $message $messageId type $eventType")
+  fun pushHMPPSPrisonUpdateToProbation(requestJson: String?) =
+    try {
+      log.debug(requestJson)
+      val (message, messageId, messageAttributes) = objectMapper.readValue(requestJson, HMPPSMessage::class.java)
+      val eventType = messageAttributes.eventType.Value
+      log.info("Received message $message $messageId type $eventType")
+      val hmppsDomainEvent = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
 
-    when (eventType) {
-      "prison-offender-events.prisoner.received" -> {
-        val hmppsDomainEvent = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
-        when (hmppsDomainEvent.additionalInformation.reason) {
-          "ADMISSION", "TEMPORARY_ABSENCE_RETURN" -> {
-            releaseAndRecallService.prisonerRecalled(
-              hmppsDomainEvent.additionalInformation.nomsNumber,
-              hmppsDomainEvent.additionalInformation.prisonId,
-              hmppsDomainEvent.occurredAtLocalDate(),
-              hmppsDomainEvent.additionalInformation.probableCause ?: "UNKNOWN",
-              hmppsDomainEvent.additionalInformation.reason
-            )
+      when (eventType) {
+        "prison-offender-events.prisoner.received" -> {
+          when (hmppsDomainEvent.additionalInformation.reason) {
+            "ADMISSION", "TEMPORARY_ABSENCE_RETURN" -> {
+              releaseAndRecallService.prisonerRecalled(
+                hmppsDomainEvent.additionalInformation.nomsNumber,
+                hmppsDomainEvent.additionalInformation.prisonId,
+                hmppsDomainEvent.occurredAtLocalDate(),
+                hmppsDomainEvent.additionalInformation.probableCause ?: "UNKNOWN",
+                hmppsDomainEvent.additionalInformation.reason
+              )
+            }
+            else -> {
+              telemetryClient.trackEvent(
+                "UnexpectedRecallReason",
+                mapOf("reason" to hmppsDomainEvent.additionalInformation.reason),
+                null
+              )
+            }
           }
         }
-      }
-      "prison-offender-events.prisoner.released" -> {
-        val hmppsDomainEvent = objectMapper.readValue(message, HMPPSDomainEvent::class.java)
-        when (hmppsDomainEvent.additionalInformation.reason) {
-          "RELEASED", "RELEASED_TO_HOSPITAL", "TEMPORARY_ABSENCE_RELEASE" -> {
-            releaseAndRecallService.prisonerReleased(
-              hmppsDomainEvent.additionalInformation.nomsNumber,
-              hmppsDomainEvent.additionalInformation.prisonId,
-              hmppsDomainEvent.occurredAtLocalDate(),
-              hmppsDomainEvent.additionalInformation.reason
-
-            )
+        "prison-offender-events.prisoner.released" -> {
+          when (hmppsDomainEvent.additionalInformation.reason) {
+            "RELEASED", "RELEASED_TO_HOSPITAL", "TEMPORARY_ABSENCE_RELEASE" -> {
+              releaseAndRecallService.prisonerReleased(
+                hmppsDomainEvent.additionalInformation.nomsNumber,
+                hmppsDomainEvent.additionalInformation.prisonId,
+                hmppsDomainEvent.occurredAtLocalDate(),
+                hmppsDomainEvent.additionalInformation.reason
+              )
+            }
+            else -> {
+              telemetryClient.trackEvent(
+                "UnexpectedReleaseReason",
+                mapOf("reason" to hmppsDomainEvent.additionalInformation.reason),
+                null
+              )
+            }
           }
         }
+        else -> {
+          log.info("Received a message wasn't expected $eventType")
+          telemetryClient.trackEvent(
+            "UnexpectedRecallReleaseEventReceived",
+            mapOf("eventType" to eventType, "event" to message),
+            null
+          )
+        }
       }
-      else -> log.info("Received a message wasn't expected $eventType")
+    } catch (ex: Exception) {
+      telemetryClient.trackEvent(
+        "UnableToProcessHmppsMessage",
+        mapOf("message" to requestJson, "exception" to ex.message),
+        null
+      )
     }
-  }
 }
 
-data class AdditionalInformation(val nomsNumber: String, val reason: String, val prisonId: String, val probableCause: String?,)
+data class AdditionalInformation(
+  val nomsNumber: String,
+  val reason: String,
+  val prisonId: String,
+  val probableCause: String?,
+)
+
 data class HMPPSDomainEvent(val occurredAt: String, val additionalInformation: AdditionalInformation) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)

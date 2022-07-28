@@ -26,7 +26,7 @@ class HMPPSPrisonerChangesListenerPusherTest {
 
   @BeforeEach
   fun before() {
-    pusher = HMPPSPrisonerChangesListenerPusher(releaseAndRecallService, objectMapper)
+    pusher = HMPPSPrisonerChangesListenerPusher(releaseAndRecallService, objectMapper, telemetryClient)
   }
 
   @Nested
