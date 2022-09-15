@@ -92,25 +92,6 @@ class HealthCheckIntegrationTest : NoQueueListenerIntegrationTest() {
   }
 
   @Test
-  fun `HMPPS domain events queue health reports UP`() {
-    subPing(200)
-
-    webTestClient.get()
-      .uri("/health")
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody()
-      .jsonPath("status").isEqualTo("UP")
-      .jsonPath("components.hmppseventqueue-health.details.queueName").isEqualTo(hmppsEventQueueName)
-      .jsonPath("components.hmppseventqueue-health.details.messagesOnQueue").isEqualTo(0)
-      .jsonPath("components.hmppseventqueue-health.details.messagesInFlight").isEqualTo(0)
-      .jsonPath("components.hmppseventqueue-health.details.dlqName").isEqualTo(hmppsEventDlqName)
-      .jsonPath("components.hmppseventqueue-health.details.dlqStatus").isEqualTo("UP")
-      .jsonPath("components.hmppseventqueue-health.details.messagesOnDlq").isEqualTo(0)
-  }
-
-  @Test
   fun `readiness reports ok`() {
     subPing(200)
 
