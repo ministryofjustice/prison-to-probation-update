@@ -14,15 +14,8 @@ hmpps.sqs:
       dlqName: ${random.uuid}
       subscribeTopicId: prisoneventtopic
       subscribeFilter: '{"eventType":[ "PRISONER_RELEASED", "PRISONER_RECEIVED"] }'
-    hmppseventqueue:
-      queueName: ${random.uuid}
-      dlqName: ${random.uuid}
-      subscribeTopicId: hmppseventtopic
-      subscribeFilter: '{"eventType":[ "PRISONER_RELEASED", "PRISONER_RECEIVED"] }'
   topics:
     prisoneventtopic:
-      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
-    hmppseventtopic:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 hmpps.dynamodb:

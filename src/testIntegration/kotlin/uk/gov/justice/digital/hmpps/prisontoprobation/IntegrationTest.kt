@@ -43,23 +43,16 @@ abstract class IntegrationTest {
   fun HmppsSqsProperties.prisonEventQueueConfig() =
     queues["prisoneventqueue"] ?: throw MissingQueueException("prisoneventqueue has not been loaded from configuration properties")
 
-  fun HmppsSqsProperties.hmppsEventQueueConfig() =
-    queues["hmppseventqueue"] ?: throw MissingQueueException("hmppseventqueue has not been loaded from configuration properties")
-
   protected val prisonEventQueue by lazy { hmppsQueueService.findByQueueId("prisoneventqueue") ?: throw MissingQueueException("HmppsQueue prisoneventqueue not found") }
-  protected val hmppsEventQueue by lazy { hmppsQueueService.findByQueueId("hmppseventqueue") ?: throw MissingQueueException("HmppsQueue hmppseventqueue not found") }
 
   @Autowired
   protected lateinit var hmppsSqsProperties: HmppsSqsProperties
 
   protected val prisonEventQueueSqsClient by lazy { prisonEventQueue.sqsClient }
-  protected val hmppsEventQueueSqsClient by lazy { hmppsEventQueue.sqsClient }
   protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient as AmazonSQS }
 
   internal val prisonEventQueueName by lazy { prisonEventQueue.queueName }
-  internal val hmppsEventQueueName by lazy { hmppsEventQueue.queueName }
   internal val prisonEventDlqName by lazy { prisonEventQueue.dlqName as String }
-  internal val hmppsEventDlqName by lazy { hmppsEventQueue.dlqName as String }
 
   @SpyBean
   internal lateinit var messageProcessor: MessageProcessor
@@ -84,7 +77,6 @@ abstract class IntegrationTest {
 
   val queueUrl: String by lazy { prisonEventQueueSqsClient.getQueueUrl(prisonEventQueueName).queueUrl }
   val dlqUrl: String by lazy { prisonEventSqsDlqClient.getQueueUrl(prisonEventDlqName).queueUrl }
-  val hmppsQueueUrl: String by lazy { hmppsEventQueueSqsClient.getQueueUrl(hmppsEventQueueName).queueUrl }
 
   @BeforeEach
   fun `Debug bean information`() {
@@ -101,10 +93,8 @@ abstract class IntegrationTest {
     messageRepository.deleteAll()
     prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
     prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    hmppsEventQueueSqsClient.purgeQueue(PurgeQueueRequest(hmppsQueueUrl))
     await untilCallTo { prisonEventQueueSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
     await untilCallTo { prisonEventSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
-    await untilCallTo { hmppsEventQueueSqsClient.activeMessageCount(hmppsQueueUrl) } matches { it == 0 }
   }
 
   companion object {
