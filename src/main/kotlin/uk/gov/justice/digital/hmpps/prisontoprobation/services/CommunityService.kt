@@ -89,32 +89,6 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenConflict(it) }
       .block()
   }
-
-  fun prisonerRecalled(
-    offenderNo: String,
-    prisonId: String,
-    recallDate: LocalDate,
-    probableCause: String,
-    reason: String
-  ): Custody? {
-    return webClient.put()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/recalled")
-      .bodyValue(PrisonerRecalled(prisonId, recallDate, probableCause, reason))
-      .retrieve()
-      .bodyToMono(Custody::class.java)
-      .onErrorResume(Exception::class.java) { Mono.empty() }
-      .block()
-  }
-
-  fun prisonerReleased(offenderNo: String, prisonId: String, releaseDate: LocalDate, reason: String): Custody? {
-    return webClient.put()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/released")
-      .bodyValue(PrisonerReleased(prisonId, releaseDate, reason))
-      .retrieve()
-      .bodyToMono(Custody::class.java)
-      .onErrorResume(Exception::class.java) { Mono.empty() }
-      .block()
-  }
 }
 
 data class UpdateOffenderNomsNumber(
@@ -152,12 +126,3 @@ data class ReplaceCustodyKeyDates(
 data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null, val custody: Custody? = null)
 
 data class Sentence(val startDate: LocalDate?)
-
-data class PrisonerRecalled(
-  val nomsPrisonInstitutionCode: String,
-  val recallDate: LocalDate,
-  val probableCause: String,
-  val reason: String
-)
-
-data class PrisonerReleased(val nomsPrisonInstitutionCode: String, val releaseDate: LocalDate, val reason: String)
