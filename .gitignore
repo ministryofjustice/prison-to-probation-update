@@ -7,4 +7,3 @@ out
 dps-gradle-spring-boot-suppressions.xml
 .editorconfig
 sonar-project.properties
-.trivyignore
