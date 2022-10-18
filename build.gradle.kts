@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.5"
   kotlin("plugin.spring") version "1.7.10"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   id("com.google.cloud.tools.jib") version "3.3.0"
@@ -33,8 +33,8 @@ dependencies {
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+  implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.12")
+  implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.12")
