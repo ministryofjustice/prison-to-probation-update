@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.6"
-  kotlin("plugin.spring") version "1.7.20"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.5.7"
+  kotlin("plugin.spring") version "1.7.21"
   id("org.unbroken-dome.test-sets") version "4.0.0"
-  id("com.google.cloud.tools.jib") version "3.3.0"
+  id("com.google.cloud.tools.jib") version "3.3.1"
   idea
 }
 
@@ -37,13 +37,13 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-ui:1.6.12")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.12")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.12")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.13")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("io.micrometer:micrometer-core")
-  implementation("com.opencsv:opencsv:5.7.0")
+  implementation("com.opencsv:opencsv:5.7.1")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
@@ -90,7 +90,7 @@ tasks {
 
 jib {
   container {
-    creationTime = "USE_CURRENT_TIMESTAMP"
+    creationTime.set("USE_CURRENT_TIMESTAMP")
     jvmFlags = mutableListOf("-Duser.timezone=Europe/London")
     mainClass = "uk.gov.justice.digital.hmpps.prisontoprobation.PrisonToProbationUpdateApplicationKt"
     user = "2000:2000"
