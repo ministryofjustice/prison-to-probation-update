@@ -1,54 +1,76 @@
-name: Suppress-Trivy - write to file
+name: Security
 
 on:
-  issue_comment:
-    types:
-      - created
+  schedule:
+    - cron: "30 5 * * MON-FRI" # Every weekday at 05:30 UTC
   workflow_dispatch:
-    inputs:
-      cve_id:
-        description: CVE ID
-        type: string
-        required: true
-      reason:
-        description: Reason
-        type: string
-        required: true
 
 jobs:
-  build:
-    if: github.event_name=='workflow_dispatch' || (startsWith(github.event.comment.body, 'Suppress') && startsWith(github.event.issue.title, 'CVE-'))
+  trivy-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+
+      - name: Scan image
+        uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5 # v0.8.0
         with:
-          ref: main
+          image-ref: 'quay.io/hmpps/prison-to-probation-update:latest'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          trivyignores: '.trivyignore'
 
-      - name: Set CVE from Issue Title automatically
-        if: github.event_name=='issue_comment'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Get Trivy results
+        if: always()
+        uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5 # v0.8.0
+        with:
+          image-ref: 'quay.io/hmpps/prison-to-probation-update:latest'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          format: 'json'
+          output: 'results.json'
+          trivyignores: '.trivyignore'
+
+      - name: Output Trivy results
+        if: always()
+        run: cat results.json
+
+      - name: Create GitHub issues
+        if: failure()
         run: |
-          echo cve_id=${{ github.event.issue.title }} >> $GITHUB_ENV
-          echo reason=${{ github.event.comment.body }} >> $GITHUB_ENV
+          cat results.json | jq -c '.Results[].Vulnerabilities | select(. != null) | flatten | .[]' | while read -r vulnerability; do
+            id=$(echo "$vulnerability" | jq -r '.VulnerabilityID')
+            if [[ $(gh issue list --state open --label dependencies --label security --search "$id" | wc -l) -gt 0 ]]; then
+              echo 'Issue "$id" already exists'
+            else
+              gh issue create \
+                --title "$id" \
+                --body "$(echo $vulnerability | jq -r '.Title + "\n* Package: `" + .PkgName + ":" + .InstalledVersion + "`\n* Location: `" + .PkgPath + "`\n\n>" + .Description + "\n\n" + .PrimaryURL')" \
+                --label 'dependencies,security'
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Set CVE from manual input
-        if: github.event_name=='workflow_dispatch'
-        run:  |
-          echo cve_id=${{ inputs.cve_id }} >> $GITHUB_ENV
-          echo reason=${{ inputs.reason }} >> $GITHUB_ENV
-
-      - name: Update trivyignore file and create pull request
+      - name: Check & Close GH Issue
+        if: always()
         run: |
-          git switch -c suppress/${{ env.cve_id }}
-          git push origin suppress/${{ env.cve_id }}
-          git pull origin suppress/${{ env.cve_id }}
-          git push origin suppress/${{ env.cve_id }}
-          echo -e "\n# ${{ env.reason }}\n# By ${{ github.actor }}\n${{ env.cve_id }} exp:$(date -d "+2 weeks" '+%Y-%m-%d')" >> .trivyignore
-          gh api --method PUT /repos/ministryofjustice/prison-to-probation-update/contents/.trivyignore \
-            --field message="Suppress ${{ env.cve_id }}" \
-            --field content=@<( base64 -i .trivyignore ) \
-            --field branch='suppress/${{ env.cve_id }}' \
-            --field sha="$( git rev-parse 'suppress/${{ env.cve_id }}:.trivyignore' )"
-          gh pr create --title "Suppress ${{ env.cve_id }}" --body "Suppressed by ${{ github.actor }} with reason: ${{ env.reason }}"
+          openissues=$(gh issue list --state open --label dependencies --label security | awk '{print $3}')
+          scanresults=$(cat results.json | jq -r -c '.Results[].Vulnerabilities | select(. != null) | flatten | .[].VulnerabilityID')
+          issuestoclose=$(comm -3 <(echo $openissues | sort) <(echo $scanresults | sort)) #print lines only present in first file
+          for cve in $issuestoclose; do
+            echo "$cve is already resolved, removing matching issue..."
+            issuenumber=$(gh issue list --state open --label dependencies --label security --search "$cve" | awk '{print $1}')
+            echo $issuenumber | xargs -n1 gh issue close
+          done
+
         env:
           GITHUB_TOKEN: ${{ github.token }}
