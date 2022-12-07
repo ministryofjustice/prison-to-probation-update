@@ -14,7 +14,7 @@ jobs:
       - name: Scan image
         uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5 # v0.8.0
         with:
-          image-ref: 'quay.io/hmpps/prison-to-probation-update:latest'
+          image-ref: 'quay.io/hmpps/prison-to-probation-update:2022-10-04.5924.1b71e5b'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
@@ -32,7 +32,7 @@ jobs:
         if: always()
         uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5 # v0.8.0
         with:
-          image-ref: 'quay.io/hmpps/prison-to-probation-update:latest'
+          image-ref: 'quay.io/hmpps/prison-to-probation-update:2022-10-04.5924.1b71e5b'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
           format: 'json'
