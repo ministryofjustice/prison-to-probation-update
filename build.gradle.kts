@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.7.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.7.1"
   kotlin("plugin.spring") version "1.7.22"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   id("com.google.cloud.tools.jib") version "3.3.1"
@@ -24,8 +24,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:4.42.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.42.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:4.43.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.43.0")
 
   implementation("javax.transaction:javax.transaction-api")
   implementation("javax.xml.bind:jaxb-api")
@@ -37,7 +37,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-ui:1.6.13")
   implementation("org.springdoc:springdoc-openapi-kotlin:1.6.13")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.1.13")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
