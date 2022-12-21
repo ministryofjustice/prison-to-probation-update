@@ -62,46 +62,6 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
   }
 
   @Test
-  fun `will consume a sentence date change message, update probation`() {
-    val message = "/messages/sentenceDatesChanged.json".readResourceAsText()
-
-    // wait until our queue has been purged
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
-
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
-    await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
-
-    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
-    assertThat(processedMessage).isNotNull
-    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
-    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
-  }
-
-  @Test
-  fun `will consume a confirmed release date change message, update probation`() {
-    val message = "/messages/confirmedReleaseDateChanged.json".readResourceAsText()
-
-    // wait until our queue has been purged
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
-
-    await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
-    await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 1 }
-    await untilCallTo { communityPostCountFor("/secure/offenders/nomsNumber/A5089DY/bookingNumber/38339A/custody/keyDates") } matches { it == 1 }
-
-    val processedMessage: Message? = messageRepository.findAll().firstOrNull()
-    assertThat(processedMessage).isNotNull
-    assertThat(processedMessage?.processedDate).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS))
-    assertThat(processedMessage?.status).isEqualTo("COMPLETED")
-  }
-
-  @Test
   fun `will consume a booking changed message, update probation`() {
     val message = "/messages/bookingNumberChanged.json".readResourceAsText()
 
