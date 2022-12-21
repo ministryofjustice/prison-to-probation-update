@@ -18,7 +18,6 @@ class MessageProcessorTest {
   private val prisonMovementService: PrisonMovementService = mock()
   private val bookingChangeService: BookingChangeService = mock()
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService = mock()
-  private val sentenceDatesChangeService: SentenceDatesChangeService = mock()
   private val retryableEventMetricsService: RetryableEventMetricsService = mock()
 
   private lateinit var messageProcessor: MessageProcessor
@@ -29,7 +28,6 @@ class MessageProcessorTest {
       prisonMovementService,
       bookingChangeService,
       imprisonmentStatusChangeService,
-      sentenceDatesChangeService,
       retryableEventMetricsService,
     )
   }
@@ -68,44 +66,11 @@ class MessageProcessorTest {
   }
 
   @Test
-  fun `sentence date change will be checked for processing`() {
-    messageProcessor.processMessage(
-      aMessage(
-        "SENTENCE_DATES-CHANGED",
-        "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200835,\"sentenceCalculationId\":5628783,\"nomisEventType\":\"S2_RESULT\"}"
-      )
-    )
-
-    verify(sentenceDatesChangeService).processSentenceDateChangeAndUpdateProbation(
-      check {
-        assertThat(it.bookingId).isEqualTo(1200835L)
-      }
-    )
-  }
-
-  @Test
-  fun `confirmed release date change will be checked for processing`() {
-    messageProcessor.processMessage(
-      aMessage(
-        "CONFIRMED_RELEASE_DATE-CHANGED",
-        "{\"eventType\":\"CONFIRMED_RELEASE_DATE-CHANGED\",\"eventDatetime\":\"2020-02-25T11:24:32.935401\",\"bookingId\":1200835,\"nomisEventType\":\"CONFIRMED_RELEASE_DATE-CHANGED\"}"
-      )
-    )
-
-    verify(sentenceDatesChangeService).processSentenceDateChangeAndUpdateProbation(
-      check {
-        assertThat(it.bookingId).isEqualTo(1200835L)
-      }
-    )
-  }
-
-  @Test
   fun `other messages are ignored`() {
     messageProcessor.processMessage(aMessage("SOME_OTHER_MESSAGE", "{\"eventType\":\"SOME_OTHER_MESSAGE\"}"))
 
     verify(prisonMovementService, never()).processMovementAndUpdateProbation(any())
     verify(imprisonmentStatusChangeService, never()).processImprisonmentStatusChangeAndUpdateProbation(any())
-    verify(sentenceDatesChangeService, never()).processSentenceDateChangeAndUpdateProbation(any())
     verify(bookingChangeService, never()).processBookingNumberChangedAndUpdateProbation(any())
   }
 

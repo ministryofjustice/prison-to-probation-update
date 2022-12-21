@@ -15,7 +15,6 @@ class MessageProcessor(
   private val prisonMovementService: PrisonMovementService,
   private val bookingChangeService: BookingChangeService,
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
-  private val sentenceDatesChangeService: SentenceDatesChangeService,
   private val retryableEventMetricsService: RetryableEventMetricsService,
 ) {
   companion object {
@@ -46,9 +45,6 @@ class MessageProcessor(
         fromJson(message)
       )
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.processBookingNumberChangedAndUpdateProbation(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.processSentenceDateChangeAndUpdateProbation(
-        fromJson(message)
-      )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }
@@ -59,9 +55,6 @@ class MessageProcessor(
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChange(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChange(fromJson(message))
-      "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChange(
-        fromJson(message)
-      )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
       }

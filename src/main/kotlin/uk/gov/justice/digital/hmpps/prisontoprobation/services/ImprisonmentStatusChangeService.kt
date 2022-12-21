@@ -106,6 +106,16 @@ class ImprisonmentStatusChangeService(
       .onIgnore { return Ignore(TelemetryEvent("P2PKeyDatesNotUpdated")) }
       .let { Success(Unit) }
 
+  private fun SentenceDetail.asProbationKeyDates(): ReplaceCustodyKeyDates = ReplaceCustodyKeyDates(
+    conditionalReleaseDate = conditionalReleaseOverrideDate ?: this.conditionalReleaseDate,
+    sentenceExpiryDate = sentenceExpiryDate,
+    paroleEligibilityDate = paroleEligibilityDate,
+    licenceExpiryDate = licenceExpiryDate,
+    expectedReleaseDate = confirmedReleaseDate,
+    hdcEligibilityDate = homeDetentionCurfewEligibilityDate,
+    postSentenceSupervisionEndDate = topupSupervisionExpiryDate
+  )
+
   private fun updateProbationPrisonLocation(offenderNo: String, bookingNumber: String, agencyId: String): Result<Unit, TelemetryEvent> =
     communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = agencyId))
       ?.let { Success(Unit) }
