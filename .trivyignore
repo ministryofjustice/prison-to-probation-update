@@ -22,3 +22,6 @@ CVE-2022-40153 exp:2022-12-01
 CVE-2022-40154 exp:2022-12-01
 CVE-2022-40155 exp:2022-12-01
 CVE-2022-40156 exp:2022-12-01
+# Suppressed for the time being as it will be fixed in next version of application insights
+# By izzyL-DJ
+CVE-2022-42889 exp:2023-02-21
