@@ -2,6 +2,10 @@
 # Values here are the same across all environments
 generic-service:
   nameOverride: prison-to-probation-update
+  resources:
+    requests:
+      cpu: 1
+      memory: 512Mi
 
   image:
     repository: quay.io/hmpps/prison-to-probation-update
@@ -27,11 +31,10 @@ generic-service:
 
   env:
     SERVER_PORT: "8080"
-    JAVA_OPTS: "-Xmx512m"
     SPRING_PROFILES_ACTIVE: "logstash"
     APPLICATIONINSIGHTS_CONNECTION_STRING: "InstrumentationKey=$(APPINSIGHTS_INSTRUMENTATIONKEY)"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
-    JDK_JAVA_OPTIONS: "-javaagent:/agent/agent.jar"
+    JDK_JAVA_OPTIONS: "-javaagent:/agent/agent.jar -XX:MaxRAMPercentage=75.0"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
