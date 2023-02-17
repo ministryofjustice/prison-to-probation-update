@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
 
-@ConstructorBinding
 @ConfigurationProperties(prefix = "hmpps.dynamodb")
 class DynamoDbConfigProperties(
   val provider: String,

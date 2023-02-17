@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.8.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.0"
   kotlin("plugin.spring") version "1.8.10"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   id("com.google.cloud.tools.jib") version "3.3.1"
@@ -34,8 +34,7 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.14")
-  implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.6.14")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
@@ -46,11 +45,12 @@ dependencies {
   implementation("com.opencsv:opencsv:5.7.1")
 
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.36.1")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
-  testImplementation("io.jsonwebtoken:jjwt:0.9.1")
+  testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+  testImplementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
   testImplementation("org.mockito:mockito-inline")
   testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
