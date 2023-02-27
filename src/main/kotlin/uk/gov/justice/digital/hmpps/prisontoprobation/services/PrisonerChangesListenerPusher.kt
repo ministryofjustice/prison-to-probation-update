@@ -20,7 +20,7 @@ class PrisonerChangesListenerPusher(
     val gson: Gson = GsonBuilder().create()
   }
 
-  @SqsListener(queueNames = ["prisoneventqueue"])
+  @SqsListener(queueNames = ["prisoneventqueue"], factory = "hmppsQueueContainerFactoryProxy")
   fun pushPrisonUpdateToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
