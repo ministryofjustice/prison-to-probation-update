@@ -1,10 +1,7 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
-import com.microsoft.applicationinsights.web.internal.RequestTelemetryContext
-import com.microsoft.applicationinsights.web.internal.ThreadContext
+import io.opentelemetry.api.trace.Span
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,16 +28,6 @@ class ClientTrackingConfigurationTest {
   @Autowired
   private lateinit var jwtAuthHelper: JwtAuthHelper
 
-  @BeforeEach
-  fun setup() {
-    ThreadContext.setRequestTelemetryContext(RequestTelemetryContext(1L))
-  }
-
-  @AfterEach
-  fun tearDown() {
-    ThreadContext.remove()
-  }
-
   @Test
   fun shouldAddClientIdAndUserNameToInsightTelemetry() {
     val token = jwtAuthHelper.createJwt("bob")
@@ -48,10 +35,8 @@ class ClientTrackingConfigurationTest {
     req.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $token")
     val res = MockHttpServletResponse()
     clientTrackingInterceptor.preHandle(req, res, "null")
-    val insightTelemetry = ThreadContext.getRequestTelemetryContext().httpRequestTelemetry.properties
-    assertThat(insightTelemetry).hasSize(2)
-    assertThat(insightTelemetry["username"]).isEqualTo("bob")
-    assertThat(insightTelemetry["clientId"]).isEqualTo("ptpu-client")
+    assertThat { Span.current().setAttribute("username") }.isEqualTo("bob")
+    assertThat { Span.current().setAttribute("clientId") }.isEqualTo("ptpu-client")
   }
 
   @Test
@@ -61,8 +46,6 @@ class ClientTrackingConfigurationTest {
     req.addHeader(HttpHeaders.AUTHORIZATION, "Bearer $token")
     val res = MockHttpServletResponse()
     clientTrackingInterceptor.preHandle(req, res, "null")
-    val insightTelemetry = ThreadContext.getRequestTelemetryContext().httpRequestTelemetry.properties
-    assertThat(insightTelemetry).hasSize(1)
-    assertThat(insightTelemetry["clientId"]).isEqualTo("ptpu-client")
+    assertThat(Span.current().setAttribute("clientId").isEqualTo("ptpu-client"))
   }
 }

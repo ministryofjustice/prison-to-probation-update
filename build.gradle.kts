@@ -27,7 +27,7 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-spring:5.1.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.44.0")
 
-  implementation("javax.transaction:javax.transaction-api")
+  implementation("jakarta.transaction:jakarta.transaction-api")
   implementation("javax.xml.bind:jaxb-api")
   implementation("com.google.code.gson:gson")
 
