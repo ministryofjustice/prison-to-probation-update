@@ -15,6 +15,11 @@ configurations {
   implementation { exclude(group = "tomcat-jdbc") }
 }
 
+repositories {
+  maven { url = uri("https://repo.spring.io/milestone") }
+  mavenCentral()
+}
+
 dependencies {
   annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -28,7 +33,6 @@ dependencies {
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.44.0")
 
   implementation("jakarta.transaction:jakarta.transaction-api")
-  implementation("javax.xml.bind:jaxb-api")
   implementation("com.google.code.gson:gson")
 
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -36,7 +40,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.14")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:1.2.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0-beta-10")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 

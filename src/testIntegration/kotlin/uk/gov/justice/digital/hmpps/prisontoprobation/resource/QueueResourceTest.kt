@@ -9,7 +9,8 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.check
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.verify
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.verifyBlocking
 import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
@@ -56,7 +57,7 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
       val dlqName = "any dlq"
       doReturn(PurgeQueueRequest(dlqName, prisonEventQueueSqsClient, "any url")).whenever(hmppsQueueService).findQueueToPurge(any())
       doReturn(HmppsQueue("any queue id", prisonEventQueueSqsClient, queueName, prisonEventSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
-      doReturn(PurgeQueueResult(0)).whenever(hmppsQueueService).purgeQueue(any())
+      hmppsQueueService.stub { onBlocking { purgeQueue(any()) } doReturn PurgeQueueResult(0) }
 
       webTestClient.put()
         .uri("/queue-admin/purge-queue/$dlqName")
@@ -65,11 +66,7 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
         .exchange()
         .expectStatus().isOk
 
-      verify(hmppsQueueService).purgeQueue(
-        check {
-          assertThat(it.queueName).isEqualTo(dlqName)
-        }
-      )
+      verifyBlocking(hmppsQueueService) { purgeQueue(check { assertThat(it.queueName).isEqualTo(dlqName) }) }
     }
 
     @Test
@@ -77,7 +74,7 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
       val queueName = "any queue"
       val dlqName = "any dlq"
       doReturn(HmppsQueue("any queue id", prisonEventQueueSqsClient, queueName, prisonEventSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
-      doReturn(RetryDlqResult(0, listOf())).whenever(hmppsQueueService).retryDlqMessages(any())
+      hmppsQueueService.stub { onBlocking { retryDlqMessages(any()) } doReturn RetryDlqResult(0, listOf()) }
 
       webTestClient.put()
         .uri("/queue-admin/retry-dlq/$dlqName")
@@ -86,11 +83,7 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
         .exchange()
         .expectStatus().isOk
 
-      verify(hmppsQueueService).retryDlqMessages(
-        check {
-          assertThat(it.hmppsQueue.dlqName).isEqualTo(dlqName)
-        }
-      )
+      verifyBlocking(hmppsQueueService) { retryDlqMessages(check { assertThat(it.hmppsQueue.dlqName).isEqualTo(dlqName) }) }
     }
   }
 }
