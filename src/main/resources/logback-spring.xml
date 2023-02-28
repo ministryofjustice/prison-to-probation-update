@@ -15,6 +15,10 @@
     </appender>
   </springProfile>
 
+  <logger name="com.microsoft.applicationinsights" additivity="false" level="INFO" >
+    <appender-ref ref="logAppender"/>
+  </logger>
+
   <logger name="uk.gov.justice.digital.hmpps.prisontoprobation.PrisonToProbationUpdateApplicationKt" additivity="false" level="DEBUG">
     <appender-ref ref="logAppender"/>
     <appender-ref ref="consoleAppender"/>

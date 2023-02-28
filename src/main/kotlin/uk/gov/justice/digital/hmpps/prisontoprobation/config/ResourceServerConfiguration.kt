@@ -22,8 +22,10 @@ class ResourceServerConfiguration {
             "/webjars/**", "/favicon.ico", "/csrf",
             "/health/**", "/info", "/ping",
             "/prometheus/**",
-            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-            "/queue-admin/retry-all-dlqs"
+            "/v3/api-docs/**", "/swagger-ui/**",
+            "/swagger-resources", "/swagger-resources/configuration/ui", "/swagger-resources/configuration/security",
+            "/queue-admin/retry-all-dlqs",
+            "/synthetic-monitor" // This endpoint is secured in the ingress rather than the app so that it can be called from within the namespace without requiring authentication
           )
           .permitAll().anyRequest().authenticated()
       }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
