@@ -1,23 +1,11 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.resource
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.any
-import org.mockito.kotlin.check
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.stub
-import org.mockito.kotlin.verifyBlocking
-import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
-import uk.gov.justice.hmpps.sqs.HmppsQueue
-import uk.gov.justice.hmpps.sqs.PurgeQueueRequest
-import uk.gov.justice.hmpps.sqs.PurgeQueueResult
-import uk.gov.justice.hmpps.sqs.RetryDlqResult
 
 class QueueResourceTest : NoQueueListenerIntegrationTest() {
 
