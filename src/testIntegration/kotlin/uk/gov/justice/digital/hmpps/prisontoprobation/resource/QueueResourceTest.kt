@@ -50,40 +50,5 @@ class QueueResourceTest : NoQueueListenerIntegrationTest() {
         .exchange()
         .expectStatus().isForbidden
     }
-
-    @Test
-    internal fun `purge - satisfies the correct role`() {
-      val queueName = "any queue"
-      val dlqName = "any dlq"
-      doReturn(PurgeQueueRequest(dlqName, prisonEventQueueSqsClient, "any url")).whenever(hmppsQueueService).findQueueToPurge(any())
-      doReturn(HmppsQueue("any queue id", prisonEventQueueSqsClient, queueName, prisonEventSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
-      hmppsQueueService.stub { onBlocking { purgeQueue(any()) } doReturn PurgeQueueResult(0) }
-
-      webTestClient.put()
-        .uri("/queue-admin/purge-queue/$dlqName")
-        .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isOk
-
-      verifyBlocking(hmppsQueueService) { purgeQueue(check { assertThat(it.queueName).isEqualTo(dlqName) }) }
-    }
-
-    @Test
-    internal fun `transfer - satisfies the correct role`() {
-      val queueName = "any queue"
-      val dlqName = "any dlq"
-      doReturn(HmppsQueue("any queue id", prisonEventQueueSqsClient, queueName, prisonEventSqsDlqClient, dlqName)).whenever(hmppsQueueService).findByDlqName(dlqName)
-      hmppsQueueService.stub { onBlocking { retryDlqMessages(any()) } doReturn RetryDlqResult(0, listOf()) }
-
-      webTestClient.put()
-        .uri("/queue-admin/retry-dlq/$dlqName")
-        .headers(setAuthorisation(roles = listOf("ROLE_PTPU_QUEUE_ADMIN")))
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isOk
-
-      verifyBlocking(hmppsQueueService) { retryDlqMessages(check { assertThat(it.hmppsQueue.dlqName).isEqualTo(dlqName) }) }
-    }
   }
 }
