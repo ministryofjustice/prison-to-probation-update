@@ -77,7 +77,7 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=localstack,dev
   localstack:
-    image: localstack/localstack:0.12.10
+    image: localstack/localstack
     networks:
       - hmpps
     container_name: localstack
@@ -93,9 +93,9 @@ services:
       - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
       - DOCKER_HOST=unix:///var/run/docker.sock
       - AWS_EXECUTION_ENV=True
-      - DEFAULT_REGION=eu-west-2
+      - AWS_DEFAULT_REGION=eu-west-2
     volumes:
-      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "${TMPDIR:-/tmp/localstack}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
 networks:

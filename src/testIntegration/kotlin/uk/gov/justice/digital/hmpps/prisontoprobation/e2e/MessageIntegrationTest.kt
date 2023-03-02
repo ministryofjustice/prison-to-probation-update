@@ -6,6 +6,7 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -19,7 +20,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody(message).build())
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/movement/1") } matches { it == 2 }
@@ -40,7 +41,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody(message).build())
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/sentenceDetail") } matches { it == 2 }
@@ -68,7 +69,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody(message).build())
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -88,7 +89,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody(message).build())
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835?basicInfo=false&extraInfo=true") } matches { it == 3 }
@@ -108,7 +109,7 @@ class MessageIntegrationTest : QueueListenerIntegrationTest() {
     // wait until our queue has been purged
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
 
-    prisonEventQueueSqsClient.sendMessage(queueUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(queueUrl).messageBody(message).build())
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { eliteRequestCountFor("/api/bookings/1200835/identifiers?type=MERGED") } matches { it == 2 }

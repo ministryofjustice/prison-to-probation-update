@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import org.springframework.boot.test.context.SpringBootTest
 import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
+import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 @SpringBootTest(
   properties = [
@@ -17,15 +18,9 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.IntegrationTest
 )
 class QueueListenerIntegrationTest : IntegrationTest() {
 
-  fun getNumberOfMessagesCurrentlyOnQueue(): Int? {
-    val queueAttributes = prisonEventQueueSqsClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
-    return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
-  }
+  fun getNumberOfMessagesCurrentlyOnQueue(): Int = prisonEventQueueSqsClient.countMessagesOnQueue(prisonEventQueueName).get()
 
-  fun getNumberOfMessagesCurrentlyOnDlq(): Int? {
-    val queueAttributes = prisonEventSqsDlqClient.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages"))
-    return queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt()
-  }
+  fun getNumberOfMessagesCurrentlyOnDlq() = prisonEventSqsDlqClient?.countMessagesOnQueue(prisonEventQueueName)?.get()
 
   fun eliteRequestCountFor(url: String) = prisonMockServer.findAll(getRequestedFor(urlEqualTo(url))).count()
 

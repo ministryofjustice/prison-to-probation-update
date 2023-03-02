@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.prisontoprobation.services
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import io.awspring.cloud.sqs.annotation.SqsListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -20,7 +20,7 @@ class PrisonerChangesListenerPusher(
     val gson: Gson = GsonBuilder().create()
   }
 
-  @JmsListener(destination = "prisoneventqueue", containerFactory = "hmppsQueueContainerFactoryProxy")
+  @SqsListener(queueNames = ["prisoneventqueue"], factory = "hmppsQueueContainerFactoryProxy")
   fun pushPrisonUpdateToProbation(requestJson: String?) {
     log.debug(requestJson)
     val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)

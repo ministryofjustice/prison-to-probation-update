@@ -8,6 +8,7 @@ import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.entity.Message
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -18,7 +19,7 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
   fun `housekeeping will consume a booking changed message on the dlq and return to main queue`() {
     val message = "/messages/bookingNumberChanged.json".readResourceAsText()
 
-    prisonEventQueueSqsClient.sendMessage(dlqUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(dlqUrl).messageBody(message).build())
 
     webTestClient.put()
       .uri("/queue-admin/retry-all-dlqs")
@@ -40,7 +41,7 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
 
   @Test
   fun `will purge any messages on the dlq`() {
-    prisonEventQueueSqsClient.sendMessage(dlqUrl, "{}")
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(dlqUrl).messageBody("{}").build())
 
     webTestClient.put()
       .uri("/queue-admin/purge-queue/${prisonEventQueue.dlqName}")
@@ -62,7 +63,7 @@ class HouseKeepingIntegrationTest : QueueListenerIntegrationTest() {
   fun `will consume a booking changed message on the dlq and return to main queue`() {
     val message = "/messages/bookingNumberChanged.json".readResourceAsText()
 
-    prisonEventQueueSqsClient.sendMessage(dlqUrl, message)
+    prisonEventQueueSqsClient.sendMessage(SendMessageRequest.builder().queueUrl(dlqUrl).messageBody(message).build())
 
     webTestClient.put()
       .uri("/queue-admin/retry-dlq/${prisonEventQueue.dlqName}")

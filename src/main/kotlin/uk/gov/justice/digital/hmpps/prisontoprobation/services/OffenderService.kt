@@ -67,7 +67,7 @@ class OffenderService(@Qualifier("prisonApiWebClient") private val webClient: We
   }
   fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
   fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
-    if (exception.rawStatusCode == statusCode.value()) Mono.empty() else Mono.error(exception)
+    if (exception.statusCode == statusCode) Mono.empty() else Mono.error(exception)
 }
 
 data class Prisoner(

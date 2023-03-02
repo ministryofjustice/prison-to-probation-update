@@ -36,7 +36,7 @@ jobs:
       name: hmpps/localstack
       jdk_tag: "17.0"
       services: "sqs,sns,dynamodb"
-      localstack_tag: "0.12.10"
+      localstack_tag: "1.4"
     steps:
       - checkout
       - hmpps/install_aws_cli

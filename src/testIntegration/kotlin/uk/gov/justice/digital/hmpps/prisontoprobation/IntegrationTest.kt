@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation
 
-import com.amazonaws.services.sqs.AmazonSQS
-import com.amazonaws.services.sqs.model.PurgeQueueRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import org.awaitility.kotlin.await
@@ -23,6 +21,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.helper.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.prisontoprobation.repositories.MessageRepository
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.MessageProcessor
@@ -30,6 +29,7 @@ import uk.gov.justice.digital.hmpps.prisontoprobation.services.PrisonerChangesLi
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import uk.gov.justice.hmpps.sqs.HmppsSqsProperties
 import uk.gov.justice.hmpps.sqs.MissingQueueException
+import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -49,7 +49,7 @@ abstract class IntegrationTest {
   protected lateinit var hmppsSqsProperties: HmppsSqsProperties
 
   protected val prisonEventQueueSqsClient by lazy { prisonEventQueue.sqsClient }
-  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient as AmazonSQS }
+  protected val prisonEventSqsDlqClient by lazy { prisonEventQueue.sqsDlqClient }
 
   internal val prisonEventQueueName by lazy { prisonEventQueue.queueName }
   internal val prisonEventDlqName by lazy { prisonEventQueue.dlqName as String }
@@ -75,8 +75,8 @@ abstract class IntegrationTest {
   @Autowired
   protected lateinit var messageRepository: MessageRepository
 
-  val queueUrl: String by lazy { prisonEventQueueSqsClient.getQueueUrl(prisonEventQueueName).queueUrl }
-  val dlqUrl: String by lazy { prisonEventSqsDlqClient.getQueueUrl(prisonEventDlqName).queueUrl }
+  val queueUrl: String by lazy { prisonEventQueue.queueUrl }
+  val dlqUrl: String by lazy { prisonEventQueue.dlqUrl!! }
 
   @BeforeEach
   fun `Debug bean information`() {
@@ -91,10 +91,10 @@ abstract class IntegrationTest {
   @BeforeEach
   fun `Reset resources`() {
     messageRepository.deleteAll()
-    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest(queueUrl))
-    await untilCallTo { prisonEventQueueSqsClient.activeMessageCount(queueUrl) } matches { it == 0 }
-    await untilCallTo { prisonEventSqsDlqClient.activeMessageCount(dlqUrl) } matches { it == 0 }
+    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(queueUrl).build())
+    prisonEventQueueSqsClient.purgeQueue(PurgeQueueRequest.builder().queueUrl(queueUrl).build())
+    await untilCallTo { prisonEventQueueSqsClient.countMessagesOnQueue(queueUrl).get() } matches { it == 0 }
+    await untilCallTo { prisonEventSqsDlqClient!!.countMessagesOnQueue(dlqUrl).get() } matches { it == 0 }
   }
 
   companion object {
@@ -154,14 +154,6 @@ abstract class IntegrationTest {
     user: String = "ptpu-report-client",
     roles: List<String> = listOf()
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
-
-  internal fun AmazonSQS.activeMessageCount(queueUrl: String): Int {
-    val queueAttributes = this.getQueueAttributes(queueUrl, listOf("ApproximateNumberOfMessages", "ApproximateNumberOfMessagesNotVisible"))
-    val msgsOnQueue = queueAttributes.attributes["ApproximateNumberOfMessages"]?.toInt() ?: 0
-    val msgsInFlight = queueAttributes.attributes["ApproximateNumberOfMessagesNotVisible"]?.toInt() ?: 0
-    return msgsOnQueue + msgsInFlight
-  }
-
   protected fun subPing(status: Int) {
     oauthMockServer.stubFor(
       WireMock.get("/auth/health/ping").willReturn(

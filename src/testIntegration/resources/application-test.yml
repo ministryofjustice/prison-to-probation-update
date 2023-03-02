@@ -5,6 +5,7 @@ graceful:
 
 aws:
   provider: localstack
+  region: eu-west-2
 
 hmpps.sqs:
   provider: ${aws.provider}

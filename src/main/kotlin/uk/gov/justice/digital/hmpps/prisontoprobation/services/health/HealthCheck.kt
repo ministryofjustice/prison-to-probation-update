@@ -18,7 +18,11 @@ abstract class HealthCheck(private val webClient: WebClient) : HealthIndicator {
       .retrieve()
       .toEntity(String::class.java)
       .flatMap { Mono.just(Health.up().withDetail("HttpStatus", it?.statusCode).build()) }
-      .onErrorResume(WebClientResponseException::class.java) { Mono.just(Health.down(it).withDetail("body", it.responseBodyAsString).withDetail("HttpStatus", it.statusCode).build()) }
+      .onErrorResume(WebClientResponseException::class.java) {
+        Mono.just(
+          Health.down(it).withDetail("body", it.responseBodyAsString).withDetail("HttpStatus", it.statusCode).build()
+        )
+      }
       .onErrorResume(Exception::class.java) { Mono.just(Health.down(it).build()) }
       .block()
   }
@@ -41,7 +45,13 @@ class OAuthApiHealth
 constructor(@Qualifier("oauthApiHealthWebClient") webClient: WebClient) : HealthCheck(webClient)
 
 @Component
-class MessageTable(@Qualifier("amazonDynamoDB") dynamoDB: AmazonDynamoDB, dynamoDbConfigProperties: DynamoDbConfigProperties) : DynamoDBHealthCheck(dynamoDB, dynamoDbConfigProperties.tableName)
+class MessageTable(
+  @Qualifier("amazonDynamoDB") dynamoDB: AmazonDynamoDB,
+  dynamoDbConfigProperties: DynamoDbConfigProperties
+) : DynamoDBHealthCheck(dynamoDB, dynamoDbConfigProperties.tableName)
 
 @Component
-class ScheduleTable(@Qualifier("scheduleDynamoDB") dynamoDB: AmazonDynamoDB, dynamoDbConfigProperties: DynamoDbConfigProperties) : DynamoDBHealthCheck(dynamoDB, dynamoDbConfigProperties.scheduleTableName)
+class ScheduleTable(
+  @Qualifier("scheduleDynamoDB") dynamoDB: AmazonDynamoDB,
+  dynamoDbConfigProperties: DynamoDbConfigProperties
+) : DynamoDBHealthCheck(dynamoDB, dynamoDbConfigProperties.scheduleTableName)
