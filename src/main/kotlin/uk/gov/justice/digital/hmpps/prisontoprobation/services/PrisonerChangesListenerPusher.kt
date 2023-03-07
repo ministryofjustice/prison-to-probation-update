@@ -22,15 +22,12 @@ class PrisonerChangesListenerPusher(
 
   @SqsListener(queueNames = ["prisoneventqueue"], factory = "hmppsQueueContainerFactoryProxy")
   fun pushPrisonUpdateToProbation(requestJson: String?) {
-    log.debug(requestJson)
-    val (message, messageId, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
+    val (message, _, messageAttributes) = gson.fromJson(requestJson, Message::class.java)
     val eventType = messageAttributes.eventType.Value
-    log.info("Received message $messageId type $eventType")
-    log.debug("Will hand over to messageProcessor $messageProcessor")
 
     when (val result: MessageResult = messageProcessor.validateMessage(eventType, message)) {
       is TryLater -> retryService.scheduleForProcessing(result.bookingId, eventType, message, result.status)
-      is Done -> result.message?.let { log.info("Ignoring message due to $it") }
+      is Done -> result.message?.let { log.debug("Ignoring message due to $it") }
     }
   }
 }

@@ -35,7 +35,6 @@ class PrisonMovementService(
       "movementSeq" to movementSeq.toString()
     )
 
-    log.info("External movement for booking $bookingId with sequence $movementSeq")
     telemetryClient.trackEvent("P2PExternalMovement", trackingAttributes, null)
 
     val (name, attributes) = processMovement(bookingId, movementSeq, trackingAttributes)
