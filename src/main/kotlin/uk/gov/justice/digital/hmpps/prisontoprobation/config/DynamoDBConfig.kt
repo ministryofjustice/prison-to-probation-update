@@ -77,7 +77,7 @@ class DynamoDBConfig {
 
       try {
         DynamoDBUtils.createLockTable(dynamoDB, scheduleTableName, ProvisionedThroughput(1L, 1L))
-        log.info("Created DynamoDB lock table $scheduleTableName")
+        log.debug("Created DynamoDB lock table $scheduleTableName")
       } catch (e: ResourceInUseException) {
         log.warn("Failed to create table $scheduleTableName as it already exists - expected when running locally but could indicate an error in tests")
       }
@@ -109,7 +109,7 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
   try {
     tableRequest.tableName = tableName
     dynamoDB.createTable(tableRequest)
-    createTableLog.info("Created DynamoDB table $tableName")
+    createTableLog.debug("Created DynamoDB table $tableName")
     dynamoDB.updateTimeToLive(
       UpdateTimeToLiveRequest()
         .withTableName(tableName)
