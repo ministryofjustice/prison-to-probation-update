@@ -46,7 +46,7 @@ class SmokeTest {
     .awaitLast()
 
   private fun logUpdate(signal: Signal<TestStatus>) {
-    signal.let { it.get()?.let { result -> println(result.description) } }
+    signal.let { it.get()?.let { result -> log.debug(result.description) } }
   }
 
   data class TestStatus(val description: String, val progress: TestProgress)

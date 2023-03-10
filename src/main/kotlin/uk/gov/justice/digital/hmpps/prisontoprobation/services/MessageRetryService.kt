@@ -17,7 +17,6 @@ class MessageRetryService(
   }
 
   fun scheduleForProcessing(bookingId: Long, eventType: String, message: String, status: SynchroniseStatus) {
-    log.info("Registering an initial processing for booking $bookingId for event $eventType")
     val booking = offenderService.getBooking(bookingId)
     messageRepository.save(
       Message(
@@ -45,16 +44,16 @@ class MessageRetryService(
 
   private fun retryForAttemptsMade(range: IntRange) =
     messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(range.first, range.last).forEach {
-      log.info("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+      log.debug("Retrying ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
       when (val result: MessageResult = processMessage(it)) {
         is TryLater -> {
-          log.info("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+          log.debug("Still not successful ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.retry(result.retryUntil, result.status))
         }
         is Done -> {
-          log.info("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
+          log.debug("Success ${it.eventType} for ${it.bookingId} after ${it.retryCount} attempts")
           messageRepository.save(it.markAsProcessed(result.status))
-          result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.info(logMessage) }
+          result.message?.let { logMessage -> PrisonerChangesListenerPusher.log.debug(logMessage) }
         }
       }
     }

@@ -18,20 +18,20 @@ class RetryScheduler(val messgaeRetryService: MessageRetryService) {
   @Scheduled(cron = "\${retry.schedules.short.cron}")
   @SchedulerLock(name = "scheduleLock")
   fun retryShortTerm() {
-    log.info("Running retry for short term")
+    log.debug("Running retry for short term")
     messgaeRetryService.retryShortTerm()
   }
   @Scheduled(cron = "\${retry.schedules.medium.cron}")
   @SchedulerLock(name = "scheduleLock")
   fun retryMediumTerm() {
-    log.info("Running retry for medium term")
+    log.debug("Running retry for medium term")
     messgaeRetryService.retryMediumTerm()
   }
 
   @Scheduled(cron = "\${retry.schedules.long.cron}")
   @SchedulerLock(name = "scheduleLock")
   fun retryLongTerm() {
-    log.info("Running retry for long term")
+    log.debug("Running retry for long term")
     messgaeRetryService.retryLongTerm()
   }
 }

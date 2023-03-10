@@ -32,8 +32,6 @@ class ImprisonmentStatusChangeService(
 
   fun processImprisonmentStatusChangeAndUpdateProbation(message: ImprisonmentStatusChangesMessage): MessageResult {
     val (bookingId, imprisonmentStatusSeq) = message
-    log.info("Imprisonment status for booking $bookingId has changed")
-
     val (result, telemetryEvent) = processStatusChange(message)
 
     telemetryClient.trackEvent(
@@ -51,12 +49,7 @@ class ImprisonmentStatusChangeService(
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return ignored() to it.reason }
     val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return ignored() to it.reason }
-    val sentenceStartDate =
-      getLatestPrimarySentenceStartDate(bookingId).onIgnore { return ignored() to it.reason }.also {
-        if (sentenceDetail.sentenceStartDate != it) {
-          log.debug("Latest and original sentence dates differ for booking $bookingId -  ${sentenceDetail.sentenceStartDate} compared to $it")
-        }
-      }
+    val sentenceStartDate = getLatestPrimarySentenceStartDate(bookingId).onIgnore { return ignored() to it.reason }
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val (offenderNo, crn) = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(
       booking,
