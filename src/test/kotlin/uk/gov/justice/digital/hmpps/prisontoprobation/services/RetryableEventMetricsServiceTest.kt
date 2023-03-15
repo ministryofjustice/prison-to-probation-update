@@ -37,7 +37,7 @@ class RetryableEventMetricsServiceTest {
       whenever(meterFactory.registerCounter(any(), eq("ptpu.statusChangeCounter"), anyString(), eq(FAIL_TYPE)))
         .thenReturn(failCounter)
       whenever(
-        meterFactory.registerRetryDistribution(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE))
+        meterFactory.registerRetryDistribution(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_RETRIES_TYPE)),
       ).thenReturn(retryDistribution)
       whenever(meterFactory.registerMessageAgeTimer(any(), eq(STATUS_CHANGE_METRIC), anyString(), eq(SUCCESS_AFTER_TIME_TYPE)))
         .thenReturn(successTimer)

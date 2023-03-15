@@ -117,7 +117,7 @@ class PrisonMovementServiceTest {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["movementSeq"]).isEqualTo("1")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -155,7 +155,7 @@ class PrisonMovementServiceTest {
           assertThat(it["toAgency"]).isEqualTo("MDI")
           assertThat(it["reason"]).isEqualTo("Not a transfer")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -174,7 +174,7 @@ class PrisonMovementServiceTest {
           assertThat(it["toAgency"]).isEqualTo("not present")
           assertThat(it["reason"]).isEqualTo("Not a transfer")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -193,7 +193,7 @@ class PrisonMovementServiceTest {
           assertThat(it["toAgency"]).isEqualTo("MDI")
           assertThat(it["reason"]).isEqualTo("Not an active booking")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -215,7 +215,7 @@ class PrisonMovementServiceTest {
           assertThat(it["toAgency"]).isEqualTo("MDI")
           assertThat(it["reason"]).isEqualTo("Not an interested prison")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -267,7 +267,7 @@ class PrisonMovementServiceTest {
           assertThat(it["toAgency"]).isEqualTo("MDI")
           assertThat(it["toAgencyDescription"]).isEqualTo("Moorland")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -288,7 +288,7 @@ class PrisonMovementServiceTest {
           assertThat(it["fromAgency"]).isEqualTo("ABRYCT")
           assertThat(it["toAgency"]).isEqualTo("MDI")
         },
-        isNull()
+        isNull(),
       )
     }
   }
@@ -346,7 +346,7 @@ class PrisonMovementServiceTest {
     latestLocation = "Moorland (HMP & YOI)",
     convictedStatus = "Convicted",
     imprisonmentStatus = "",
-    receptionDate = ""
+    receptionDate = "",
   )
 
   private fun createPrisonAdmissionMovement(offenderNo: String = "AB123D", toAgency: String = "MDI") = Movement(
@@ -355,7 +355,7 @@ class PrisonMovementServiceTest {
     fromAgency = "ABRYCT",
     toAgency = toAgency,
     movementType = "ADM",
-    directionCode = "OUT"
+    directionCode = "OUT",
   )
 
   private fun createTransferMovement() = Movement(
@@ -364,7 +364,7 @@ class PrisonMovementServiceTest {
     fromAgency = "LEI",
     toAgency = "MDI",
     movementType = "TRN",
-    directionCode = "OUT"
+    directionCode = "OUT",
   )
 
   private fun createTemporaryAbsenceMovement() = Movement(
@@ -373,7 +373,7 @@ class PrisonMovementServiceTest {
     fromAgency = null,
     toAgency = null,
     movementType = "TAP",
-    directionCode = "OUT"
+    directionCode = "OUT",
   )
 
   private fun createCurrentBooking(bookingNo: String = "38353A") = createBooking(bookingNo = bookingNo)
@@ -382,6 +382,6 @@ class PrisonMovementServiceTest {
 
   private fun createUpdatedCustody(description: String = "Moorland") = Custody(
     institution = Institution(description),
-    bookingNumber = "38353A"
+    bookingNumber = "38353A",
   )
 }

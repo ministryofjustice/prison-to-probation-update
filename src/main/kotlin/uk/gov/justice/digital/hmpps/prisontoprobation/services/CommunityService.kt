@@ -92,25 +92,25 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
 }
 
 data class UpdateOffenderNomsNumber(
-  val nomsNumber: String
+  val nomsNumber: String,
 )
 
 data class UpdateCustody(
-  val nomsPrisonInstitutionCode: String
+  val nomsPrisonInstitutionCode: String,
 )
 
 data class Institution(
-  val description: String?
+  val description: String?,
 )
 
 data class Custody(
   val institution: Institution?,
-  val bookingNumber: String?
+  val bookingNumber: String?,
 )
 
 data class UpdateCustodyBookingNumber(
   val sentenceStartDate: LocalDate,
-  val bookingNumber: String
+  val bookingNumber: String,
 )
 
 data class ReplaceCustodyKeyDates(
@@ -120,7 +120,7 @@ data class ReplaceCustodyKeyDates(
   val paroleEligibilityDate: LocalDate? = null,
   val sentenceExpiryDate: LocalDate? = null,
   val expectedReleaseDate: LocalDate? = null,
-  val postSentenceSupervisionEndDate: LocalDate? = null
+  val postSentenceSupervisionEndDate: LocalDate? = null,
 )
 
 data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null, val custody: Custody? = null)

@@ -149,7 +149,7 @@ class BookingChangeServiceTest {
           assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
           assertThat(it["crn"]).isEqualTo("X123456")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -168,7 +168,7 @@ class BookingChangeServiceTest {
           assertThat(it["offenderNo"]).isEqualTo("A11111Y")
           assertThat(it["oldOffenderNo"]).isEqualTo("A88888Y")
         },
-        isNull()
+        isNull(),
       )
     }
   }

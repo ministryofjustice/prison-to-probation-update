@@ -84,7 +84,7 @@ data class Prisoner(
   val latestLocation: String?,
   val convictedStatus: String?,
   val imprisonmentStatus: String?,
-  val receptionDate: String?
+  val receptionDate: String?,
 )
 
 data class Movement(
@@ -93,7 +93,7 @@ data class Movement(
   val fromAgency: String?,
   val toAgency: String?,
   val movementType: String,
-  val directionCode: String
+  val directionCode: String,
 )
 
 data class Booking(
@@ -106,7 +106,7 @@ data class Booking(
   val lastName: String,
   val dateOfBirth: LocalDate,
   val recall: Boolean? = null,
-  val legalStatus: String? = null
+  val legalStatus: String? = null,
 )
 
 data class SentenceDetail(
@@ -119,7 +119,7 @@ data class SentenceDetail(
   val sentenceExpiryDate: LocalDate? = null,
   val topupSupervisionExpiryDate: LocalDate? = null,
   val releaseDate: LocalDate? = null,
-  val homeDetentionCurfewEligibilityDate: LocalDate? = null
+  val homeDetentionCurfewEligibilityDate: LocalDate? = null,
 )
 
 data class SentenceSummary(
@@ -131,5 +131,5 @@ data class SentenceSummary(
 
 data class BookingIdentifier(
   val type: String,
-  val value: String
+  val value: String,
 )

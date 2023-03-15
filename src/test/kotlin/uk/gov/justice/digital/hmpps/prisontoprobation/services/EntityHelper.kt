@@ -12,7 +12,7 @@ fun createBooking(
   lastName: String = "Barnes",
   dateOfBirth: LocalDate = LocalDate.of(1965, 7, 19),
   recall: Boolean = false,
-  legalStatus: String = "SENTENCED"
+  legalStatus: String = "SENTENCED",
 ): Booking = Booking(
   bookingNo = bookingNo,
   activeFlag = activeFlag,

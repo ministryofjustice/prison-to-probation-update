@@ -116,8 +116,8 @@ fun createTable(tableName: String, dynamoDB: AmazonDynamoDB) {
         .withTimeToLiveSpecification(
           TimeToLiveSpecification()
             .withAttributeName("deleteBy")
-            .withEnabled(true)
-        )
+            .withEnabled(true),
+        ),
     )
   } catch (e: ResourceInUseException) {
     createTableLog.warn("Failed to create table $tableName as it already exists - expected when running locally but could indicate an error in tests")

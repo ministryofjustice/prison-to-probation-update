@@ -17,6 +17,6 @@ class OpenApiConfiguration(buildProperties: BuildProperties) {
       Info().title("Prison to Probation update service")
         .version(version)
         .description("A service that synchronises prison custody data to Delius")
-        .contact(Contact().name("HMPPS Digital Studio").email("feedback@digital.justice.gov.uk"))
+        .contact(Contact().name("HMPPS Digital Studio").email("feedback@digital.justice.gov.uk")),
     )
 }

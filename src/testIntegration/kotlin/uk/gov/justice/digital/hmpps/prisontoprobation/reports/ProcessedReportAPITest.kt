@@ -42,7 +42,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
         message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-          ZoneOffset.UTC
+          ZoneOffset.UTC,
         ),
         reportable = true,
         locationId = "MDI",
@@ -54,7 +54,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
         recall = false,
         offenderNo = "A1234DY",
         status = "MATCHED",
-      )
+      ),
     )
     messageRepository.save(
       Message(
@@ -64,10 +64,10 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
         message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-          ZoneOffset.UTC
+          ZoneOffset.UTC,
         ),
-        reportable = false
-      )
+        reportable = false,
+      ),
     )
 
     webTestClient.get()
@@ -91,7 +91,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
         aMessage(90L, locationId = "MDI"),
         aMessage(91L, locationId = "MDI"),
         aMessage(92L, locationId = "WWI"),
-      )
+      ),
     )
 
     webTestClient.get()
@@ -116,7 +116,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
         aMessage(91L, eventType = "SENTENCE_DATES-CHANGED"),
         aMessage(92L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
         aMessage(93L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
-      )
+      ),
     )
 
     webTestClient.get()
@@ -158,7 +158,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
           aMessage(91L, processedDate = LocalDateTime.parse("2020-12-11T15:15:50")),
           aMessage(92L, processedDate = LocalDateTime.parse("2020-12-12T15:15:50")),
           aMessage(93L, processedDate = LocalDateTime.parse("2020-12-13T15:15:50")),
-        )
+        ),
       )
     }
 
@@ -237,7 +237,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
           aMessage(91L, createdDate = LocalDateTime.parse("2020-12-11T15:15:50")),
           aMessage(92L, createdDate = LocalDateTime.parse("2020-12-12T15:15:50")),
           aMessage(93L, createdDate = LocalDateTime.parse("2020-12-13T15:15:50")),
-        )
+        ),
       )
     }
 
@@ -319,7 +319,7 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
     createdDate = createdDate,
     message = """{"text": "value"}""",
     deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-      ZoneOffset.UTC
+      ZoneOffset.UTC,
     ),
     reportable = true,
     locationId = locationId,

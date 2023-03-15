@@ -40,11 +40,11 @@ class InProgressReportAPITest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
         message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-          ZoneOffset.UTC
+          ZoneOffset.UTC,
         ),
         reportable = true,
-        processedDate = LocalDateTime.now()
-      )
+        processedDate = LocalDateTime.now(),
+      ),
     )
     messageRepository.save(
       Message(
@@ -54,10 +54,10 @@ class InProgressReportAPITest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
         message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-          ZoneOffset.UTC
+          ZoneOffset.UTC,
         ),
         reportable = false,
-      )
+      ),
     )
     messageRepository.save(
       Message(
@@ -67,7 +67,7 @@ class InProgressReportAPITest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.parse("2020-12-09T15:15:50"),
         message = """{"text": "value"}""",
         deleteBy = LocalDateTime.parse("2020-12-19T15:15:50").toEpochSecond(
-          ZoneOffset.UTC
+          ZoneOffset.UTC,
         ),
         reportable = true,
         offenderNo = "A1234GY",
@@ -77,8 +77,8 @@ class InProgressReportAPITest : NoQueueListenerIntegrationTest() {
         locationId = "MDI",
         locationDescription = "Moorland HMP",
         recall = false,
-        legalStatus = "SENTENCED"
-      )
+        legalStatus = "SENTENCED",
+      ),
     )
 
     webTestClient.get()
