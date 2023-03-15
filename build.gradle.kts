@@ -100,7 +100,7 @@ jib {
     user = "2000:2000"
   }
   from {
-    image = "ghcr.io/ministryofjustice/hmpps-probation-integration-services/eclipse-temurin:17-jre-alpine"
+    image = "eclipse-temurin:17-jre-alpine"
   }
   extraDirectories {
     paths {
