@@ -21,6 +21,7 @@ class RetryScheduler(val messgaeRetryService: MessageRetryService) {
     log.debug("Running retry for short term")
     messgaeRetryService.retryShortTerm()
   }
+
   @Scheduled(cron = "\${retry.schedules.medium.cron}")
   @SchedulerLock(name = "scheduleLock")
   fun retryMediumTerm() {

@@ -152,7 +152,7 @@ abstract class IntegrationTest {
 
   protected fun setAuthorisation(
     user: String = "ptpu-report-client",
-    roles: List<String> = listOf()
+    roles: List<String> = listOf(),
   ): (HttpHeaders) -> Unit = jwtAuthHelper.setAuthorisation(user, roles)
   protected fun subPing(status: Int) {
     oauthMockServer.stubFor(
@@ -160,8 +160,8 @@ abstract class IntegrationTest {
         WireMock.aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
+          .withStatus(status),
+      ),
     )
 
     prisonMockServer.stubFor(
@@ -169,8 +169,8 @@ abstract class IntegrationTest {
         WireMock.aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
+          .withStatus(status),
+      ),
     )
 
     communityMockServer.stubFor(
@@ -178,8 +178,8 @@ abstract class IntegrationTest {
         WireMock.aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
+          .withStatus(status),
+      ),
     )
 
     searchMockServer.stubFor(
@@ -187,8 +187,8 @@ abstract class IntegrationTest {
         WireMock.aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(if (status == 200) "pong" else "some error")
-          .withStatus(status)
-      )
+          .withStatus(status),
+      ),
     )
   }
 }

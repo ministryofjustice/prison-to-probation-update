@@ -14,7 +14,7 @@ class MessageAggregator(
   private val messageRepository: MessageRepository,
   private val messageProcessor: MessageProcessor,
   @Value("\${prisontoprobation.hold-back.duration}")
-  private val holdBackDuration: Duration
+  private val holdBackDuration: Duration,
 ) {
 
   companion object {
@@ -24,7 +24,7 @@ class MessageAggregator(
   fun processMessagesForNextBookingSets() {
     val messages = messageRepository.findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(
       0,
-      LocalDateTime.now().minus(holdBackDuration)
+      LocalDateTime.now().minus(holdBackDuration),
     )
 
     val (messagesToProcess, messagesToDiscard) = aggregatedMessagesOrdered(messages)

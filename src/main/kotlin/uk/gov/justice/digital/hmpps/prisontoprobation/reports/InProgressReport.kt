@@ -28,13 +28,13 @@ class InProgressReport(private val messageRepository: MessageRepository) {
                 """
                 "BOOKINGID","BOOKINGNO","CREATEDDATE","CRNS","DELETEBY","EVENTTYPE","LEGALSTATUS","LOCATION","LOCATIONID","OFFENDERNO","RECALL","STATUS"
                 "2672916","12345V","2020-12-09T15:15:50","X12345,X87654","2020-12-19T15:15:50","IMPRISONMENT_STATUS-CHANGED","SENTENCED","Moorland HMP","MDI","A1234GY","false","BOOKING_NUMBER_NOT_ASSIGNED"
-                """
-              )
-            )
-          )
-        )
-      )
-    ]
+                """,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
   )
   fun generate(): String {
     return messageRepository.findAllByProcessedDateIsNull().sortedBy { it.createdDate }.map {
@@ -50,7 +50,7 @@ class InProgressReport(private val messageRepository: MessageRepository) {
         location = it.locationDescription,
         legalStatus = it.legalStatus,
         recall = it.recall,
-        status = it.status
+        status = it.status,
       )
     }.asCSV()
   }

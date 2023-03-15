@@ -19,8 +19,8 @@ abstract class DynamoDBHealthCheck(private val dynamoDB: AmazonDynamoDB, private
         mutableMapOf<String, Any?>(
           "tableName" to result.table.tableName,
           "rows" to result.table.itemCount,
-          "tableStatus" to result.table.tableStatus
-        )
+          "tableStatus" to result.table.tableStatus,
+        ),
       ).build()
     } catch (e: Exception) {
       log.error("Unable to retrieve table details $tableName due to exception:", e)

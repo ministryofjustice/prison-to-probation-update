@@ -31,8 +31,8 @@ class PrisonerChangesListenerPusherTest {
       eventType = eq("IMPRISONMENT_STATUS-CHANGED"),
       message = eq("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"),
       eq(
-        SynchroniseStatus(state = SynchroniseState.VALIDATED)
-      )
+        SynchroniseStatus(state = SynchroniseState.VALIDATED),
+      ),
     )
   }
 

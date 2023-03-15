@@ -37,25 +37,24 @@ class NotMatchedReportAPITest : NoQueueListenerIntegrationTest() {
     @BeforeEach
     internal fun setUp() {
       messageRepository.save(
-        aMessage(1, 10, "NO_MATCH")
+        aMessage(1, 10, "NO_MATCH"),
       )
       messageRepository.save(
-        aMessage(2, 10, "NO_MATCH_WITH_SENTENCE_DATE")
+        aMessage(2, 10, "NO_MATCH_WITH_SENTENCE_DATE"),
       )
       messageRepository.save(
-        aMessage(3, 10, "TOO_MANY_MATCHES")
+        aMessage(3, 10, "TOO_MANY_MATCHES"),
       )
       messageRepository.save(
-        aMessage(4, 10, "BOOKING_NUMBER_NOT_ASSIGNED")
+        aMessage(4, 10, "BOOKING_NUMBER_NOT_ASSIGNED"),
       )
       messageRepository.save(
-        aMessage(5, 0, "NO_MATCH")
+        aMessage(5, 0, "NO_MATCH"),
       )
     }
 
     @Test
     internal fun `will retrieve only records not matched over 7 days old`() {
-
       webTestClient.get()
         .uri("/report/not-matched")
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
@@ -96,7 +95,6 @@ class NotMatchedReportAPITest : NoQueueListenerIntegrationTest() {
 
     @Test
     internal fun `will be an empty file if not records found`() {
-
       webTestClient.get()
         .uri { it.path("/report/not-matched").queryParam("daysOld", "11").build() }
         .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))

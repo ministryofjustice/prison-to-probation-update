@@ -31,22 +31,22 @@ class NotMatchedReport(private val messageRepository: MessageRepository) {
                 """
                 "BOOKINGID","BOOKINGNO","CREATEDDATE","CRNS","DELETEBY","EVENTTYPE","LEGALSTATUS","LOCATION","LOCATIONID","OFFENDERNO","RECALL","STATUS"
                 "2672916","12345V","2020-12-09T15:15:50","","2020-12-19T15:15:50","IMPRISONMENT_STATUS-CHANGED","SENTENCED","Moorland HMP","MDI","A1234GY","false","NOT_MATCHED"
-                """
-              )
-            )
-          )
-        )
-      )
-    ]
+                """,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
   )
   fun generate(daysOld: Long): String {
     return messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
       listOf(
         NO_MATCH.name,
         NO_MATCH_WITH_SENTENCE_DATE.name,
-        TOO_MANY_MATCHES.name
+        TOO_MANY_MATCHES.name,
       ),
-      LocalDateTime.now().minusDays(daysOld)
+      LocalDateTime.now().minusDays(daysOld),
     ).sortedBy { it.createdDate }.map {
       NotMatched(
         bookingId = it.bookingId,
@@ -60,7 +60,7 @@ class NotMatchedReport(private val messageRepository: MessageRepository) {
         location = it.locationDescription,
         legalStatus = it.legalStatus,
         recall = it.recall,
-        status = it.status
+        status = it.status,
       )
     }.asCSV()
   }

@@ -30,11 +30,11 @@ class MessageProcessor(
           is Done -> retryableEventMetricsService.eventSucceeded(
             message.eventType,
             message.createdDate,
-            message.retryCount
+            message.retryCount,
           )
           is TryLater -> retryableEventMetricsService.eventFailed(
             message.eventType,
-            LocalDateTime.ofEpochSecond(message.deleteBy, 0, OffsetDateTime.now().offset)
+            LocalDateTime.ofEpochSecond(message.deleteBy, 0, OffsetDateTime.now().offset),
           )
         }
       }
@@ -43,11 +43,11 @@ class MessageProcessor(
     when (eventType) {
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.processMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.processImprisonmentStatusChangeAndUpdateProbation(
-        fromJson(message)
+        fromJson(message),
       )
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.processBookingNumberChangedAndUpdateProbation(fromJson(message))
       "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.processSentenceDateChangeAndUpdateProbation(
-        fromJson(message)
+        fromJson(message),
       )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
@@ -60,7 +60,7 @@ class MessageProcessor(
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChange(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChange(fromJson(message))
       "SENTENCE_DATES-CHANGED", "CONFIRMED_RELEASE_DATE-CHANGED" -> sentenceDatesChangeService.validateSentenceDateChange(
-        fromJson(message)
+        fromJson(message),
       )
       else -> {
         Done("We received a message of event type $eventType which I really wasn't expecting")
@@ -86,7 +86,7 @@ enum class SynchroniseState {
   LOCATION_NOT_UPDATED,
   KEY_DATES_NOT_UPDATED,
   COMPLETED,
-  NO_LONGER_VALID
+  NO_LONGER_VALID,
 }
 
 data class SynchroniseStatus(val matchingCrns: String? = null, val state: SynchroniseState = SynchroniseState.VALIDATED)
@@ -94,10 +94,10 @@ sealed class MessageResult
 class TryLater(
   val bookingId: Long,
   val retryUntil: LocalDate? = null,
-  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.VALIDATED)
+  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.VALIDATED),
 ) : MessageResult()
 
 class Done(
   val message: String? = null,
-  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.COMPLETED)
+  val status: SynchroniseStatus = SynchroniseStatus(state = SynchroniseState.COMPLETED),
 ) : MessageResult()

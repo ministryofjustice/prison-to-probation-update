@@ -34,9 +34,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
 
     // continually call this as if on a schedule
@@ -48,7 +48,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       check {
         assertThat(it.eventType).isEqualTo(eventType)
         assertThat(it.message).isEqualTo(message)
-      }
+      },
     )
   }
 
@@ -65,9 +65,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
 
     service.retryShortTerm()
@@ -97,9 +97,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
 
     // continually call this as if on a schedule
@@ -111,7 +111,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       check {
         assertThat(it.eventType).isEqualTo(eventType)
         assertThat(it.message).isEqualTo(message)
-      }
+      },
     )
   }
 
@@ -128,9 +128,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
 
     // continually call this as if on a schedule
@@ -142,7 +142,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       check {
         assertThat(it.eventType).isEqualTo(eventType)
         assertThat(it.message).isEqualTo(message)
-      }
+      },
     )
   }
 
@@ -159,9 +159,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
     val shortTermRepeat = 4
 
@@ -176,7 +176,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       check {
         assertThat(it.eventType).isEqualTo(eventType)
         assertThat(it.message).isEqualTo(message)
-      }
+      },
     )
   }
 
@@ -193,9 +193,9 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         message = message,
         retryCount = 1,
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
-          ZoneOffset.UTC
-        )
-      )
+          ZoneOffset.UTC,
+        ),
+      ),
     )
     val shortTermRepeat = 4
     val mediumTermRepeat = 6
@@ -215,7 +215,7 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
       check {
         assertThat(it.eventType).isEqualTo(eventType)
         assertThat(it.message).isEqualTo(message)
-      }
+      },
     )
   }
 
@@ -234,8 +234,8 @@ internal class MessageRetryServiceIntTest : NoQueueListenerIntegrationTest() {
         deleteBy = LocalDateTime.now().plusHours(1).toEpochSecond(
           ZoneOffset.UTC,
         ),
-        processedDate = LocalDateTime.now().minusMinutes(50)
-      )
+        processedDate = LocalDateTime.now().minusMinutes(50),
+      ),
     )
 
     service.retryShortTerm()

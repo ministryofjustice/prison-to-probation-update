@@ -23,7 +23,7 @@ class OffenderProbationMatchService(
   private val offenderSearchService: OffenderSearchService,
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
-  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -31,7 +31,7 @@ class OffenderProbationMatchService(
 
   fun ensureOffenderNumberExistsInProbation(
     booking: Booking,
-    sentenceStartDate: LocalDate
+    sentenceStartDate: LocalDate,
   ): Result<OffenderIdentifiers, FailureResult> {
     val prisoner = offenderService.getOffender(booking.offenderNo)
 
@@ -43,8 +43,8 @@ class OffenderProbationMatchService(
         nomsNumber = booking.offenderNo,
         croNumber = prisoner.croNumber,
         pncNumber = prisoner.pncNumber,
-        activeSentence = true
-      )
+        activeSentence = true,
+      ),
     )
 
     log.debug("${booking.offenderNo} matched ${result.matches.size} offender(s)")
@@ -61,14 +61,14 @@ class OffenderProbationMatchService(
         "matches" to result.matches.size.toString(),
         "filtered_matches" to filteredCRNs.size.toString(),
         "crns" to result.CRNs(),
-        "filtered_crns" to filteredCRNs.sorted().joinToString()
+        "filtered_crns" to filteredCRNs.sorted().joinToString(),
       ),
-      null
+      null,
     )
 
     return when (result.matchedBy) {
       "ALL_SUPPLIED", "ALL_SUPPLIED_ALIAS", "HMPPS_KEY" -> Success(
-        booking.offenderNo to result.CRNList().first()
+        booking.offenderNo to result.CRNList().first(),
       ) // NOMS number is already set in probation
       else -> {
         when (filteredCRNs.size) {
@@ -82,38 +82,42 @@ class OffenderProbationMatchService(
 
   private fun ignoreTooManyMatches(
     booking: Booking,
-    filteredCRNs: Set<String>
+    filteredCRNs: Set<String>,
   ) = Ignore(
     TelemetryEvent(
       name = "P2POffenderTooManyMatches",
       attributes = mapOf(
         "offenderNo" to booking.offenderNo,
-        "filtered_crns" to filteredCRNs.sorted().joinToString()
-      )
+        "filtered_crns" to filteredCRNs.sorted().joinToString(),
+      ),
     ) to SynchroniseStatus(
       matchingCrns = filteredCRNs.sorted().joinToString(),
-      state = SynchroniseState.TOO_MANY_MATCHES
-    )
+      state = SynchroniseState.TOO_MANY_MATCHES,
+    ),
   )
 
   private fun ignoreNotMatch(
     booking: Booking,
-    result: OffenderMatches
+    result: OffenderMatches,
   ) = Ignore(
     TelemetryEvent(
       name = "P2POffenderNoMatch",
-      attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs())
+      attributes = mapOf("offenderNo" to booking.offenderNo, "crns" to result.CRNs()),
     ) to SynchroniseStatus(
       matchingCrns = result.CRNs(),
       state = if (result.CRNList()
         .isEmpty()
-      ) SynchroniseState.NO_MATCH else SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE
-    )
+      ) {
+        SynchroniseState.NO_MATCH
+      } else {
+        SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE
+      },
+    ),
   )
 
   private fun updateProbationWithOffenderNo(
     booking: Booking,
-    crn: String
+    crn: String,
   ): Result<OffenderIdentifiers, FailureResult> {
     return if (isBookingInInterestedPrison(booking.agencyId)) {
       communityService.updateProbationOffenderNo(crn, booking.offenderNo)
@@ -122,16 +126,16 @@ class OffenderProbationMatchService(
         mapOf(
           "offenderNo" to booking.offenderNo,
           "bookingNumber" to booking.bookingNo,
-          "crn" to crn
+          "crn" to crn,
         ),
-        null
+        null,
       )
       Success(booking.offenderNo to crn)
     } else {
       Ignore(
         TelemetryEvent("P2PChangeIgnored", mapOf("reason" to "Not at an interested prison")) to SynchroniseStatus(
-          state = SynchroniseState.NOT_VALID
-        )
+          state = SynchroniseState.NOT_VALID,
+        ),
       )
     }
   }

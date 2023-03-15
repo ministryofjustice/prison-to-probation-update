@@ -98,31 +98,31 @@ class RetryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory: M
     meterRegistry,
     "${STATUS_CHANGE_METRIC}Counter",
     "The number of status change updates received",
-    TOTAL_TYPE
+    TOTAL_TYPE,
   )
   private val statusChangesFailedCounter = meterFactory.registerCounter(
     meterRegistry,
     "${STATUS_CHANGE_METRIC}Counter",
     "The number of failed status change updates ",
-    FAIL_TYPE
+    FAIL_TYPE,
   )
   private val statusChangesSuccessCounter = meterFactory.registerCounter(
     meterRegistry,
     "${STATUS_CHANGE_METRIC}Counter",
     "The number of successful status change updates ",
-    SUCCESS_TYPE
+    SUCCESS_TYPE,
   )
   private val statusChangeRetriesDistribution = meterFactory.registerRetryDistribution(
     meterRegistry,
     STATUS_CHANGE_METRIC,
     "The number of retries before a successful update",
-    SUCCESS_AFTER_RETRIES_TYPE
+    SUCCESS_AFTER_RETRIES_TYPE,
   )
   private val statusChangeSuccessTimer = meterFactory.registerMessageAgeTimer(
     meterRegistry,
     STATUS_CHANGE_METRIC,
     "The time in days before a successful update",
-    SUCCESS_AFTER_TIME_TYPE
+    SUCCESS_AFTER_TIME_TYPE,
   )
 
   fun eventFailed(eventType: String, deleteBy: LocalDateTime) =

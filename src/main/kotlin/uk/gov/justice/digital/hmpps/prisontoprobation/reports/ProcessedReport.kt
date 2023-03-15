@@ -28,13 +28,13 @@ class ProcessedReport(private val messageRepository: MessageRepository) {
                 """
                 "BOOKINGID","BOOKINGNO","CREATEDDATE","CRNS","DELETEBY","EVENTTYPE","LEGALSTATUS","LOCATION","LOCATIONID","OFFENDERNO","PROCESSEDDATE","RECALL","STATUS"
                 "2672916","12345V","2020-12-09T15:15:50","X12345,X87654","2020-12-19T15:15:50","IMPRISONMENT_STATUS-CHANGED","SENTENCED","Moorland HMP","MDI","A1234GY","2020-12-09T15:15:50","false","BOOKING_NUMBER_NOT_ASSIGNED"
-                """
-              )
-            )
-          )
-        )
-      )
-    ]
+                """,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
   )
   fun generate(
     locationId: String?,
@@ -75,7 +75,7 @@ class ProcessedReport(private val messageRepository: MessageRepository) {
           legalStatus = it.legalStatus,
           recall = it.recall,
           status = it.status,
-          processedDate = it.processedDate!!
+          processedDate = it.processedDate!!,
         )
       }
       .toList().asCSV()

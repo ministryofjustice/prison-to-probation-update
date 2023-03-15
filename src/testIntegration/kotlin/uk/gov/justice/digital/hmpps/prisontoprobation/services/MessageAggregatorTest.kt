@@ -21,8 +21,8 @@ import java.time.LocalDateTime
 
 @TestPropertySource(
   properties = [
-    "prisontoprobation.hold-back.duration=10m"
-  ]
+    "prisontoprobation.hold-back.duration=10m",
+  ],
 )
 internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
@@ -70,7 +70,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor).processMessage(
-      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message)
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message),
     )
   }
 
@@ -84,8 +84,8 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
         createdDate = LocalDateTime.now().minusMinutes(11),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
         message = message,
-        processedDate = LocalDateTime.now().minusMinutes(9)
-      )
+        processedDate = LocalDateTime.now().minusMinutes(9),
+      ),
     )
 
     messageAggregator.processMessagesForNextBookingSets()
@@ -102,7 +102,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor).processMessage(
-      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message)
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", message),
     )
   }
 
@@ -120,7 +120,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(3)).processMessage(
-      matchesMessage("IMPRISONMENT_STATUS-CHANGED")
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED"),
     )
   }
 
@@ -141,19 +141,19 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage),
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage)
+      matchesMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage),
     )
     verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage),
     )
     verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", youngMessage),
     )
     verify(messageProcessor, never()).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", tooYoungMessage),
     )
   }
 
@@ -168,10 +168,10 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementMessage),
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceChangeMessage)
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceChangeMessage),
     )
   }
 
@@ -186,10 +186,10 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage),
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage)
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage),
     )
   }
 
@@ -206,10 +206,10 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
     val orderVerifier = inOrder(messageProcessor)
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage),
     )
     orderVerifier.verify(messageProcessor, times(1)).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED")
+      matchesMessage("SENTENCE_DATES-CHANGED"),
     )
   }
 
@@ -223,7 +223,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(1)).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED")
+      matchesMessage("SENTENCE_DATES-CHANGED"),
     )
   }
 
@@ -240,7 +240,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor).processMessage(
-      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", latestPrisonLocationChangeMessage)
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", latestPrisonLocationChangeMessage),
     )
   }
 
@@ -336,8 +336,8 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
         retryCount = 0,
         createdDate = LocalDateTime.now().minusDays(3),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = imprisonmentStatusChangedMessage
-      )
+        message = imprisonmentStatusChangedMessage,
+      ),
     )
     messageRepository.save(
       Message(
@@ -345,17 +345,17 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
         retryCount = 0,
         createdDate = LocalDateTime.now().minusHours(2),
         eventType = "SENTENCE_DATES-CHANGED",
-        message = sentenceDateChangeMessage
-      )
+        message = sentenceDateChangeMessage,
+      ),
     )
 
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage)
+      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage),
     )
     verify(messageProcessor, never()).processMessage(
-      matchesMessage("IMPRISONMENT_STATUS-CHANGED", imprisonmentStatusChangedMessage)
+      matchesMessage("IMPRISONMENT_STATUS-CHANGED", imprisonmentStatusChangedMessage),
     )
   }
 
