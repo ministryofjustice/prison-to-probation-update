@@ -68,7 +68,7 @@ class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
           aMessage(ageInDays = 8, status = LOCATION_NOT_UPDATED),
           aMessage(ageInDays = 8, status = KEY_DATES_NOT_UPDATED),
           aMessage(ageInDays = 8, status = ERROR),
-        )
+        ),
       )
     }
 
@@ -146,7 +146,7 @@ class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
         aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday(), locationId = "MDI"),
         aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday(), locationId = "MDI"),
         aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday(), locationId = "WWI"),
-      )
+      ),
     )
     webTestClient.get()
       .uri("/report/match-summary")
@@ -183,7 +183,7 @@ class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
         aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
         aMessage(ageInDays = 5, status = COMPLETED, processedDate = yesterday()),
         aMessage(ageInDays = 10, status = COMPLETED, processedDate = yesterday()),
-      )
+      ),
     )
     webTestClient.get()
       .uri("/report/match-summary")
@@ -238,7 +238,7 @@ class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
         aMessage(ageInDays = 1, status = COMPLETED, processedDate = yesterday()),
         aMessage(ageInDays = 5, status = COMPLETED, processedDate = yesterday()),
         aMessage(ageInDays = 10, status = COMPLETED, processedDate = yesterday()),
-      )
+      ),
     )
     webTestClient.get()
       .uri("/report/match-summary")
@@ -306,7 +306,7 @@ class MatchingSummaryReportAPITest : NoQueueListenerIntegrationTest() {
     processedDate: LocalDateTime? = null,
     locationId: String = "MDI",
     retryCount: Int = 99,
-    eventType: String = "IMPRISONMENT_STATUS-CHANGED"
+    eventType: String = "IMPRISONMENT_STATUS-CHANGED",
   ): Message = Message(
     bookingId = Random.nextLong(),
     eventType = eventType,

@@ -32,7 +32,7 @@ class MessageRetryService(
         recall = booking.recall,
         legalStatus = booking.legalStatus,
         status = status.state.name,
-      )
+      ),
     )
   }
 

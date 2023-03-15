@@ -14,7 +14,7 @@ class SentenceDatesChangeService(
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
   private val unretryableEventMetricsService: UnretryableEventMetricsService,
-  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -35,9 +35,9 @@ class SentenceDatesChangeService(
       telemetryClient.trackEvent(
         it.name,
         it.attributes + mapOf(
-          "bookingId" to bookingId.toString()
+          "bookingId" to bookingId.toString(),
         ),
-        null
+        null,
       )
     }
 
@@ -79,7 +79,7 @@ class SentenceDatesChangeService(
   private fun getActiveBooking(bookingId: Long): Result<Booking, TelemetryEvent> =
     Success(
       validActiveBooking(bookingId)
-        .onIgnore { return Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to it.reason))) }
+        .onIgnore { return Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to it.reason))) },
     )
 
   private fun validActiveBooking(bookingId: Long): Result<Booking, String> =
@@ -89,7 +89,9 @@ class SentenceDatesChangeService(
   private fun validBookingForInterestedPrison(booking: Booking): Result<Booking, String> =
     if (isBookingInInterestedPrison(booking.agencyId)) {
       Success(booking)
-    } else Ignore("Not at an interested prison")
+    } else {
+      Ignore("Not at an interested prison")
+    }
 
   private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
     Success(validBookingForInterestedPrison(booking).onIgnore { return Ignore(TelemetryEvent("P2PSentenceDatesChangeIgnored", mapOf("reason" to it.reason))) })
@@ -107,5 +109,5 @@ fun SentenceDetail.asProbationKeyDates(): ReplaceCustodyKeyDates = ReplaceCustod
   licenceExpiryDate = licenceExpiryDate,
   expectedReleaseDate = confirmedReleaseDate,
   hdcEligibilityDate = homeDetentionCurfewEligibilityDate,
-  postSentenceSupervisionEndDate = topupSupervisionExpiryDate
+  postSentenceSupervisionEndDate = topupSupervisionExpiryDate,
 )

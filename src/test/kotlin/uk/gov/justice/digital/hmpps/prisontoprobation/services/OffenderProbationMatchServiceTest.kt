@@ -40,9 +40,9 @@ internal class OffenderProbationMatchServiceTest {
         offenderNo = "AB123D",
         firstName = "John",
         lastName = "Smith",
-        dateOfBirth = LocalDate.of(1965, 7, 19)
+        dateOfBirth = LocalDate.of(1965, 7, 19),
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     val matchRequestCaptor = argumentCaptor<MatchRequest>()
@@ -67,16 +67,16 @@ internal class OffenderProbationMatchServiceTest {
         offenderNo = "AB123D",
         firstName = "John",
         lastName = "Smith",
-        dateOfBirth = LocalDate.of(1965, 7, 19)
+        dateOfBirth = LocalDate.of(1965, 7, 19),
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(offenderSearchService, atLeastOnce()).matchProbationOffender(
       check {
         assertThat(it.pncNumber).isNull()
         assertThat(it.croNumber).isNull()
-      }
+      },
     )
   }
 
@@ -85,8 +85,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "ALL_SUPPLIED",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -94,14 +94,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { Assertions.fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
@@ -113,13 +113,13 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "NOTHING",
-        matches = listOf()
-      )
+        matches = listOf(),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore {
       assertThat(it.reason.first.name).isEqualTo("P2POffenderNoMatch")
       assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NO_MATCH)
@@ -134,22 +134,22 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
         Conviction(
           index = "1",
           active = true,
-          sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
-        )
-      )
+          sentence = Sentence(startDate = LocalDate.parse("1988-01-30")),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore {
       assertThat(it.reason.first.name).isEqualTo("P2POffenderNoMatch")
       assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NO_MATCH_WITH_SENTENCE_DATE)
@@ -164,22 +164,22 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "HMPPS_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
         Conviction(
           index = "1",
           active = true,
-          sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
-        )
-      )
+          sentence = Sentence(startDate = LocalDate.parse("1988-01-30")),
+        ),
+      ),
     )
 
     val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
@@ -191,22 +191,22 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "ALL_SUPPLIED_ALIAS",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
         Conviction(
           index = "1",
           active = true,
-          sentence = Sentence(startDate = LocalDate.parse("1988-01-30"))
-        )
-      )
+          sentence = Sentence(startDate = LocalDate.parse("1988-01-30")),
+        ),
+      ),
     )
 
     val (offenderNo, crn) = service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { fail("should have got a result") }
 
     assertThat(offenderNo).isEqualTo("A5089DY")
@@ -218,8 +218,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345")))),
+      ),
     )
     whenever(communityService.getConvictions(any())).thenReturn(
       listOf(
@@ -227,14 +227,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore {
       assertThat(it.reason.first.name).isEqualTo("P2POffenderTooManyMatches")
       assertThat(it.reason.second.state).isEqualTo(SynchroniseState.TOO_MANY_MATCHES)
@@ -249,8 +249,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "A12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "A12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -258,9 +258,9 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
     whenever(communityService.getConvictions("A12345")).thenReturn(
       listOf(
@@ -268,17 +268,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("1970-03-29")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -291,7 +291,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["offenderNo"]).isEqualTo("A5089DY")
         assertThat(it["bookingNumber"]).isEqualTo("38339A")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -304,17 +304,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -323,7 +323,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("X12345")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -332,8 +332,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -341,17 +341,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-23")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -360,7 +360,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("X12345")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -369,8 +369,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -378,17 +378,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-02-06")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -397,7 +397,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("X12345")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -406,8 +406,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -415,17 +415,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2019-03-12")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -434,7 +434,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -443,8 +443,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -452,17 +452,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = null
-        )
-      )
+          custody = null,
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -471,7 +471,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -480,8 +480,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -489,17 +489,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = false,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -508,7 +508,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("X12345")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -517,25 +517,25 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
         Conviction(
           index = "1",
           active = true,
-          sentence = null
-        )
-      )
+          sentence = null,
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -544,7 +544,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X12345")
         assertThat(it["filtered_crns"]).isEqualTo("")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -556,18 +556,18 @@ internal class OffenderProbationMatchServiceTest {
         matches = listOf(
           OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00001"))),
           OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00002"))),
-          OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00003")))
-        )
-      )
+          OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00003"))),
+        ),
+      ),
     ).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
         matches = listOf(
           OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00002"))),
           OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00003"))),
-          OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00004")))
-        )
-      )
+          OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X00004"))),
+        ),
+      ),
     )
     whenever(communityService.getConvictions(any())).thenReturn(
       listOf(
@@ -575,17 +575,17 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(
         offenderNo = "A5089DY",
-        bookingNo = "38339A"
+        bookingNo = "38339A",
       ),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore { return }
 
     verify(telemetryClient).trackEvent(
@@ -595,7 +595,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crns"]).isEqualTo("X00002, X00003")
         assertThat(it["missing_crns"]).isEqualTo("X00001")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -604,8 +604,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -613,14 +613,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(communityService).updateProbationOffenderNo("X12345", "A5089DY")
@@ -631,8 +631,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -640,14 +640,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY", agencyId = "XX"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     ).onIgnore {
       assertThat(it.reason.first.name).isEqualTo("P2PChangeIgnored")
       assertThat(it.reason.second.state).isEqualTo(SynchroniseState.NOT_VALID)
@@ -662,8 +662,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -671,14 +671,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(telemetryClient).trackEvent(
@@ -687,7 +687,7 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["crn"]).isEqualTo("X12345")
         assertThat(it["offenderNo"]).isEqualTo("A5089DY")
       },
-      isNull()
+      isNull(),
     )
   }
 
@@ -696,8 +696,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "ALL_SUPPLIED",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -705,14 +705,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(communityService, never()).updateProbationOffenderNo(any(), any())
@@ -723,8 +723,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "HMPPS_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345")))),
+      ),
     )
     whenever(communityService.getConvictions("X12345")).thenReturn(
       listOf(
@@ -732,14 +732,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(communityService, never()).updateProbationOffenderNo(any(), any())
@@ -750,8 +750,8 @@ internal class OffenderProbationMatchServiceTest {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
-        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345"))))
-      )
+        matches = listOf(OffenderMatch(OffenderDetail(otherIds = IDs(crn = "X12345"))), OffenderMatch(OffenderDetail(otherIds = IDs(crn = "Z12345")))),
+      ),
     )
     whenever(communityService.getConvictions(any())).thenReturn(
       listOf(
@@ -759,14 +759,14 @@ internal class OffenderProbationMatchServiceTest {
           index = "1",
           active = true,
           sentence = Sentence(startDate = LocalDate.parse("2020-01-30")),
-          custody = Custody(institution = null, bookingNumber = null)
-        )
-      )
+          custody = Custody(institution = null, bookingNumber = null),
+        ),
+      ),
     )
 
     service.ensureOffenderNumberExistsInProbation(
       bookingOf(offenderNo = "A5089DY"),
-      LocalDate.parse("2020-01-30")
+      LocalDate.parse("2020-01-30"),
     )
 
     verify(communityService, never()).updateProbationOffenderNo(any(), any())
@@ -778,7 +778,7 @@ internal class OffenderProbationMatchServiceTest {
     firstName: String = "Joe",
     lastName: String = "Plumb",
     dateOfBirth: LocalDate = LocalDate.now().minusYears(20),
-    agencyId: String = "MDI"
+    agencyId: String = "MDI",
   ) = Booking(
     bookingNo = bookingNo,
     activeFlag = true,
@@ -786,7 +786,7 @@ internal class OffenderProbationMatchServiceTest {
     agencyId = agencyId,
     firstName = firstName,
     lastName = lastName,
-    dateOfBirth = dateOfBirth
+    dateOfBirth = dateOfBirth,
   )
 
   private fun prisonerOf(croNumber: String? = null, pncNumber: String? = null) = Prisoner(
@@ -803,6 +803,6 @@ internal class OffenderProbationMatchServiceTest {
     latestLocation = "",
     convictedStatus = "",
     imprisonmentStatus = "",
-    receptionDate = ""
+    receptionDate = "",
   )
 }

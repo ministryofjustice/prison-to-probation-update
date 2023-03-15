@@ -12,7 +12,7 @@ private const val MAPPINGS_DIRECTORY = "src/testIntegration/resources"
 open class MockServer(port: Int) : WireMockServer(
   WireMockConfiguration.wireMockConfig()
     .port(port)
-    .usingFilesUnderDirectory(MAPPINGS_DIRECTORY)
+    .usingFilesUnderDirectory(MAPPINGS_DIRECTORY),
 )
 
 class PrisonMockServer : MockServer(8093)
@@ -30,8 +30,8 @@ class OAuthMockServer : MockServer(8090) {
         .willReturn(
           WireMock.aResponse()
             .withHeaders(HttpHeaders(HttpHeader("Content-Type", "application/json")))
-            .withBody(gson.toJson(mapOf("access_token" to "ABCDE", "token_type" to "bearer")))
-        )
+            .withBody(gson.toJson(mapOf("access_token" to "ABCDE", "token_type" to "bearer"))),
+        ),
     )
   }
 }

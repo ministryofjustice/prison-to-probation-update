@@ -86,8 +86,8 @@ internal class SentenceDatesChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(
           createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY"
-          )
+            offenderNo = "A5089DY",
+          ),
         )
         whenever(offenderService.getSentenceDetail(any())).thenReturn(
           SentenceDetail(
@@ -99,8 +99,8 @@ internal class SentenceDatesChangeServiceTest {
             releaseDate = LocalDate.of(1970, 1, 7),
             sentenceExpiryDate = LocalDate.of(1970, 1, 8),
             topupSupervisionExpiryDate = LocalDate.of(1970, 1, 9),
-            homeDetentionCurfewEligibilityDate = LocalDate.of(1970, 1, 10)
-          )
+            homeDetentionCurfewEligibilityDate = LocalDate.of(1970, 1, 10),
+          ),
         )
         service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -115,7 +115,7 @@ internal class SentenceDatesChangeServiceTest {
             assertThat(it.sentenceExpiryDate).isEqualTo(LocalDate.of(1970, 1, 8))
             assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.of(1970, 1, 4))
             assertThat(it.postSentenceSupervisionEndDate).isEqualTo(LocalDate.of(1970, 1, 9))
-          }
+          },
         )
       }
 
@@ -124,14 +124,14 @@ internal class SentenceDatesChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(
           createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY"
-          )
+            offenderNo = "A5089DY",
+          ),
         )
         whenever(offenderService.getSentenceDetail(any())).thenReturn(
           SentenceDetail(
             confirmedReleaseDate = LocalDate.parse("2020-06-12"),
-            releaseDate = LocalDate.parse("2020-07-14")
-          )
+            releaseDate = LocalDate.parse("2020-07-14"),
+          ),
         )
         service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -140,7 +140,7 @@ internal class SentenceDatesChangeServiceTest {
           eq("38339A"),
           check {
             assertThat(it.expectedReleaseDate).isEqualTo(LocalDate.parse("2020-06-12"))
-          }
+          },
         )
       }
 
@@ -149,14 +149,14 @@ internal class SentenceDatesChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(
           createBooking(
             bookingNo = "38339A",
-            offenderNo = "A5089DY"
-          )
+            offenderNo = "A5089DY",
+          ),
         )
         whenever(offenderService.getSentenceDetail(any())).thenReturn(
           SentenceDetail(
             confirmedReleaseDate = null,
-            releaseDate = LocalDate.parse("2020-07-14")
-          )
+            releaseDate = LocalDate.parse("2020-07-14"),
+          ),
         )
         service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -165,7 +165,7 @@ internal class SentenceDatesChangeServiceTest {
           eq("38339A"),
           check {
             assertThat(it.expectedReleaseDate).isNull()
-          }
+          },
         )
       }
 
@@ -176,11 +176,11 @@ internal class SentenceDatesChangeServiceTest {
           whenever(offenderService.getBooking(any())).thenReturn(
             createBooking(
               bookingNo = "38339A",
-              offenderNo = "A5089DY"
-            )
+              offenderNo = "A5089DY",
+            ),
           )
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
-            SentenceDetail()
+            SentenceDetail(),
           )
           service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -195,7 +195,7 @@ internal class SentenceDatesChangeServiceTest {
               assertThat(it.sentenceExpiryDate).isNull()
               assertThat(it.expectedReleaseDate).isNull()
               assertThat(it.postSentenceSupervisionEndDate).isNull()
-            }
+            },
           )
         }
       }
@@ -207,14 +207,14 @@ internal class SentenceDatesChangeServiceTest {
           whenever(offenderService.getBooking(any())).thenReturn(
             createBooking(
               bookingNo = "38339A",
-              offenderNo = "A5089DY"
-            )
+              offenderNo = "A5089DY",
+            ),
           )
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
               conditionalReleaseDate = LocalDate.of(1970, 1, 2),
-              conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3)
-            )
+              conditionalReleaseOverrideDate = LocalDate.of(1970, 1, 3),
+            ),
           )
           service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -223,7 +223,7 @@ internal class SentenceDatesChangeServiceTest {
             eq("38339A"),
             check {
               assertThat(it.conditionalReleaseDate).isEqualTo(LocalDate.of(1970, 1, 3))
-            }
+            },
           )
         }
       }
@@ -235,13 +235,13 @@ internal class SentenceDatesChangeServiceTest {
           whenever(offenderService.getBooking(any())).thenReturn(
             createBooking(
               bookingNo = "38339A",
-              offenderNo = "A5089DY"
-            )
+              offenderNo = "A5089DY",
+            ),
           )
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
-              conditionalReleaseDate = LocalDate.of(1970, 1, 2)
-            )
+              conditionalReleaseDate = LocalDate.of(1970, 1, 2),
+            ),
           )
           service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -250,7 +250,7 @@ internal class SentenceDatesChangeServiceTest {
             eq("38339A"),
             check {
               assertThat(it.conditionalReleaseDate).isEqualTo(LocalDate.of(1970, 1, 2))
-            }
+            },
           )
         }
       }
@@ -263,8 +263,8 @@ internal class SentenceDatesChangeServiceTest {
             offenderNo = "A5089DY",
             firstName = "Bobby",
             lastName = "Bridle",
-            dateOfBirth = LocalDate.of(1965, 7, 19)
-          )
+            dateOfBirth = LocalDate.of(1965, 7, 19),
+          ),
         )
         whenever(offenderService.getSentenceDetail(any())).thenReturn(
           SentenceDetail(
@@ -276,8 +276,8 @@ internal class SentenceDatesChangeServiceTest {
             paroleEligibilityDate = LocalDate.of(1970, 1, 6),
             releaseDate = LocalDate.of(1970, 1, 7),
             sentenceExpiryDate = LocalDate.of(1970, 1, 8),
-            topupSupervisionExpiryDate = LocalDate.of(1970, 1, 9)
-          )
+            topupSupervisionExpiryDate = LocalDate.of(1970, 1, 9),
+          ),
         )
 
         service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
@@ -298,7 +298,7 @@ internal class SentenceDatesChangeServiceTest {
             assertThat(it["sentenceExpiryDate"]).isEqualTo("1970-01-08")
             assertThat(it["topupSupervisionExpiryDate"]).isEqualTo("1970-01-09")
           },
-          isNull()
+          isNull(),
         )
       }
 
@@ -311,8 +311,8 @@ internal class SentenceDatesChangeServiceTest {
           whenever(offenderService.getBooking(any())).thenReturn(
             createBooking(
               bookingNo = "38339A",
-              offenderNo = "A5089DY"
-            )
+              offenderNo = "A5089DY",
+            ),
           )
           service.processSentenceDateChangeAndUpdateProbation(SentenceKeyDateChangeMessage(12345L))
 
@@ -323,7 +323,7 @@ internal class SentenceDatesChangeServiceTest {
               assertThat(it["bookingNumber"]).isEqualTo("38339A")
               assertThat(it["offenderNo"]).isEqualTo("A5089DY")
             },
-            isNull()
+            isNull(),
           )
         }
       }
@@ -346,7 +346,7 @@ internal class SentenceDatesChangeServiceTest {
             assertThat(it["reason"]).isEqualTo("Not an active booking")
             assertThat(it["bookingId"]).isEqualTo("12345")
           },
-          isNull()
+          isNull(),
         )
 
         verify(communityService, never()).replaceProbationCustodyKeyDates(any(), any(), any())
@@ -371,7 +371,7 @@ internal class SentenceDatesChangeServiceTest {
             assertThat(it["bookingId"]).isEqualTo("12345")
             assertThat(it["agencyId"]).isEqualTo("XX")
           },
-          isNull()
+          isNull(),
         )
         verify(communityService, never()).replaceProbationCustodyKeyDates(any(), any(), any())
       }

@@ -26,16 +26,16 @@ data class MatchRequest(
   val nomsNumber: String,
   val activeSentence: Boolean = true,
   val pncNumber: String? = null,
-  val croNumber: String? = null
+  val croNumber: String? = null,
 )
 
 data class OffenderMatches(
   val matches: List<OffenderMatch>,
-  val matchedBy: String
+  val matchedBy: String,
 )
 
 data class OffenderMatch(
-  val offender: OffenderDetail
+  val offender: OffenderDetail,
 )
 
 data class OffenderDetail(
@@ -47,7 +47,7 @@ data class OffenderDetail(
   val surname: String? = null,
   val dateOfBirth: LocalDate? = null,
   val gender: String? = null,
-  val currentDisposal: String? = null
+  val currentDisposal: String? = null,
 )
 
 data class IDs(
@@ -57,5 +57,5 @@ data class IDs(
   val niNumber: String? = null,
   val nomsNumber: String? = null,
   val immigrationNumber: String? = null,
-  val mostRecentPrisonerNumber: String? = null
+  val mostRecentPrisonerNumber: String? = null,
 )

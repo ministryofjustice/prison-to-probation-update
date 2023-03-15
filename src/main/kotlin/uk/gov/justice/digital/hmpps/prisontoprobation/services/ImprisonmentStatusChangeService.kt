@@ -16,7 +16,7 @@ class ImprisonmentStatusChangeService(
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
   private val offenderProbationMatchService: OffenderProbationMatchService,
-  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -38,9 +38,9 @@ class ImprisonmentStatusChangeService(
       telemetryEvent.name,
       telemetryEvent.attributes + mapOf(
         "imprisonmentStatusSeq" to imprisonmentStatusSeq.toString(),
-        "bookingId" to bookingId.toString()
+        "bookingId" to bookingId.toString(),
       ),
-      null
+      null,
     )
 
     return result
@@ -53,7 +53,7 @@ class ImprisonmentStatusChangeService(
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val (offenderNo, crn) = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(
       booking,
-      sentenceStartDate
+      sentenceStartDate,
     )
       .onIgnore {
         val (telemetryEvent, status) = it.reason
@@ -62,14 +62,14 @@ class ImprisonmentStatusChangeService(
 
     val (bookingNumber, _, _) = getBookingForInterestedPrison(booking).onIgnore {
       return ignored() to it.reason.with(
-        booking
+        booking,
       ).with(sentenceStartDate)
     }
 
     updateProbationCustodyBookingNumber(offenderNo, sentenceStartDate, bookingNumber).onIgnore {
       return TryLater(
         bookingId,
-        status = SynchroniseStatus(crn, SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED)
+        status = SynchroniseStatus(crn, SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED),
       ) to it.reason.with(booking).with(sentenceStartDate)
     }
 
@@ -78,7 +78,7 @@ class ImprisonmentStatusChangeService(
         return TryLater(
           bookingId,
           retryUntil = sentenceDetail.sentenceExpiryDate,
-          status = SynchroniseStatus(crn, SynchroniseState.LOCATION_NOT_UPDATED)
+          status = SynchroniseStatus(crn, SynchroniseState.LOCATION_NOT_UPDATED),
         ) to it.reason.with(booking).with(sentenceStartDate)
       }
     }
@@ -87,7 +87,7 @@ class ImprisonmentStatusChangeService(
       return TryLater(
         bookingId,
         retryUntil = sentenceDetail.sentenceExpiryDate,
-        status = SynchroniseStatus(crn, SynchroniseState.KEY_DATES_NOT_UPDATED)
+        status = SynchroniseStatus(crn, SynchroniseState.KEY_DATES_NOT_UPDATED),
       ) to it.reason.with(booking).with(sentenceStartDate)
     }
 
@@ -146,7 +146,9 @@ class ImprisonmentStatusChangeService(
   private fun validBookingForInterestedPrison(booking: Booking): Result<Booking, String> =
     if (isBookingInInterestedPrison(booking.agencyId)) {
       Success(booking)
-    } else Ignore("Not at an interested prison")
+    } else {
+      Ignore("Not at an interested prison")
+    }
 
   private fun getBookingForInterestedPrison(booking: Booking): Result<Booking, TelemetryEvent> =
     Success(validBookingForInterestedPrison(booking).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusIgnored", mapOf("reason" to it.reason))) })
@@ -160,8 +162,8 @@ class ImprisonmentStatusChangeService(
 private fun TelemetryEvent.with(sentenceStartDate: LocalDate): TelemetryEvent = TelemetryEvent(
   this.name,
   this.attributes + mapOf(
-    "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_DATE)
-  )
+    "sentenceStartDate" to sentenceStartDate.format(DateTimeFormatter.ISO_DATE),
+  ),
 )
 
 private fun ignored() = Done(status = SynchroniseStatus(state = SynchroniseState.NO_LONGER_VALID))

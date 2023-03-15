@@ -39,8 +39,8 @@ internal class MessageRetryServiceTest {
         offenderNo = "AB1234Y",
         bookingNo = "12344G",
         recall = true,
-        legalStatus = "SENTENCED"
-      )
+        legalStatus = "SENTENCED",
+      ),
     )
     service.scheduleForProcessing(99L, "EVENT", "message", SynchroniseStatus())
 
@@ -52,7 +52,7 @@ internal class MessageRetryServiceTest {
         assertThat(it.retryCount).isEqualTo(0)
         assertThat(it.createdDate.toLocalDate()).isToday
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          LocalDate.now().plusDays(30)
+          LocalDate.now().plusDays(30),
         )
         assertThat(it.reportable).isTrue
         assertThat(it.processedDate).isNull()
@@ -63,7 +63,7 @@ internal class MessageRetryServiceTest {
         assertThat(it.recall).isTrue
         assertThat(it.legalStatus).isEqualTo("SENTENCED")
         assertThat(it.status).isEqualTo("VALIDATED")
-      }
+      },
     )
   }
 
@@ -92,14 +92,14 @@ internal class MessageRetryServiceTest {
       message = "{}",
       id = "123",
       retryCount = 1,
-      deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC)
+      deleteBy = LocalDateTime.now().plusDays(30).toEpochSecond(ZoneOffset.UTC),
     )
     whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
-        retryUntil = null
-      )
+        retryUntil = null,
+      ),
     )
 
     service.retryShortTerm()
@@ -108,9 +108,9 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          LocalDate.now().plusDays(30)
+          LocalDate.now().plusDays(30),
         )
-      }
+      },
     )
   }
 
@@ -122,14 +122,14 @@ internal class MessageRetryServiceTest {
       message = "{}",
       id = "123",
       retryCount = 1,
-      deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC)
+      deleteBy = LocalDateTime.now().plusDays(6).toEpochSecond(ZoneOffset.UTC),
     )
     whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(listOf(message))
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
-        retryUntil = expectedRetryUntilDate
-      )
+        retryUntil = expectedRetryUntilDate,
+      ),
     )
 
     service.retryShortTerm()
@@ -138,9 +138,9 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          expectedRetryUntilDate
+          expectedRetryUntilDate,
         )
-      }
+      },
     )
   }
 
@@ -156,7 +156,7 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(it.retryCount).isEqualTo(2)
-      }
+      },
     )
   }
 
@@ -167,8 +167,8 @@ internal class MessageRetryServiceTest {
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
-        status = SynchroniseStatus(state = SynchroniseState.LOCATION_NOT_UPDATED)
-      )
+        status = SynchroniseStatus(state = SynchroniseState.LOCATION_NOT_UPDATED),
+      ),
     )
 
     service.retryShortTerm()
@@ -177,7 +177,7 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(it.status).isEqualTo("LOCATION_NOT_UPDATED")
-      }
+      },
     )
   }
 
@@ -188,8 +188,8 @@ internal class MessageRetryServiceTest {
     whenever(messageProcessor.processMessage(any())).thenReturn(
       TryLater(
         bookingId = 99L,
-        status = SynchroniseStatus(matchingCrns = "X12345", state = SynchroniseState.LOCATION_NOT_UPDATED)
-      )
+        status = SynchroniseStatus(matchingCrns = "X12345", state = SynchroniseState.LOCATION_NOT_UPDATED),
+      ),
     )
 
     service.retryShortTerm()
@@ -198,7 +198,7 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.id).isEqualTo("123")
         assertThat(it.matchingCrns).isEqualTo("X12345")
-      }
+      },
     )
   }
 
@@ -209,8 +209,8 @@ internal class MessageRetryServiceTest {
     whenever(messageRepository.findByRetryCountBetweenAndProcessedDateIsNull(any(), any())).thenReturn(
       listOf(
         message1,
-        message2
-      )
+        message2,
+      ),
     )
     whenever(messageProcessor.processMessage(any())).thenThrow(RuntimeException("it has all gone wrong"))
 
@@ -231,9 +231,9 @@ internal class MessageRetryServiceTest {
       check {
         assertThat(it.processedDate).isCloseTo(LocalDateTime.now(), byLessThan(1, ChronoUnit.SECONDS))
         assertThat(LocalDateTime.ofEpochSecond(it.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-          LocalDate.now().plusDays(30)
+          LocalDate.now().plusDays(30),
         )
-      }
+      },
     )
   }
 }

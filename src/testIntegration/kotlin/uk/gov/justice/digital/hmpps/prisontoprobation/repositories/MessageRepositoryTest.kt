@@ -18,8 +18,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
       Message(
         bookingId = 99L,
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-      )
+        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+      ),
     )
 
     val message = messageRepository.findAll().first()
@@ -31,7 +31,7 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
     assertThat(LocalDateTime.ofEpochSecond(message.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-      LocalDate.now().plusDays(30)
+      LocalDate.now().plusDays(30),
     )
 
     assertThat(message.processedDate).isNull()
@@ -58,8 +58,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         locationId = "MDI",
         locationDescription = "HMP Moorland",
         recall = true,
-        legalStatus = "SENTENCED"
-      )
+        legalStatus = "SENTENCED",
+      ),
     )
 
     val message = messageRepository.findAll().first()
@@ -71,7 +71,7 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
     assertThat(message.message).isEqualTo("{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}")
 
     assertThat(LocalDateTime.ofEpochSecond(message.deleteBy, 0, ZoneOffset.UTC).toLocalDate()).isEqualTo(
-      LocalDate.now().plusDays(30)
+      LocalDate.now().plusDays(30),
     )
 
     assertThat(message.processedDate?.toLocalDate()).isToday
@@ -92,8 +92,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         retryCount = 1,
         createdDate = LocalDateTime.now(),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-      )
+        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+      ),
     )
     messageRepository.save(
       Message(
@@ -101,8 +101,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         retryCount = 1,
         createdDate = LocalDateTime.now(),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-      )
+        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+      ),
     )
     messageRepository.save(
       Message(
@@ -110,8 +110,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         retryCount = 2,
         createdDate = LocalDateTime.now(),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-      )
+        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+      ),
     )
     messageRepository.save(
       Message(
@@ -119,8 +119,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         retryCount = 3,
         createdDate = LocalDateTime.now(),
         eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED",
-        message = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":1200835,\"movementSeq\":1,\"nomisEventType\":\"M1_RESULT\"}"
-      )
+        message = "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":1200835,\"movementSeq\":1,\"nomisEventType\":\"M1_RESULT\"}",
+      ),
     )
 
     assertThat(messageRepository.findAll()).hasSize(4)
@@ -169,8 +169,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         retryCount = 1,
         createdDate = LocalDateTime.now(),
         eventType = "IMPRISONMENT_STATUS-CHANGED",
-        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-      )
+        message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+      ),
     )
 
     val message = messageRepository.findAll().first()
@@ -192,8 +192,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages =
@@ -210,8 +210,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now().minusMinutes(11),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages =
@@ -228,8 +228,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now().minusMinutes(11),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
       messageRepository.save(
         Message(
@@ -237,8 +237,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now().minusMinutes(12),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages =
@@ -255,8 +255,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 1,
           createdDate = LocalDateTime.now().minusMinutes(11),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages =
@@ -276,8 +276,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages = messageRepository.findByBookingIdAndProcessedDateIsNull(99L)
@@ -294,8 +294,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
           message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
-          processedDate = LocalDateTime.now()
-        )
+          processedDate = LocalDateTime.now(),
+        ),
       )
 
       assertThat(messageRepository.findByBookingId(99L)).hasSize(1)
@@ -313,8 +313,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
       messageRepository.save(
         Message(
@@ -322,8 +322,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages = messageRepository.findByBookingIdAndProcessedDateIsNull(99L)
@@ -339,8 +339,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 0,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
       messageRepository.save(
         Message(
@@ -348,8 +348,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 1,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
       messageRepository.save(
         Message(
@@ -357,8 +357,8 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
           retryCount = 2,
           createdDate = LocalDateTime.now(),
           eventType = "IMPRISONMENT_STATUS-CHANGED",
-          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
-        )
+          message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
+        ),
       )
 
       val messages = messageRepository.findByBookingIdAndProcessedDateIsNull(99L)
@@ -372,20 +372,20 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
     @Test
     internal fun `will find records of the statuses supplied`() {
       messageRepository.save(
-        aMessage(1, LocalDateTime.now(), "NO_MATCH")
+        aMessage(1, LocalDateTime.now(), "NO_MATCH"),
       )
       messageRepository.save(
-        aMessage(2, LocalDateTime.now(), "NO_MATCH_WITH_SENTENCE_DATE")
+        aMessage(2, LocalDateTime.now(), "NO_MATCH_WITH_SENTENCE_DATE"),
       )
       messageRepository.save(
-        aMessage(3, LocalDateTime.now(), "KEY_DATES_NOT_UPDATED")
+        aMessage(3, LocalDateTime.now(), "KEY_DATES_NOT_UPDATED"),
       )
       messageRepository.save(
-        aMessage(4, LocalDateTime.now(), "NO_MATCH", processedDate = LocalDateTime.now())
+        aMessage(4, LocalDateTime.now(), "NO_MATCH", processedDate = LocalDateTime.now()),
       )
       val messages = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
         listOf("NO_MATCH", "NO_MATCH_WITH_SENTENCE_DATE"),
-        LocalDateTime.now()
+        LocalDateTime.now(),
       )
       assertThat(messages.map(Message::bookingId)).containsExactlyInAnyOrder(1L, 2L)
     }
@@ -393,24 +393,24 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
     @Test
     internal fun `will find records older then the supplied date`() {
       messageRepository.save(
-        aMessage(1, LocalDateTime.now(), "NO_MATCH")
+        aMessage(1, LocalDateTime.now(), "NO_MATCH"),
       )
       messageRepository.save(
-        aMessage(2, LocalDateTime.now().minusDays(1), "NO_MATCH")
+        aMessage(2, LocalDateTime.now().minusDays(1), "NO_MATCH"),
       )
       messageRepository.save(
-        aMessage(3, LocalDateTime.now().minusDays(3), "NO_MATCH")
+        aMessage(3, LocalDateTime.now().minusDays(3), "NO_MATCH"),
       )
 
       val messages1 = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
         listOf("NO_MATCH"),
-        LocalDateTime.now()
+        LocalDateTime.now(),
       )
       assertThat(messages1.map(Message::bookingId)).containsExactlyInAnyOrder(1L, 2L, 3L)
 
       val messages2 = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(
         listOf("NO_MATCH"),
-        LocalDateTime.now().minusDays(2)
+        LocalDateTime.now().minusDays(2),
       )
       assertThat(messages2.map(Message::bookingId)).containsExactlyInAnyOrder(3L)
     }
@@ -422,7 +422,7 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
       eventType = "IMPRISONMENT_STATUS-CHANGED",
       message = "{\"eventType\":\"IMPRISONMENT_STATUS-CHANGED\",\"eventDatetime\":\"2020-02-12T15:14:24.125533\",\"bookingId\":1200835,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}",
       status = status,
-      processedDate = processedDate
+      processedDate = processedDate,
     )
   }
 }

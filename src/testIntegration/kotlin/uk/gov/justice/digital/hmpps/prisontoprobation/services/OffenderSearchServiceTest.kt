@@ -27,8 +27,8 @@ internal class OffenderSearchServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectResult.asJson())
-          .withStatus(HttpURLConnection.HTTP_OK)
-      )
+          .withStatus(HttpURLConnection.HTTP_OK),
+      ),
     )
 
     val matches = service.matchProbationOffender(MatchRequest(firstName = "John", surname = "Smith", dateOfBirth = LocalDate.of(1965, 7, 19), nomsNumber = "A12345"))
@@ -40,7 +40,7 @@ internal class OffenderSearchServiceTest : NoQueueListenerIntegrationTest() {
         .withRequestBody(matchingJsonPath("firstName", equalTo("John")))
         .withRequestBody(matchingJsonPath("nomsNumber", equalTo("A12345")))
         .withRequestBody(matchingJsonPath("dateOfBirth", equalTo("1965-07-19")))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 }

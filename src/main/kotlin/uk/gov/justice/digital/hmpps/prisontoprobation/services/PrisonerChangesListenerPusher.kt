@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 @Profile("!no-queue-listener")
 class PrisonerChangesListenerPusher(
   private val messageProcessor: MessageProcessor,
-  private val retryService: MessageRetryService
+  private val retryService: MessageRetryService,
 
 ) {
   companion object {

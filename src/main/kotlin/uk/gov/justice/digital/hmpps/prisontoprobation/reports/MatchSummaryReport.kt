@@ -22,8 +22,8 @@ class MatchSummaryReport(private val messageRepository: MessageRepository) {
       ApiResponse(
         responseCode = "200",
         description = "JSON report",
-      )
-    ]
+      ),
+    ],
   )
   fun generate(
     locationId: String?,
@@ -56,7 +56,7 @@ data class MatchSummary(
   val waiting: Waiting = Waiting(),
   @Schema(title = "exceeded-sla", description = "exceeded SLA but may still be processed in the future")
   @JsonProperty("exceeded-sla")
-  val exceededSla: ExceededSLA = ExceededSLA()
+  val exceededSla: ExceededSLA = ExceededSLA(),
 )
 
 data class Completed(

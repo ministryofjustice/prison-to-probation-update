@@ -17,7 +17,7 @@ class WebClientConfiguration(
   @Value("\${community.endpoint.url}") private val communityRootUri: String,
   @Value("\${prison.endpoint.url}") private val prisonRootUri: String,
   @Value("\${oauth.endpoint.url}") private val oauthRootUri: String,
-  @Value("\${offender-search.endpoint.url}") private val searchRootUri: String
+  @Value("\${offender-search.endpoint.url}") private val searchRootUri: String,
 ) {
 
   @Bean
@@ -34,7 +34,7 @@ class WebClientConfiguration(
             configurer.defaultCodecs()
               .maxInMemorySize(-1)
           }
-          .build()
+          .build(),
       )
       .build()
   }
@@ -53,7 +53,7 @@ class WebClientConfiguration(
             configurer.defaultCodecs()
               .maxInMemorySize(-1)
           }
-          .build()
+          .build(),
       )
       .build()
   }
@@ -72,7 +72,7 @@ class WebClientConfiguration(
             configurer.defaultCodecs()
               .maxInMemorySize(-1)
           }
-          .build()
+          .build(),
       )
       .build()
   }
@@ -100,7 +100,7 @@ class WebClientConfiguration(
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository?,
-    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?
+    oAuth2AuthorizedClientService: OAuth2AuthorizedClientService?,
   ): OAuth2AuthorizedClientManager? {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build()
     val authorizedClientManager =

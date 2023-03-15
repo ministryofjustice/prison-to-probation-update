@@ -66,6 +66,7 @@ class ImprisonmentStatusChangeServiceTest {
       assertThat(result).isInstanceOf(Done::class.java)
     }
   }
+
   @Nested
   inner class Process {
     @BeforeEach
@@ -81,8 +82,8 @@ class ImprisonmentStatusChangeServiceTest {
         whenever(offenderService.getCurrentSentences(any())).thenReturn(
           listOf(
             SentenceSummary(startDate = LocalDate.of(2020, 2, 29), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
-            SentenceSummary(startDate = LocalDate.of(2019, 4, 12), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence")
-          )
+            SentenceSummary(startDate = LocalDate.of(2019, 4, 12), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
+          ),
         )
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
@@ -112,7 +113,7 @@ class ImprisonmentStatusChangeServiceTest {
             SentenceSummary(startDate = LocalDate.parse("2020-01-30"), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
             SentenceSummary(startDate = LocalDate.parse("2019-06-23"), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
             SentenceSummary(startDate = null, sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
-          )
+          ),
         )
 
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -127,7 +128,7 @@ class ImprisonmentStatusChangeServiceTest {
             SentenceSummary(startDate = LocalDate.parse("2020-01-30"), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
             SentenceSummary(startDate = LocalDate.parse("2019-06-23"), sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
             SentenceSummary(startDate = null, sentenceSequence = 34, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
-          )
+          ),
         )
 
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -152,7 +153,7 @@ class ImprisonmentStatusChangeServiceTest {
           eq("38339A"),
           check {
             assertThat(it.licenceExpiryDate).isEqualTo(LocalDate.parse("1970-01-05"))
-          }
+          },
         )
       }
 
@@ -168,7 +169,7 @@ class ImprisonmentStatusChangeServiceTest {
             assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             assertThat(it["offenderNo"]).isEqualTo("A5089DY")
           },
-          isNull()
+          isNull(),
         )
       }
 
@@ -179,9 +180,9 @@ class ImprisonmentStatusChangeServiceTest {
           Done(
             status = SynchroniseStatus(
               matchingCrns = "X12345",
-              state = SynchroniseState.COMPLETED
-            )
-          )
+              state = SynchroniseState.COMPLETED,
+            ),
+          ),
         )
       }
 
@@ -193,9 +194,9 @@ class ImprisonmentStatusChangeServiceTest {
             Ignore(
               TelemetryEvent(
                 name = "P2POffenderNoMatch",
-                attributes = mapOf("offenderNo" to "A5089DY", "crns" to "")
-              ) to SynchroniseStatus("", state = SynchroniseState.NO_MATCH)
-            )
+                attributes = mapOf("offenderNo" to "A5089DY", "crns" to ""),
+              ) to SynchroniseStatus("", state = SynchroniseState.NO_MATCH),
+            ),
           )
         }
 
@@ -218,6 +219,7 @@ class ImprisonmentStatusChangeServiceTest {
           val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
           assertThat(result).isInstanceOf(TryLater::class.java)
         }
+
         @Test
         fun `will log that booking number could not be set`() {
           service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -228,21 +230,23 @@ class ImprisonmentStatusChangeServiceTest {
               assertThat(it["bookingId"]).isEqualTo("12345")
               assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             },
-            isNull()
+            isNull(),
           )
         }
       }
+
       @Nested
       inner class WhenPrisonLocationNotSet {
         private val sentenceExpiryDate: LocalDate = LocalDate.now().plusYears(1)
+
         @BeforeEach
         fun setup() {
           whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
               sentenceStartDate = LocalDate.of(2020, 2, 29),
-              sentenceExpiryDate = sentenceExpiryDate
-            )
+              sentenceExpiryDate = sentenceExpiryDate,
+            ),
           )
         }
 
@@ -254,10 +258,11 @@ class ImprisonmentStatusChangeServiceTest {
             TryLater(
               bookingId = 12345,
               retryUntil = sentenceExpiryDate,
-              status = SynchroniseStatus("X12345", SynchroniseState.LOCATION_NOT_UPDATED)
-            )
+              status = SynchroniseStatus("X12345", SynchroniseState.LOCATION_NOT_UPDATED),
+            ),
           )
         }
+
         @Test
         fun `will log that prison location could not be set`() {
           service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
@@ -268,21 +273,23 @@ class ImprisonmentStatusChangeServiceTest {
               assertThat(it["bookingId"]).isEqualTo("12345")
               assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             },
-            isNull()
+            isNull(),
           )
         }
       }
+
       @Nested
       inner class WhenDatesNotSet {
         private val sentenceExpiryDate: LocalDate = LocalDate.now().plusYears(1)
+
         @BeforeEach
         fun setup() {
           whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Ignore("Not found error message"))
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
               sentenceStartDate = LocalDate.of(2020, 2, 29),
-              sentenceExpiryDate = sentenceExpiryDate
-            )
+              sentenceExpiryDate = sentenceExpiryDate,
+            ),
           )
         }
 
@@ -294,8 +301,8 @@ class ImprisonmentStatusChangeServiceTest {
             TryLater(
               bookingId = 12345,
               retryUntil = sentenceExpiryDate,
-              status = SynchroniseStatus("X12345", SynchroniseState.KEY_DATES_NOT_UPDATED)
-            )
+              status = SynchroniseStatus("X12345", SynchroniseState.KEY_DATES_NOT_UPDATED),
+            ),
           )
         }
 
@@ -309,7 +316,7 @@ class ImprisonmentStatusChangeServiceTest {
               assertThat(it["bookingId"]).isEqualTo("12345")
               assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
             },
-            isNull()
+            isNull(),
           )
         }
       }
@@ -325,7 +332,7 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("88")
         },
-        isNull()
+        isNull(),
       )
 
       verify(offenderService, never()).getBooking(any())
@@ -352,7 +359,7 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
         },
-        isNull()
+        isNull(),
       )
 
       verify(offenderService, never()).getBooking(any())
@@ -374,7 +381,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getCurrentSentences(any())).thenReturn(
         listOf(
           SentenceSummary(startDate = LocalDate.now(), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
-        )
+        ),
       )
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
@@ -387,7 +394,7 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["bookingId"]).isEqualTo("12345")
           assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
         },
-        isNull()
+        isNull(),
       )
     }
 
@@ -398,9 +405,9 @@ class ImprisonmentStatusChangeServiceTest {
           SentenceSummary(
             startDate = LocalDate.now(),
             sentenceSequence = 33,
-            sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"
+            sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence",
           ),
-        )
+        ),
       )
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(activeFlag = false))
@@ -417,7 +424,7 @@ class ImprisonmentStatusChangeServiceTest {
       whenever(offenderService.getCurrentSentences(any())).thenReturn(
         listOf(
           SentenceSummary(startDate = LocalDate.now(), sentenceSequence = 33, sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence"),
-        )
+        ),
       )
       whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.now()))
       whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "XXX"))
@@ -434,7 +441,7 @@ class ImprisonmentStatusChangeServiceTest {
           assertThat(it["offenderNo"]).isEqualTo("A5089DY")
           assertThat(it["agencyId"]).isEqualTo("XXX")
         },
-        isNull()
+        isNull(),
       )
     }
   }

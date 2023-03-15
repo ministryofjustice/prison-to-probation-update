@@ -28,25 +28,25 @@ class ReportsConfiguration(
       path = "/report/in-progress",
       method = arrayOf(RequestMethod.GET),
       beanClass = InProgressReport::class,
-      beanMethod = "generate"
+      beanMethod = "generate",
     ),
     RouterOperation(
       path = "/report/not-matched",
       method = arrayOf(RequestMethod.GET),
       beanClass = NotMatchedReport::class,
-      beanMethod = "generate"
+      beanMethod = "generate",
     ),
     RouterOperation(
       path = "/report/processed",
       method = arrayOf(RequestMethod.GET),
       beanClass = ProcessedReport::class,
-      beanMethod = "generate"
+      beanMethod = "generate",
     ),
     RouterOperation(
       path = "/report/match-summary",
       method = arrayOf(RequestMethod.GET),
       beanClass = MatchSummaryReport::class,
-      beanMethod = "generate"
+      beanMethod = "generate",
     ),
   )
   fun router(): RouterFunction<ServerResponse> = router {
@@ -86,7 +86,7 @@ class ReportsConfiguration(
         request.param("locationId").orElse(null),
         request.param("createdDateStartDateTime").map { LocalDateTime.parse(it) }.orElse(null),
         request.param("createdDateEndDateTime").map { LocalDateTime.parse(it) }.orElse(null),
-        request.param("slaDays").orElse(EXPECT_MATCHING_SLA_DAYS).toLong()
+        request.param("slaDays").orElse(EXPECT_MATCHING_SLA_DAYS).toLong(),
       ),
     )
 }

@@ -12,9 +12,9 @@ import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
   properties = [
     "prisontoprobation.message-processor.enabled=true",
     "prisontoprobation.message-processor.delay=50",
-    "prisontoprobation.hold-back.duration=0m"
+    "prisontoprobation.hold-back.duration=0m",
   ],
-  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 class QueueListenerIntegrationTest : IntegrationTest() {
 

@@ -20,7 +20,7 @@ internal class DynamoDBHealthCheckTest {
       .thenReturn(
         DescribeTableResult().apply {
           this.table = TableDescription().withItemCount(99).withTableStatus(ACTIVE).withTableName("my-table")
-        }
+        },
       )
 
     val result = healthCheck.health()

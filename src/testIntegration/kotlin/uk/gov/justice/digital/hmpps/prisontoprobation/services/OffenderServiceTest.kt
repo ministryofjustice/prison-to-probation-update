@@ -33,8 +33,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(listOf(expectedPrisoner).asJson())
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val offender = service.getOffender("AB123D")
@@ -42,7 +42,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     assertThat(offender).isEqualTo(expectedPrisoner)
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/prisoners?offenderNo=AB123D"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -55,8 +55,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectedMovement.asJson())
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val movement = service.getMovement(1234L, 1L)
@@ -64,7 +64,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     assertThat(movement).isEqualTo(expectedMovement)
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/movement/1"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -75,8 +75,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody("{\"error\": \"not found\"}")
-          .withStatus(HTTP_NOT_FOUND)
-      )
+          .withStatus(HTTP_NOT_FOUND),
+      ),
     )
 
     val movement = service.getMovement(1234L, 1L)
@@ -90,8 +90,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
       get("/api/bookings/1234/movement/1").willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
-          .withStatus(HTTP_BAD_REQUEST)
-      )
+          .withStatus(HTTP_BAD_REQUEST),
+      ),
     )
 
     assertThatThrownBy { service.getMovement(1234L, 1L) }.isInstanceOf(BadRequest::class.java)
@@ -266,8 +266,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectedBooking)
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val booking = service.getBooking(1234L)
@@ -285,7 +285,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
 
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234?basicInfo=false&extraInfo=true"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -298,8 +298,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectedSentenceDetails.asJson())
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val movement = service.getSentenceDetail(1234L)
@@ -307,7 +307,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     assertThat(movement).isEqualTo(expectedSentenceDetails)
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/sentenceDetail"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -320,8 +320,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(expectedIdentifiers.asJson())
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val bookingIdentifiers = service.getMergedIdentifiers(1234L)
@@ -329,7 +329,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     assertThat(bookingIdentifiers).isEqualTo(expectedIdentifiers)
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/bookings/1234/identifiers?type=MERGED"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -389,8 +389,8 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withBody(sentenceTerms)
-          .withStatus(HTTP_OK)
-      )
+          .withStatus(HTTP_OK),
+      ),
     )
 
     val sentences = service.getCurrentSentences(1234L)
@@ -399,23 +399,23 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
       SentenceSummary(
         startDate = LocalDate.parse("2020-10-10"),
         sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence",
-        sentenceSequence = 61
+        sentenceSequence = 61,
       ),
       SentenceSummary(
         startDate = LocalDate.parse("2020-11-21"),
         sentenceTypeDescription = "ORA CJA03 Standard Determinate Sentence",
         sentenceSequence = 62,
-        consecutiveTo = 61
+        consecutiveTo = 61,
       ),
       SentenceSummary(
         startDate = LocalDate.parse("2020-01-13"),
         sentenceTypeDescription = "ORA 14 Day Fixed Term Recall",
-        sentenceSequence = 69
+        sentenceSequence = 69,
       ),
     )
     prisonMockServer.verify(
       getRequestedFor(urlEqualTo("/api/offender-sentences/booking/1234/sentenceTerms"))
-        .withHeader("Authorization", equalTo("Bearer ABCDE"))
+        .withHeader("Authorization", equalTo("Bearer ABCDE")),
     )
   }
 
@@ -433,7 +433,7 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     latestLocation = "",
     convictedStatus = "",
     imprisonmentStatus = "",
-    receptionDate = ""
+    receptionDate = "",
   )
 
   private fun createMovement() = Movement(
@@ -442,6 +442,6 @@ class OffenderServiceTest : NoQueueListenerIntegrationTest() {
     fromAgency = "LEI",
     toAgency = "MDI",
     movementType = "TRN",
-    directionCode = "OUT"
+    directionCode = "OUT",
   )
 }

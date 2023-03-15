@@ -13,7 +13,7 @@ interface MessageRepository : CrudRepository<Message, String> {
   fun findByRetryCountBetweenAndProcessedDateIsNull(low: Int, high: Int): List<Message>
   fun findByRetryCountAndCreatedDateBeforeAndProcessedDateIsNull(
     retryCount: Int,
-    createdDate: LocalDateTime
+    createdDate: LocalDateTime,
   ): List<Message>
 
   fun findByBookingId(bookingId: Long): List<Message>

@@ -44,8 +44,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(expectedUpdatedCustody.asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       val updateCustody = createUpdateCustody(nomsPrisonInstitutionCode = "MDI")
@@ -56,7 +56,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A"))
           .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE")),
       )
     }
 
@@ -67,8 +67,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody("{\"error\": \"not found\"}")
-            .withStatus(HTTP_NOT_FOUND)
-        )
+            .withStatus(HTTP_NOT_FOUND),
+        ),
       )
 
       val updatedCustody = service.updateProbationCustody("AB123D", "38353A", createUpdateCustody())
@@ -82,8 +82,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_REQUEST)
-        )
+            .withStatus(HTTP_BAD_REQUEST),
+        ),
       )
 
       assertThatThrownBy { service.updateProbationCustody("AB123D", "38353A", createUpdateCustody()) }.isInstanceOf(BadRequest::class.java)
@@ -102,16 +102,16 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(expectedUpdatedCustody.asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       val updatedCustody = service.updateProbationCustodyBookingNumber(
         "AB123D",
         UpdateCustodyBookingNumber(
           sentenceStartDate = LocalDate.now(),
-          bookingNumber = "38353A"
-        )
+          bookingNumber = "38353A",
+        ),
       )
 
       assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
@@ -120,7 +120,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
           .withRequestBody(matchingJsonPath("bookingNumber", equalTo("38353A")))
-          .withRequestBody(matchingJsonPath("sentenceStartDate", matching(".*")))
+          .withRequestBody(matchingJsonPath("sentenceStartDate", matching(".*"))),
       )
     }
 
@@ -131,8 +131,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody("{\"error\": \"not found\"}")
-            .withStatus(HTTP_NOT_FOUND)
-        )
+            .withStatus(HTTP_NOT_FOUND),
+        ),
       )
 
       val updatedCustody = service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber())
@@ -146,8 +146,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber").willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_REQUEST)
-        )
+            .withStatus(HTTP_BAD_REQUEST),
+        ),
       )
 
       assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber()) }.isInstanceOf(BadRequest::class.java)
@@ -166,8 +166,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(expectedUpdatedCustody.asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       val replaceCustodyKeyDates = createReplaceCustodyKeyDates()
@@ -177,7 +177,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
       communityMockServer.verify(
         postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE")),
       )
     }
 
@@ -188,8 +188,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody("{\"error\": \"not found description\"}")
-            .withStatus(HTTP_NOT_FOUND)
-        )
+            .withStatus(HTTP_NOT_FOUND),
+        ),
       )
 
       val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
@@ -207,8 +207,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_REQUEST)
-        )
+            .withStatus(HTTP_BAD_REQUEST),
+        ),
       )
 
       assertThatThrownBy { service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates()) }.isInstanceOf(BadRequest::class.java)
@@ -226,8 +226,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(expectedConvictions.asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       val convictions = service.getConvictions("X153626")
@@ -235,9 +235,10 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
       assertThat(convictions).isEqualTo(expectedConvictions)
       communityMockServer.verify(
         WireMock.getRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/convictions"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE"))
+          .withHeader("Authorization", equalTo("Bearer ABCDE")),
       )
     }
+
     @Test
     fun `test can read conviction`() {
       val convictions = service.getConvictions("TEST")
@@ -257,8 +258,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(IDs(crn = "X153626").asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       service.updateProbationOffenderNo("X153626", "AB123D")
@@ -267,7 +268,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         putRequestedFor(urlEqualTo("/secure/offenders/crn/X153626/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D")))
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("AB123D"))),
       )
     }
   }
@@ -281,8 +282,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(listOf(IDs(crn = "X153626")).asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       service.replaceProbationOffenderNo("A11111Y", "A99999Y")
@@ -291,7 +292,7 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/A11111Y/nomsNumber"))
           .withHeader("Authorization", equalTo("Bearer ABCDE"))
           .withHeader("Content-Type", equalTo("application/json"))
-          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y")))
+          .withRequestBody(MatchesJsonPathPattern("nomsNumber", equalTo("A99999Y"))),
       )
     }
 
@@ -302,8 +303,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withBody(listOf(IDs(crn = "X153626", nomsNumber = "A99999Y")).asJson())
-            .withStatus(HTTP_OK)
-        )
+            .withStatus(HTTP_OK),
+        ),
       )
 
       val ids = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
@@ -317,8 +318,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         put(anyUrl()).willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_CONFLICT)
-        )
+            .withStatus(HTTP_CONFLICT),
+        ),
       )
 
       val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
@@ -332,8 +333,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         put(anyUrl()).willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_NOT_FOUND)
-        )
+            .withStatus(HTTP_NOT_FOUND),
+        ),
       )
 
       val maybeIDs = service.replaceProbationOffenderNo("A11111Y", "A99999Y")
@@ -347,8 +348,8 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
         put(anyUrl()).willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_GATEWAY)
-        )
+            .withStatus(HTTP_BAD_GATEWAY),
+        ),
       )
 
       assertThatThrownBy { service.replaceProbationOffenderNo("A11111Y", "A99999Y") }.isInstanceOf(BadGateway::class.java)
@@ -357,16 +358,16 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
 
   private fun createUpdatedCustody() = Custody(
     institution = Institution("Doncaster"),
-    bookingNumber = "38353A"
+    bookingNumber = "38353A",
   )
 
   private fun createUpdateCustody(nomsPrisonInstitutionCode: String = "MDI") = UpdateCustody(
-    nomsPrisonInstitutionCode = nomsPrisonInstitutionCode
+    nomsPrisonInstitutionCode = nomsPrisonInstitutionCode,
   )
 
   private fun createUpdatedCustodyBookingNumber() = UpdateCustodyBookingNumber(
     sentenceStartDate = LocalDate.now(),
-    bookingNumber = "38353A"
+    bookingNumber = "38353A",
   )
 
   private fun createReplaceCustodyKeyDates() = ReplaceCustodyKeyDates()

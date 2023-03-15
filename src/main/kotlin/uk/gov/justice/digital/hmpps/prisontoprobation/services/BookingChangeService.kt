@@ -11,7 +11,7 @@ class BookingChangeService(
   private val telemetryClient: TelemetryClient,
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
-  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>
+  @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -36,10 +36,9 @@ class BookingChangeService(
     val booking = offenderService.getBooking(bookingId)
 
     if (isBookingInInterestedPrison(booking.agencyId)) {
-
       val trackingAttributes = mapOf(
         "bookingId" to bookingId.toString(),
-        "offenderNo" to booking.offenderNo
+        "offenderNo" to booking.offenderNo,
       )
 
       val mergedOffenders = offenderService.getMergedIdentifiers(message.bookingId)
