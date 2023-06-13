@@ -9,6 +9,3 @@ CVE-2023-20863 exp:2023-07-01
 
 # Suppressed - fix due soon
 CVE-2023-2650 exp:2023-06-26
-
-# Suppressed as Welcome Page not utilised - also no cache for 404 responses
-CVE-2023-20883 exp:2023-07-01
