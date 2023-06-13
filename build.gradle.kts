@@ -1,6 +1,6 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.4"
-  kotlin("plugin.spring") version "1.8.21"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.2.0"
+  kotlin("plugin.spring") version "1.8.22"
   id("org.unbroken-dome.test-sets") version "4.0.0"
   id("com.google.cloud.tools.jib") version "3.3.2"
   idea
@@ -30,7 +30,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.3.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.4.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.44.0")
 
   implementation("jakarta.transaction:jakarta.transaction-api")
@@ -56,7 +56,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
   testImplementation("org.mockito:mockito-inline")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.0.0")
 }
 
 java {
