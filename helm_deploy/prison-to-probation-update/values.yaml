@@ -2,6 +2,7 @@
 # Values here are the same across all environments
 generic-service:
   nameOverride: prison-to-probation-update
+  serviceAccountName: prison-to-probation-update
   resources:
     requests:
       cpu: 1
@@ -36,24 +37,15 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     JDK_JAVA_OPTIONS: "-javaagent:/agent/agent.jar -XX:MaxRAMPercentage=75.0"
 
-  # Pre-existing kubernetes secrets to load as environment variables in the deployment.
-  # namespace_secrets:
-  #   [name of kubernetes secret]:
-  #     [name of environment variable as seen by app]: [key of kubernetes secret to load]
-
   namespace_secrets:
     prison-to-probation-update:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
       OAUTH_CLIENT_ID: "PRISON_TO_PROBATION_CLIENT_ID"
       OAUTH_CLIENT_SECRET: "PRISON_TO_PROBATION_CLIENT_SECRET"
-    ptpu-sqs-instance-output:
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_ACCESS_KEY_ID: "access_key_id"
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_SECRET_ACCESS_KEY: "secret_access_key"
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_NAME: "sqs_ptpu_name"
-    ptpu-sqs-dl-instance-output:
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_ACCESS_KEY_ID: "access_key_id"
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_SECRET_ACCESS_KEY: "secret_access_key"
-      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_NAME: "sqs_ptpu_name"
+    prison-to-probation-update-queue:
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_QUEUE_NAME: "QUEUE_NAME"
+    prison-to-probation-update-dlq:
+      HMPPS_SQS_QUEUES_PRISONEVENTQUEUE_DLQ_NAME: "QUEUE_NAME"
     message-dynamodb-output:
       DYNAMODB_TABLENAME: "table_name"
       DYNAMODB_AWS_ACCESS_KEY_ID: "access_key_id"
