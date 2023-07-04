@@ -109,6 +109,7 @@ aws:
 
 hmpps.sqs:
   queueAdminRole: ROLE_PTPU_QUEUE_ADMIN
+  useWebToken: true
 
 hmpps.dynamodb:
   region: ${aws.region}
