@@ -16,6 +16,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.HmppsDomainEventPublisher
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.PersonIdentifier
 import java.time.LocalDate
 
 internal class OffenderProbationMatchServiceTest {
@@ -23,7 +25,8 @@ internal class OffenderProbationMatchServiceTest {
   private val offenderService: OffenderService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val communityService: CommunityService = mock()
-  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService, offenderService, communityService, listOf("MDI"))
+  private val hmppsDomainEventPublisher: HmppsDomainEventPublisher = mock()
+  private val service = OffenderProbationMatchService(telemetryClient, offenderSearchService, offenderService, communityService, hmppsDomainEventPublisher, listOf("MDI"))
 
   @BeforeEach
   fun setup() {
@@ -658,7 +661,7 @@ internal class OffenderProbationMatchServiceTest {
   }
 
   @Test
-  fun `will send telemetry event indicating NOMS number has been updated`() {
+  fun `will send events indicating NOMS number has been updated`() {
     whenever(offenderSearchService.matchProbationOffender(any())).thenReturn(
       OffenderMatches(
         matchedBy = "EXTERNAL_KEY",
@@ -688,6 +691,17 @@ internal class OffenderProbationMatchServiceTest {
         assertThat(it["offenderNo"]).isEqualTo("A5089DY")
       },
       isNull(),
+    )
+
+    verify(hmppsDomainEventPublisher).publish(
+      check {
+        assertThat(it.eventType).isEqualTo("probation-case.prison-identifier.added")
+        assertThat(it.personReference.identifiers).containsExactly(
+          PersonIdentifier("CRN", "X12345"),
+          PersonIdentifier("NOMS", "A5089DY"),
+        )
+        assertThat(it.additionalInformation["bookingNumber"]).isEqualTo("38339A")
+      },
     )
   }
 
