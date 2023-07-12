@@ -9,10 +9,10 @@ import uk.gov.justice.hmpps.sqs.MissingTopicException
 
 @Service
 class HmppsDomainEventPublisher(
+  hmppsQueueService: HmppsQueueService,
   private val objectMapper: ObjectMapper,
-  private val hmppsQueueService: HmppsQueueService,
 ) {
-  private val domainEventsTopic = hmppsQueueService.findByTopicId("domaineventstopic") ?: throw MissingTopicException("Missing topic details for HMPPS Domain Events")
+  private val domainEventsTopic = hmppsQueueService.findByTopicId("domaineventtopic") ?: throw MissingTopicException("Missing topic details for HMPPS Domain Events")
 
   fun publish(event: HmppsDomainEvent) {
     domainEventsTopic.snsClient.publish(
