@@ -378,9 +378,6 @@ class MessageRepositoryTest : NoQueueListenerIntegrationTest() {
         aMessage(2, LocalDateTime.now(), "NO_MATCH_WITH_SENTENCE_DATE"),
       )
       messageRepository.save(
-        aMessage(3, LocalDateTime.now(), "KEY_DATES_NOT_UPDATED"),
-      )
-      messageRepository.save(
         aMessage(4, LocalDateTime.now(), "NO_MATCH", processedDate = LocalDateTime.now()),
       )
       val messages = messageRepository.findAllByStatusInAndCreatedDateLessThanAndProcessedDateIsNull(

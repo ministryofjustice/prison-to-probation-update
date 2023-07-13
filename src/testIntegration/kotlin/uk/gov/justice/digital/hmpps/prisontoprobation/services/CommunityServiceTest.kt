@@ -6,8 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
-import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
@@ -20,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadGateway
 import org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
 import uk.gov.justice.digital.hmpps.prisontoprobation.NoQueueListenerIntegrationTest
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.net.HttpURLConnection.HTTP_BAD_GATEWAY
 import java.net.HttpURLConnection.HTTP_BAD_REQUEST
 import java.net.HttpURLConnection.HTTP_CONFLICT
@@ -151,67 +147,6 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
       )
 
       assertThatThrownBy { service.updateProbationCustodyBookingNumber("AB123D", createUpdatedCustodyBookingNumber()) }.isInstanceOf(BadRequest::class.java)
-    }
-  }
-
-  @Nested
-  inner class WhenReplaceProbationCustodyKeyDates {
-
-    @Test
-    fun `test post key dates calls endpoint`() {
-      val expectedUpdatedCustody = createUpdatedCustody()
-
-      communityMockServer.stubFor(
-        post(anyUrl()).willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(expectedUpdatedCustody.asJson())
-            .withStatus(HTTP_OK),
-        ),
-      )
-
-      val replaceCustodyKeyDates = createReplaceCustodyKeyDates()
-      val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", replaceCustodyKeyDates)
-
-      assertThat(updatedCustody).isEqualTo(Success(expectedUpdatedCustody))
-      communityMockServer.verify(
-        postRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates"))
-          .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")),
-      )
-    }
-
-    @Test
-    fun `test custody will be ignored if not found`() {
-      communityMockServer.stubFor(
-        post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody("{\"error\": \"not found description\"}")
-            .withStatus(HTTP_NOT_FOUND),
-        ),
-      )
-
-      val updatedCustody = service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates())
-
-      assertThat(updatedCustody).isInstanceOf(Ignore::class.java)
-      updatedCustody.onIgnore {
-        assertThat(it.reason).contains("not found description")
-        return
-      }
-    }
-
-    @Test
-    fun `test will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(
-        post("/secure/offenders/nomsNumber/AB123D/bookingNumber/38353A/custody/keyDates").willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_REQUEST),
-        ),
-      )
-
-      assertThatThrownBy { service.replaceProbationCustodyKeyDates("AB123D", "38353A", createReplaceCustodyKeyDates()) }.isInstanceOf(BadRequest::class.java)
     }
   }
 
@@ -369,6 +304,4 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
     sentenceStartDate = LocalDate.now(),
     bookingNumber = "38353A",
   )
-
-  private fun createReplaceCustodyKeyDates() = ReplaceCustodyKeyDates()
 }

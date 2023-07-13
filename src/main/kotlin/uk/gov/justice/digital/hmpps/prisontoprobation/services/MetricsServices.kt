@@ -11,7 +11,6 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 internal const val MOVEMENT_METRIC = "ptpu.movement"
-internal const val SENTENCE_DATES_METRIC = "ptpu.sentenceDateChange"
 internal const val STATUS_CHANGE_METRIC = "ptpu.statusChange"
 internal const val TOTAL_TYPE = "total"
 internal const val FAIL_TYPE = "fail"
@@ -63,23 +62,9 @@ class UnretryableEventMetricsService(meterRegistry: MeterRegistry, meterFactory:
   private val movementsSuccessCounter =
     meterFactory.registerCounter(meterRegistry, MOVEMENT_METRIC, "The number of successful movements", SUCCESS_TYPE)
 
-  private val dateChangeReceivedCounter =
-    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of sentence date changes received", TOTAL_TYPE)
-  private val dateChangeFailedNoOffenderCounter =
-    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of failed sentence date changes", "fail_no_offender")
-  private val dateChangeFailedNoConvictionCounter =
-    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of failed sentence date changes", "fail_no_conviction")
-  private val dateChangeSuccessCounter =
-    meterFactory.registerCounter(meterRegistry, SENTENCE_DATES_METRIC, "The number of successful sentence date changes", SUCCESS_TYPE)
-
   fun movementReceived() = movementReceivedCounter.increment()
   fun movementFailed() = movementsFailedCounter.increment()
   fun movementSucceeded() = movementsSuccessCounter.increment()
-
-  fun dateChangeReceived() = dateChangeReceivedCounter.increment()
-  fun dateChangeFailedNoOffender() = dateChangeFailedNoOffenderCounter.increment()
-  fun dateChangeFailedNoConviction() = dateChangeFailedNoConvictionCounter.increment()
-  fun dateChangeSucceeded() = dateChangeSuccessCounter.increment()
 }
 
 /**

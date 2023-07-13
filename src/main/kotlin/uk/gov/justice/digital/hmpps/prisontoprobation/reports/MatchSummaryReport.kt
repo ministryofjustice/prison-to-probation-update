@@ -88,8 +88,6 @@ data class Category(
   val bookNumberSetFail: Long = 0,
   @JsonProperty("location-set-fail")
   val locationSetFail: Long = 0,
-  @JsonProperty("key-dates-set-fail")
-  val keyDatesSetFail: Long = 0,
   @JsonProperty("error-fail")
   val errorFail: Long = 0,
 )
@@ -122,7 +120,6 @@ operator fun Category.plus(message: Message): Category =
     SynchroniseState.TOO_MANY_MATCHES.name -> this.copy(tooManyMatches = this.tooManyMatches + 1)
     SynchroniseState.BOOKING_NUMBER_NOT_ASSIGNED.name -> this.copy(bookNumberSetFail = this.bookNumberSetFail + 1)
     SynchroniseState.LOCATION_NOT_UPDATED.name -> this.copy(locationSetFail = this.locationSetFail + 1)
-    SynchroniseState.KEY_DATES_NOT_UPDATED.name -> this.copy(keyDatesSetFail = this.keyDatesSetFail + 1)
     SynchroniseState.ERROR.name -> this.copy(errorFail = this.errorFail + 1)
     else -> this
   }
