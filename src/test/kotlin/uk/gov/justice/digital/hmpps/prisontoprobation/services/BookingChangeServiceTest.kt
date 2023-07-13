@@ -13,13 +13,16 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.HmppsDomainEventPublisher
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.PersonIdentifier
 
 class BookingChangeServiceTest {
   private val telemetryClient: TelemetryClient = mock()
   private val offenderService: OffenderService = mock()
   private val communityService: CommunityService = mock()
+  private val hmppsDomainEventPublisher: HmppsDomainEventPublisher = mock()
 
-  private val service = BookingChangeService(telemetryClient, offenderService, communityService, listOf("MDI", "WII"))
+  private val service = BookingChangeService(telemetryClient, offenderService, communityService, hmppsDomainEventPublisher, listOf("MDI", "WII"))
 
   @Nested
   inner class Validate {
@@ -150,6 +153,27 @@ class BookingChangeServiceTest {
           assertThat(it["crn"]).isEqualTo("X123456")
         },
         isNull(),
+      )
+    }
+
+    @Test
+    fun `will publish a domain event when booking number changed`() {
+      whenever(offenderService.getBooking(any())).thenReturn(createBooking(offenderNo = "A11111Y"))
+      whenever(offenderService.getMergedIdentifiers(any())).thenReturn(listOf(BookingIdentifier(type = "MERGED", value = "A88888Y")))
+      whenever(communityService.replaceProbationOffenderNo(any(), any())).thenReturn(listOf(IDs(crn = "X123456")))
+
+      service.processBookingNumberChangedAndUpdateProbation(BookingNumberChangedMessage(12345L))
+
+      verify(hmppsDomainEventPublisher).publish(
+        check {
+          assertThat(it.eventType).isEqualTo("probation-case.prison-identifier.updated")
+          assertThat(it.personReference.identifiers).containsExactly(
+            PersonIdentifier("CRN", "X123456"),
+            PersonIdentifier("NOMS", "A11111Y"),
+          )
+          assertThat(it.additionalInformation["previousNomsNumber"]).isEqualTo("A88888Y")
+          assertThat(it.additionalInformation["bookingNumber"]).isEqualTo("38339A")
+        },
       )
     }
 
