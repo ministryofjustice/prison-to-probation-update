@@ -7,6 +7,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.HmppsDomainEvent
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.HmppsDomainEventPublisher
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.PersonIdentifier
+import uk.gov.justice.digital.hmpps.prisontoprobation.notifications.PersonReference
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
@@ -23,6 +27,7 @@ class OffenderProbationMatchService(
   private val offenderSearchService: OffenderSearchService,
   private val offenderService: OffenderService,
   private val communityService: CommunityService,
+  private val hmppsDomainEventPublisher: HmppsDomainEventPublisher,
   @Value("\${prisontoprobation.only.prisons}") private val allowedPrisons: List<String>,
 ) {
   companion object {
@@ -129,6 +134,19 @@ class OffenderProbationMatchService(
           "crn" to crn,
         ),
         null,
+      )
+      hmppsDomainEventPublisher.publish(
+        HmppsDomainEvent(
+          eventType = "probation-case.prison-identifier.added",
+          description = "A probation case has been matched with a booking in the prison system. The prison number and booking number have been added to the probation case.",
+          personReference = PersonReference(
+            identifiers = listOf(
+              PersonIdentifier("CRN", crn),
+              PersonIdentifier("NOMS", booking.offenderNo),
+            ),
+          ),
+          additionalInformation = mapOf("bookingNumber" to booking.bookingNo),
+        ),
       )
       Success(booking.offenderNo to crn)
     } else {

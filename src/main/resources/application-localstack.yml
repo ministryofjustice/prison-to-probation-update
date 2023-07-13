@@ -12,6 +12,8 @@ hmpps.sqs:
   topics:
     prisoneventtopic:
       arn: arn:aws:sns:eu-west-2:000000000000:offender_events
+    domaineventtopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:domain_events
 
 hmpps.dynamodb:
   provider: ${aws.provider}

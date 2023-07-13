@@ -18,6 +18,8 @@ hmpps.sqs:
   topics:
     prisoneventtopic:
       arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
+    domaineventtopic:
+      arn: arn:aws:sns:eu-west-2:000000000000:${random.uuid}
 
 hmpps.dynamodb:
   provider: ${aws.provider}
