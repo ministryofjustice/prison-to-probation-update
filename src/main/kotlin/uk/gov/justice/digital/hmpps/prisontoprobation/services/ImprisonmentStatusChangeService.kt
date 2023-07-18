@@ -83,21 +83,8 @@ class ImprisonmentStatusChangeService(
       }
     }
 
-    updateProbationKeyDates(offenderNo, bookingNumber, sentenceDetail).onIgnore {
-      return TryLater(
-        bookingId,
-        retryUntil = sentenceDetail.sentenceExpiryDate,
-        status = SynchroniseStatus(crn, SynchroniseState.KEY_DATES_NOT_UPDATED),
-      ) to it.reason.with(booking).with(sentenceStartDate)
-    }
-
     return completed(crn) to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
-
-  private fun updateProbationKeyDates(offenderNo: String, bookingNumber: String, sentenceDetail: SentenceDetail): Result<Unit, TelemetryEvent> =
-    communityService.replaceProbationCustodyKeyDates(offenderNo, bookingNumber, sentenceDetail.asProbationKeyDates())
-      .onIgnore { return Ignore(TelemetryEvent("P2PKeyDatesNotUpdated")) }
-      .let { Success(Unit) }
 
   private fun updateProbationPrisonLocation(offenderNo: String, bookingNumber: String, agencyId: String): Result<Unit, TelemetryEvent> =
     communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = agencyId))

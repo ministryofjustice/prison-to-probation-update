@@ -126,8 +126,6 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
   @Test
   fun `will process messages in date order within group of bookings`() {
-    val youngSentenceChangeMessage = sentenceDatesChangedMessage(999)
-    messageRepository.save(Message(bookingId = 999, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(1), eventType = "SENTENCE_DATES-CHANGED", message = youngSentenceChangeMessage))
     val tooYoungMessage = externalMovementInsertedMessage(99)
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(1), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = tooYoungMessage))
     val youngMessage = externalMovementInsertedMessage(100)
@@ -143,9 +141,6 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     orderVerifier.verify(messageProcessor).processMessage(
       matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", veryOldMessage),
     )
-    orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", youngSentenceChangeMessage),
-    )
     verify(messageProcessor).processMessage(
       matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", oldMessage),
     )
@@ -159,8 +154,8 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
 
   @Test
   fun `will process messages even if they are in a retry state in date order within group of bookings`() {
-    val sentenceChangeMessage = sentenceDatesChangedMessage(999)
-    messageRepository.save(Message(bookingId = 999, retryCount = 9, createdDate = LocalDateTime.now().minusDays(1), eventType = "SENTENCE_DATES-CHANGED", message = sentenceChangeMessage))
+    val bookingNumberChangedMessage = bookingNumberChangedMessage(999)
+    messageRepository.save(Message(bookingId = 999, retryCount = 9, createdDate = LocalDateTime.now().minusDays(1), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage))
     val externalMovementMessage = externalMovementInsertedMessage(999)
     messageRepository.save(Message(bookingId = 999, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(99), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementMessage))
 
@@ -171,16 +166,16 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
       matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementMessage),
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceChangeMessage),
+      matchesMessage("BOOKING_NUMBER-CHANGED", bookingNumberChangedMessage),
     )
   }
 
   @Test
   fun `will process all other messages for a booking when old first-time messages need processing regardless of age`() {
     val prisonLocationChangeMessage = externalMovementInsertedMessage(99)
-    val sentenceDateChangeMessage = sentenceDatesChangedMessage(99)
+    val bookingNumberChangedMessage = bookingNumberChangedMessage(99)
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = prisonLocationChangeMessage))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage))
 
     messageAggregator.processMessagesForNextBookingSets()
 
@@ -189,18 +184,18 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
       matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage),
     )
     orderVerifier.verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage),
+      matchesMessage("BOOKING_NUMBER-CHANGED", bookingNumberChangedMessage),
     )
   }
 
   @Test
   fun `will de-duplicate the messages prior to processing`() {
     val prisonLocationChangeMessage = externalMovementInsertedMessage(99)
-    val sentenceDateChangeMessage1 = sentenceDatesChangedMessage(99, "2020-02-25T11:24:32.935401")
-    val sentenceDateChangeMessage2 = sentenceDatesChangedMessage(99, "2020-02-25T11:24:33.935401")
+    val bookingNumberChangedMessage1 = bookingNumberChangedMessage(99, "2020-02-25T11:24:32.935401")
+    val bookingNumberChangedMessage2 = bookingNumberChangedMessage(99, "2020-02-25T11:24:33.935401")
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = prisonLocationChangeMessage))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage1))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage1))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage2))
 
     messageAggregator.processMessagesForNextBookingSets()
 
@@ -209,21 +204,21 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
       matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", prisonLocationChangeMessage),
     )
     orderVerifier.verify(messageProcessor, times(1)).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED"),
+      matchesMessage("BOOKING_NUMBER-CHANGED"),
     )
   }
 
   @Test
   fun `will de-duplicate old messages prior to processing`() {
-    val sentenceDateChangeMessage1 = sentenceDatesChangedMessage(99, "2020-02-25T11:24:32.935401")
-    val sentenceDateChangeMessage2 = sentenceDatesChangedMessage(99, "2020-02-25T11:24:33.935401")
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage1))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
+    val bookingNumberChangedMessage1 = bookingNumberChangedMessage(99, "2020-02-25T11:24:32.935401")
+    val bookingNumberChangedMessage2 = bookingNumberChangedMessage(99, "2020-02-25T11:24:33.935401")
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage1))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage2))
 
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor, times(1)).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED"),
+      matchesMessage("BOOKING_NUMBER-CHANGED"),
     )
   }
 
@@ -247,11 +242,11 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
   @Test
   fun `will only process message once each is successfully processed`() {
     val prisonLocationChangeMessage = externalMovementInsertedMessage(99)
-    val sentenceDateChangeMessage1 = sentenceDatesChangedMessage(99)
-    val sentenceDateChangeMessage2 = sentenceDatesChangedMessage(99)
+    val bookingNumberChangedMessage1 = bookingNumberChangedMessage(99)
+    val bookingNumberChangedMessage2 = bookingNumberChangedMessage(99)
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = prisonLocationChangeMessage))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage1))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDateChangeMessage2))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage1))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage2))
 
     messageAggregator.processMessagesForNextBookingSets()
     verify(messageProcessor, times(2)).processMessage(any())
@@ -264,7 +259,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
   @Test
   fun `no messages will be retried if all successful`() {
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
     verify(messageProcessor, times(2)).processMessage(any())
@@ -282,7 +277,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     doThrow(RuntimeException("oops")).whenever(messageProcessor).processMessage(any())
 
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
     verify(messageProcessor, times(2)).processMessage(any())
@@ -299,7 +294,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
       .whenever(messageProcessor).processMessage(any())
 
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
     verify(messageProcessor, times(2)).processMessage(any())
@@ -314,7 +309,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
     doReturn(TryLater(99)).whenever(messageProcessor).processMessage(any())
 
     messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now().minusMinutes(11), eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED", message = externalMovementInsertedMessage(99)))
-    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "SENTENCE_DATES-CHANGED", message = sentenceDatesChangedMessage(99)))
+    messageRepository.save(Message(bookingId = 99, retryCount = 0, createdDate = LocalDateTime.now(), eventType = "BOOKING_NUMBER-CHANGED", message = bookingNumberChangedMessage(99)))
 
     messageAggregator.processMessagesForNextBookingSets()
     verify(messageProcessor, times(2)).processMessage(any())
@@ -327,7 +322,7 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
   @Test
   fun `will ignore processed messages when processing a batch`() {
     val imprisonmentStatusChangedMessage = imprisonmentStatusChangedMessage(99)
-    val sentenceDateChangeMessage = sentenceDatesChangedMessage(99)
+    val externalMovementInsertedMessage = externalMovementInsertedMessage(99)
 
     messageRepository.save(
       Message(
@@ -344,23 +339,23 @@ internal class MessageAggregatorTest : NoQueueListenerIntegrationTest() {
         bookingId = 99,
         retryCount = 0,
         createdDate = LocalDateTime.now().minusHours(2),
-        eventType = "SENTENCE_DATES-CHANGED",
-        message = sentenceDateChangeMessage,
+        eventType = "EXTERNAL_MOVEMENT_RECORD-INSERTED",
+        message = externalMovementInsertedMessage,
       ),
     )
 
     messageAggregator.processMessagesForNextBookingSets()
 
     verify(messageProcessor).processMessage(
-      matchesMessage("SENTENCE_DATES-CHANGED", sentenceDateChangeMessage),
+      matchesMessage("EXTERNAL_MOVEMENT_RECORD-INSERTED", externalMovementInsertedMessage),
     )
     verify(messageProcessor, never()).processMessage(
       matchesMessage("IMPRISONMENT_STATUS-CHANGED", imprisonmentStatusChangedMessage),
     )
   }
 
-  private fun sentenceDatesChangedMessage(bookingId: Long, eventDateTime: String = "2020-02-12T15:14:24.125533"): String =
-    "{\"eventType\":\"SENTENCE_DATES-CHANGED\",\"eventDatetime\":\"$eventDateTime\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
+  private fun bookingNumberChangedMessage(bookingId: Long, eventDateTime: String = "2020-02-12T15:14:24.125533"): String =
+    "{\"eventType\":\"BOOKING_NUMBER-CHANGED\",\"eventDatetime\":\"$eventDateTime\",\"bookingId\":$bookingId,\"nomisEventType\":\"OFF_IMP_STAT_OASYS\"}"
 
   private fun externalMovementInsertedMessage(bookingId: Long, movementSeq: Int = 1): String =
     "{\"eventType\":\"EXTERNAL_MOVEMENT_RECORD-INSERTED\",\"eventDatetime\":\"2020-01-13T11:33:23.790725\",\"bookingId\":$bookingId,\"movementSeq\":$movementSeq,\"nomisEventType\":\"M1_RESULT\"}"

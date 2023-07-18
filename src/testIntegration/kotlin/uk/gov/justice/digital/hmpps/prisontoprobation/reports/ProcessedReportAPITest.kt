@@ -112,15 +112,15 @@ class ProcessedReportAPITest : NoQueueListenerIntegrationTest() {
   internal fun `can filter by event type`() {
     messageRepository.saveAll(
       listOf(
-        aMessage(90L, eventType = "SENTENCE_DATES-CHANGED"),
-        aMessage(91L, eventType = "SENTENCE_DATES-CHANGED"),
+        aMessage(90L, eventType = "BOOKING_NUMBER-CHANGED"),
+        aMessage(91L, eventType = "BOOKING_NUMBER-CHANGED"),
         aMessage(92L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
         aMessage(93L, eventType = "IMPRISONMENT_STATUS-CHANGED"),
       ),
     )
 
     webTestClient.get()
-      .uri { it.path("/report/processed").queryParam("eventType", "SENTENCE_DATES-CHANGED").build() }
+      .uri { it.path("/report/processed").queryParam("eventType", "BOOKING_NUMBER-CHANGED").build() }
       .headers(setAuthorisation(roles = listOf("ROLE_PTPU_REPORT")))
       .accept(MediaType("text", "csv"))
       .exchange()

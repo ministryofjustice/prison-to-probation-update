@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Success
 import java.time.LocalDate
 
 @Service
@@ -41,17 +40,6 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
       .bodyToMono(Custody::class.java)
       .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
       .block()
-  }
-
-  fun replaceProbationCustodyKeyDates(offenderNo: String, bookingNo: String, replaceCustodyKeyDates: ReplaceCustodyKeyDates): Result<Custody, String> {
-    return webClient.post()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/bookingNumber/$bookingNo/custody/keyDates")
-      .bodyValue(replaceCustodyKeyDates)
-      .retrieve()
-      .bodyToMono(Custody::class.java)
-      .map<Result<Custody, String>> { Success(it) }
-      .onErrorResume(WebClientResponseException::class.java) { errorMessageWhenNotFound(it) }
-      .block()!!
   }
 
   fun <T> emptyWhenConflict(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, CONFLICT)
@@ -111,16 +99,6 @@ data class Custody(
 data class UpdateCustodyBookingNumber(
   val sentenceStartDate: LocalDate,
   val bookingNumber: String,
-)
-
-data class ReplaceCustodyKeyDates(
-  val conditionalReleaseDate: LocalDate? = null,
-  val licenceExpiryDate: LocalDate? = null,
-  val hdcEligibilityDate: LocalDate? = null,
-  val paroleEligibilityDate: LocalDate? = null,
-  val sentenceExpiryDate: LocalDate? = null,
-  val expectedReleaseDate: LocalDate? = null,
-  val postSentenceSupervisionEndDate: LocalDate? = null,
 )
 
 data class Conviction(val index: String, val active: Boolean, val sentence: Sentence? = null, val custody: Custody? = null)

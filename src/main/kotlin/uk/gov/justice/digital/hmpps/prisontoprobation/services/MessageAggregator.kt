@@ -70,9 +70,7 @@ val Message.toPriority: Int
     return when (this.eventType) {
       "IMPRISONMENT_STATUS-CHANGED" -> 0
       "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> 1
-      "SENTENCE_DATES-CHANGED" -> 2
-      "CONFIRMED_RELEASE_DATE-CHANGED" -> 3
-      "BOOKING_NUMBER-CHANGED" -> 4
+      "BOOKING_NUMBER-CHANGED" -> 2
       else -> 99
     }
   }

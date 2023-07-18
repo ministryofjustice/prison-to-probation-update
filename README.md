@@ -114,8 +114,6 @@ The service subscribes to a number of prison offender events
 * IMPRISONMENT_STATUS-CHANGED
 * EXTERNAL_MOVEMENT_RECORD-INSERTED
 * BOOKING_NUMBER-CHANGED
-* SENTENCE_DATES-CHANGED
-* CONFIRMED_RELEASE_DATE-CHANGED
 
 Each message is processed in up to 3 phases:
 
@@ -137,7 +135,7 @@ The scheduling of the message is processed by *MessageRetryService*.
 
 The main processing loop is invoked by *SerialiseBookingScheduler* which is a Spring Scheduler that itself uses DynamoDB as a persistent store for locking - this ensures only a single pod is processing messages at a time.  
 
-Events are held back for a period of time (one hour in production); this is so multiple similar messages are processed for a record all in one go, there is no drip feeding of small changes, e.g. each of the key sentence dates are all changed at once.
+Events are held back for a period of time (one hour in production); this is so multiple similar messages are processed for a record all in one go, there is no drip feeding of small changes.
 
 Events are sorted and grouped so for each run of the processing events for a particular booking and are processed together rather than being processed by different pods simultaneously. This is done by the *MessageAggregator*.
 
@@ -146,8 +144,6 @@ Unsuccessful processing can lead to different paths depending on the event being
  * IMPRISONMENT_STATUS-CHANGED - will be retried for a period of time. Given this indicates a significant change to the prisoner's status, e.g. conviction, it may take some time before the associated Delius record has been created or is in the correct state. It will retry for around a month.
  * EXTERNAL_MOVEMENT_RECORD-INSERTED - only tried once and then discarded
  * BOOKING_NUMBER-CHANGED - only tried once and then discarded
- * SENTENCE_DATES-CHANGED - only tried once and then discarded
- * CONFIRMED_RELEASE_DATE-CHANGED - only tried once and then discarded
 
 If there is a *system* exception while processing any of these messages they will be retried. However business "exceptions", for instance if the prisoner does not exist in Delius, are not retried since they are not expected to succeed because of the passing of time.
 
@@ -238,7 +234,7 @@ All telemetry events are prefixed by `P2P` so this query will show all significa
 ```bigquery
 customEvents
 | where cloud_RoleName in ("prison-to-probation-update", "community-api")
-| where name startswith "P2P" or name startswith "KeyDate" 
+| where name startswith "P2P"
 | summarize count() by name
 ```
 Description for each event is as follows:
@@ -257,20 +253,6 @@ Description for each event is as follows:
     * `P2PTransferBookingNumberNotFound` -  Location could not be updated since event not found
     * `P2PTransferBookingNumberHasDuplicates` -  Location could not be updated since mutiple events found with book number
 
-*Sentence dates changes*
-
-* prison-to-probation-update service
-    * `P2PSentenceDatesRecordNotFound` -  Dates could not be updated since prisoner or event has not been found
-    * `P2PSentenceDatesChanged` - Dates have been updated or were correct already
-    * `P2PSentenceDatesChangeIgnored` - Dates changes are ignored since the dates or booking is no longer valid
-* community-api service
-    * `keyDatesBulkUnchanged` - No dates required updating 
-    * `keyDatesBulkSummary` - Dates were successfully updated  
-    * `keyDatesBulkAllRemoved` - All dates were updated, this may indicate the sentence has changed to a Life sentence, they have been deported or new dates are about to be added
-    * `KeyDateDeleted` - One of the key the dates was deleted (also fired POM handover dates)
-    * `KeyDateUpdated` - Existing date was updated (also fired POM handover dates)
-    * `KeyDateAdded` - New date was added (also fired POM handover dates)
-
 *Imprisonment status change and offender matching*
 
 * prison-to-probation-update service
@@ -283,7 +265,6 @@ Description for each event is as follows:
   * `P2PImprisonmentStatusIgnored` - Change is being ignored since booking is no longer relevant, e.g. the booking is no longer active and they have been released
   * `P2PBookingNumberNotAssigned` - Book number can be set in Delius, typically because there are multiple active events
   * `P2PLocationNotUpdated` - Location can not be set for the matched offender, typically where there are multiple custodial events
-  * `P2PKeyDatesNotUpdated` - Dates can not be set for the matched offender, typically where there are multiple custodial events
 
 * community-api service
   * `P2PImprisonmentStatusCustodyEventsHasDuplicates` - book number can not be set due multiple matching events
@@ -324,13 +305,6 @@ requests
   requests
   | where cloud_RoleName in ("community-api")
   | where name == "PUT CustodyResource/updateCustody"
-  | summarize count() by resultCode
-```
-* Set key dates
-```bigquery
-  requests
-  | where cloud_RoleName in ("community-api")
-  | where name == "POST CustodyKeyDatesController/replaceAllCustodyKeyDateByNomsNumberAndBookingNumber"
   | summarize count() by resultCode
 ```
 * Replace NOMS number

@@ -88,7 +88,6 @@ class ImprisonmentStatusChangeServiceTest {
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
         whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
-        whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Success(Custody(Institution("HMP Brixton"), "38339A")))
       }
 
       @Test
@@ -141,20 +140,6 @@ class ImprisonmentStatusChangeServiceTest {
 
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).updateProbationCustody("A5089DY", "38339A", UpdateCustody(nomsPrisonInstitutionCode = "MDI"))
-      }
-
-      @Test
-      fun `will send keydates to probation`() {
-        whenever(offenderService.getSentenceDetail(any())).thenReturn(SentenceDetail(sentenceStartDate = LocalDate.of(2020, 2, 29), licenceExpiryDate = LocalDate.parse("1970-01-05")))
-
-        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(communityService).replaceProbationCustodyKeyDates(
-          eq("A5089DY"),
-          eq("38339A"),
-          check {
-            assertThat(it.licenceExpiryDate).isEqualTo(LocalDate.parse("1970-01-05"))
-          },
-        )
       }
 
       @Test
@@ -269,49 +254,6 @@ class ImprisonmentStatusChangeServiceTest {
 
           verify(telemetryClient).trackEvent(
             eq("P2PLocationNotUpdated"),
-            check {
-              assertThat(it["bookingId"]).isEqualTo("12345")
-              assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
-            },
-            isNull(),
-          )
-        }
-      }
-
-      @Nested
-      inner class WhenDatesNotSet {
-        private val sentenceExpiryDate: LocalDate = LocalDate.now().plusYears(1)
-
-        @BeforeEach
-        fun setup() {
-          whenever(communityService.replaceProbationCustodyKeyDates(anyString(), anyString(), any())).thenReturn(Ignore("Not found error message"))
-          whenever(offenderService.getSentenceDetail(any())).thenReturn(
-            SentenceDetail(
-              sentenceStartDate = LocalDate.of(2020, 2, 29),
-              sentenceExpiryDate = sentenceExpiryDate,
-            ),
-          )
-        }
-
-        @Test
-        fun `will indicate we want to try again until sentence expires`() {
-          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-
-          assertThat(result).usingRecursiveComparison().isEqualTo(
-            TryLater(
-              bookingId = 12345,
-              retryUntil = sentenceExpiryDate,
-              status = SynchroniseStatus("X12345", SynchroniseState.KEY_DATES_NOT_UPDATED),
-            ),
-          )
-        }
-
-        @Test
-        fun `will log that key dates could not be set`() {
-          service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-
-          verify(telemetryClient).trackEvent(
-            eq("P2PKeyDatesNotUpdated"),
             check {
               assertThat(it["bookingId"]).isEqualTo("12345")
               assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
