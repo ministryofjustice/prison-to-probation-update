@@ -46,7 +46,7 @@ dependencies {
 
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("io.micrometer:micrometer-core")
-  implementation("com.opencsv:opencsv:5.7.1")
+  implementation("com.opencsv:opencsv:5.8")
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
