@@ -30,63 +30,6 @@ class CommunityServiceTest : NoQueueListenerIntegrationTest() {
   private lateinit var service: CommunityService
 
   @Nested
-  inner class WhenUpdateCustody {
-
-    @Test
-    fun `test put custody calls endpoint`() {
-      val expectedUpdatedCustody = createUpdatedCustody()
-      communityMockServer.stubFor(
-        put(anyUrl()).willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody(expectedUpdatedCustody.asJson())
-            .withStatus(HTTP_OK),
-        ),
-      )
-
-      val updateCustody = createUpdateCustody(nomsPrisonInstitutionCode = "MDI")
-      val updatedCustody = service.updateProbationCustody("AB123D", "38353A", updateCustody)
-
-      assertThat(updatedCustody).isEqualTo(expectedUpdatedCustody)
-      communityMockServer.verify(
-        putRequestedFor(urlEqualTo("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A"))
-          .withRequestBody(matchingJsonPath("nomsPrisonInstitutionCode", equalTo("MDI")))
-          .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer ABCDE")),
-      )
-    }
-
-    @Test
-    fun `test put custody will be null if conviction not found`() {
-      communityMockServer.stubFor(
-        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withBody("{\"error\": \"not found\"}")
-            .withStatus(HTTP_NOT_FOUND),
-        ),
-      )
-
-      val updatedCustody = service.updateProbationCustody("AB123D", "38353A", createUpdateCustody())
-
-      assertThat(updatedCustody).isNull()
-    }
-
-    @Test
-    fun `test put custody will throw exception for other types of http responses`() {
-      communityMockServer.stubFor(
-        put("/secure/offenders/nomsNumber/AB123D/custody/bookingNumber/38353A").willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(HTTP_BAD_REQUEST),
-        ),
-      )
-
-      assertThatThrownBy { service.updateProbationCustody("AB123D", "38353A", createUpdateCustody()) }.isInstanceOf(BadRequest::class.java)
-    }
-  }
-
-  @Nested
   inner class WhenUpdateCustodyBookingNumber {
 
     @Test
