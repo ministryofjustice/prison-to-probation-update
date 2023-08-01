@@ -48,7 +48,6 @@ class ImprisonmentStatusChangeService(
 
   private fun processStatusChange(message: ImprisonmentStatusChangesMessage): Pair<MessageResult, TelemetryEvent> {
     val (bookingId) = getSignificantStatusChange(message).onIgnore { return ignored() to it.reason }
-    val sentenceDetail = getSentenceDatesWithStartDate(bookingId).onIgnore { return ignored() to it.reason }
     val sentenceStartDate = getLatestPrimarySentenceStartDate(bookingId).onIgnore { return ignored() to it.reason }
     val booking = getActiveBooking(bookingId).onIgnore { return Done() to it.reason }
     val (offenderNo, crn) = offenderProbationMatchService.ensureOffenderNumberExistsInProbation(
@@ -73,23 +72,8 @@ class ImprisonmentStatusChangeService(
       ) to it.reason.with(booking).with(sentenceStartDate)
     }
 
-    booking.agencyId?.let { agencyId ->
-      updateProbationPrisonLocation(offenderNo, bookingNumber, agencyId).onIgnore {
-        return TryLater(
-          bookingId,
-          retryUntil = sentenceDetail.sentenceExpiryDate,
-          status = SynchroniseStatus(crn, SynchroniseState.LOCATION_NOT_UPDATED),
-        ) to it.reason.with(booking).with(sentenceStartDate)
-      }
-    }
-
     return completed(crn) to TelemetryEvent("P2PImprisonmentStatusUpdated").with(booking).with(sentenceStartDate)
   }
-
-  private fun updateProbationPrisonLocation(offenderNo: String, bookingNumber: String, agencyId: String): Result<Unit, TelemetryEvent> =
-    communityService.updateProbationCustody(offenderNo, bookingNumber, UpdateCustody(nomsPrisonInstitutionCode = agencyId))
-      ?.let { Success(Unit) }
-      ?: Ignore(TelemetryEvent("P2PLocationNotUpdated"))
 
   private fun updateProbationCustodyBookingNumber(offenderNo: String, sentenceStartDate: LocalDate, bookingNumber: String): Result<Unit, TelemetryEvent> =
     communityService.updateProbationCustodyBookingNumber(offenderNo, UpdateCustodyBookingNumber(sentenceStartDate, bookingNumber))
@@ -111,9 +95,6 @@ class ImprisonmentStatusChangeService(
         ?.let { Success(this) }
         ?: Ignore("No sentence start date")
     }
-
-  private fun getSentenceDatesWithStartDate(bookingId: Long): Result<SentenceDetail, TelemetryEvent> =
-    Success(validSentenceDatesWithStartDate(bookingId).onIgnore { return Ignore(TelemetryEvent("P2PImprisonmentStatusNoSentenceStartDate")) })
 
   private fun getLatestPrimarySentenceStartDate(bookingId: Long): Result<LocalDate, TelemetryEvent> =
     offenderService.getCurrentSentences(bookingId)

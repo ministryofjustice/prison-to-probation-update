@@ -12,7 +12,6 @@ import java.time.OffsetDateTime
 
 @Service
 class MessageProcessor(
-  private val prisonMovementService: PrisonMovementService,
   private val bookingChangeService: BookingChangeService,
   private val imprisonmentStatusChangeService: ImprisonmentStatusChangeService,
   private val retryableEventMetricsService: RetryableEventMetricsService,
@@ -40,7 +39,6 @@ class MessageProcessor(
 
   private fun callMessageHandler(eventType: String, message: String): MessageResult =
     when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.processMovementAndUpdateProbation(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.processImprisonmentStatusChangeAndUpdateProbation(
         fromJson(message),
       )
@@ -52,7 +50,6 @@ class MessageProcessor(
 
   fun validateMessage(eventType: String, message: String): MessageResult =
     when (eventType) {
-      "EXTERNAL_MOVEMENT_RECORD-INSERTED" -> prisonMovementService.validateMovement(fromJson(message))
       "IMPRISONMENT_STATUS-CHANGED" -> imprisonmentStatusChangeService.validateImprisonmentStatusChange(fromJson(message))
       "BOOKING_NUMBER-CHANGED" -> bookingChangeService.validateBookingNumberChange(fromJson(message))
       else -> {
