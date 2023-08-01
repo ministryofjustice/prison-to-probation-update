@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
-import uk.gov.justice.digital.hmpps.prisontoprobation.services.Result.Ignore
 import java.time.LocalDate
 
 @Service
@@ -21,16 +20,6 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
   }
 
   private val convictionListType = object : ParameterizedTypeReference<List<Conviction>>() {}
-
-  fun updateProbationCustody(offenderNo: String, bookingNo: String, updateCustody: UpdateCustody): Custody? {
-    return webClient.put()
-      .uri("/secure/offenders/nomsNumber/$offenderNo/custody/bookingNumber/$bookingNo")
-      .bodyValue(updateCustody)
-      .retrieve()
-      .bodyToMono(Custody::class.java)
-      .onErrorResume(WebClientResponseException::class.java) { emptyWhenNotFound(it) }
-      .block()
-  }
 
   fun updateProbationCustodyBookingNumber(offenderNo: String, updateCustodyBookingNumber: UpdateCustodyBookingNumber): Custody? {
     return webClient.put()
@@ -46,9 +35,6 @@ class CommunityService(@Qualifier("probationApiWebClient") private val webClient
   fun <T> emptyWhenNotFound(exception: WebClientResponseException): Mono<T> = emptyWhen(exception, NOT_FOUND)
   fun <T> emptyWhen(exception: WebClientResponseException, statusCode: HttpStatus): Mono<T> =
     if (exception.statusCode == statusCode) Mono.empty() else Mono.error(exception)
-
-  fun errorMessageWhenNotFound(exception: WebClientResponseException): Mono<Ignore<String>> =
-    if (exception.statusCode == NOT_FOUND) Mono.just(Ignore(exception.responseBodyAsString)) else Mono.error(exception)
 
   fun getConvictions(crn: String): List<Conviction> {
     return webClient.get()

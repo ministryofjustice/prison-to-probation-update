@@ -87,13 +87,6 @@ class ImprisonmentStatusChangeServiceTest {
         )
         whenever(offenderService.getBooking(any())).thenReturn(createBooking())
         whenever(communityService.updateProbationCustodyBookingNumber(anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
-        whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(Custody(Institution("HMP Brixton"), "38339A"))
-      }
-
-      @Test
-      fun `will request the sentence start date`() {
-        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(offenderService).getSentenceDetail(12345L)
       }
 
       @Test
@@ -132,14 +125,6 @@ class ImprisonmentStatusChangeServiceTest {
 
         service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
         verify(communityService).updateProbationCustodyBookingNumber("A5089DY", UpdateCustodyBookingNumber(LocalDate.parse("2020-01-30"), "38339A"))
-      }
-
-      @Test
-      fun `will send location to probation`() {
-        whenever(offenderService.getBooking(any())).thenReturn(createBooking(agencyId = "MDI"))
-
-        service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-        verify(communityService).updateProbationCustody("A5089DY", "38339A", UpdateCustody(nomsPrisonInstitutionCode = "MDI"))
       }
 
       @Test
@@ -226,39 +211,11 @@ class ImprisonmentStatusChangeServiceTest {
 
         @BeforeEach
         fun setup() {
-          whenever(communityService.updateProbationCustody(anyString(), anyString(), any())).thenReturn(null)
           whenever(offenderService.getSentenceDetail(any())).thenReturn(
             SentenceDetail(
               sentenceStartDate = LocalDate.of(2020, 2, 29),
               sentenceExpiryDate = sentenceExpiryDate,
             ),
-          )
-        }
-
-        @Test
-        fun `will indicate we want to try again until sentence expires`() {
-          val result = service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-
-          assertThat(result).usingRecursiveComparison().isEqualTo(
-            TryLater(
-              bookingId = 12345,
-              retryUntil = sentenceExpiryDate,
-              status = SynchroniseStatus("X12345", SynchroniseState.LOCATION_NOT_UPDATED),
-            ),
-          )
-        }
-
-        @Test
-        fun `will log that prison location could not be set`() {
-          service.processImprisonmentStatusChangeAndUpdateProbation(ImprisonmentStatusChangesMessage(12345L, 0L))
-
-          verify(telemetryClient).trackEvent(
-            eq("P2PLocationNotUpdated"),
-            check {
-              assertThat(it["bookingId"]).isEqualTo("12345")
-              assertThat(it["imprisonmentStatusSeq"]).isEqualTo("0")
-            },
-            isNull(),
           )
         }
       }
