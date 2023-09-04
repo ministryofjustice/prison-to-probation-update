@@ -50,12 +50,8 @@ generic-service:
       HMPPS_SQS_TOPICS_DOMAINEVENTTOPIC_ARN: "TOPIC_ARN"
     message-dynamodb-output:
       DYNAMODB_TABLENAME: "table_name"
-      DYNAMODB_AWS_ACCESS_KEY_ID: "access_key_id"
-      DYNAMODB_AWS_SECRET_ACCESS_KEY: "secret_access_key"
     schedule-dynamodb-output:
       DYNAMODB_SCHEDULE_TABLENAME: "table_name"
-      DYNAMODB_SCHEDULE_AWS_ACCESS_KEY_ID: "access_key_id"
-      DYNAMODB_SCHEDULE_AWS_SECRET_ACCESS_KEY: "secret_access_key"
 
   allowlist:
     office: "217.33.148.210/32"
