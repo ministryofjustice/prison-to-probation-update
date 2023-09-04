@@ -113,13 +113,8 @@ hmpps.sqs:
 
 hmpps.dynamodb:
   region: ${aws.region}
-  provider: ${aws.provider}
   tableName: ${dynamodb.tablename}
-  tableAccessKeyId: ${dynamodb.aws.access.key.id}
-  tableSecretAccessKey: ${dynamodb.aws.secret.access.key}
   scheduleTableName: ${dynamodb.schedule.tablename}
-  scheduleTableAccessKeyId: ${dynamodb.schedule.aws.access.key.id}
-  scheduleTableSecretAccessKey: ${dynamodb.schedule.aws.secret.access.key}
 
 
 retry:
