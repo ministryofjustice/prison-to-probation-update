@@ -35,7 +35,7 @@ class DynamoDBConfig {
     with(dynamoDbConfigProperties) {
       AmazonDynamoDBClientBuilder
         .standard()
-        .withCredentials(WebIdentityTokenCredentialsProvider.builder().roleSessionName("prison-to-probation-update").build())
+        .withCredentials(WebIdentityTokenCredentialsProvider.create())
         .withRegion(region)
         .build()
     }
@@ -60,7 +60,7 @@ class DynamoDBConfig {
     with(dynamoDbConfigProperties) {
       AmazonDynamoDBClientBuilder
         .standard()
-        .withCredentials(WebIdentityTokenCredentialsProvider.builder().roleSessionName("prison-to-probation-update").build())
+        .withCredentials(WebIdentityTokenCredentialsProvider.create())
         .withRegion(region)
         .build()
     }
