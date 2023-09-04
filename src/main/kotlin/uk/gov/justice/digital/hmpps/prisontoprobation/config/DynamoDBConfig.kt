@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.config
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.WebIdentityTokenCredentialsProvider
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
@@ -36,7 +35,7 @@ class DynamoDBConfig {
     with(dynamoDbConfigProperties) {
       AmazonDynamoDBClientBuilder
         .standard()
-        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(tableAccessKeyId, tableSecretAccessKey)))
+        .withCredentials(WebIdentityTokenCredentialsProvider.builder().roleSessionName("prison-to-probation-update").build())
         .withRegion(region)
         .build()
     }
@@ -61,7 +60,7 @@ class DynamoDBConfig {
     with(dynamoDbConfigProperties) {
       AmazonDynamoDBClientBuilder
         .standard()
-        .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials(scheduleTableAccessKeyId, scheduleTableSecretAccessKey)))
+        .withCredentials(WebIdentityTokenCredentialsProvider.builder().roleSessionName("prison-to-probation-update").build())
         .withRegion(region)
         .build()
     }
