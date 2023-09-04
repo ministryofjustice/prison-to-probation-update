@@ -113,7 +113,6 @@ hmpps.sqs:
 
 hmpps.dynamodb:
   region: ${aws.region}
-  provider: ${aws.provider}
   tableName: ${dynamodb.tablename}
   scheduleTableName: ${dynamodb.schedule.tablename}
 
