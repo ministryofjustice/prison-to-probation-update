@@ -112,6 +112,7 @@ hmpps.sqs:
   useWebToken: true
 
 hmpps.dynamodb:
+  provider: ${aws.provider}
   region: ${aws.region}
   tableName: ${dynamodb.tablename}
   scheduleTableName: ${dynamodb.schedule.tablename}
