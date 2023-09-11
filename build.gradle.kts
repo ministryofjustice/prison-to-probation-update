@@ -1,7 +1,7 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.4.0"
   kotlin("plugin.spring") version "1.9.10"
-  id("org.unbroken-dome.test-sets") version "4.0.0"
+  id("org.unbroken-dome.test-sets") version "4.1.0"
   id("com.google.cloud.tools.jib") version "3.3.2"
   idea
 }
