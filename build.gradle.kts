@@ -51,7 +51,7 @@ dependencies {
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.1.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
