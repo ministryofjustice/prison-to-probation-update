@@ -2,7 +2,7 @@ plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.4.1"
   kotlin("plugin.spring") version "1.9.10"
   id("org.unbroken-dome.test-sets") version "4.1.0"
-  id("com.google.cloud.tools.jib") version "3.3.2"
+  id("com.google.cloud.tools.jib") version "3.4.0"
   idea
 }
 
@@ -30,7 +30,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.7.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.8.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.46.0")
 
   implementation("jakarta.transaction:jakarta.transaction-api")
@@ -42,7 +42,7 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.1")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
-  implementation("com.amazonaws:aws-java-sdk-sts:1.12.549")
+  implementation("com.amazonaws:aws-java-sdk-sts:1.12.556")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
   implementation("io.micrometer:micrometer-registry-prometheus")
@@ -51,7 +51,7 @@ dependencies {
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.1.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
