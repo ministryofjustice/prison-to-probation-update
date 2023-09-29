@@ -42,7 +42,7 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.1")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
-  implementation("com.amazonaws:aws-java-sdk-sts:1.12.556")
+  implementation("com.amazonaws:aws-java-sdk-sts:1.12.560")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
 
   implementation("io.micrometer:micrometer-registry-prometheus")
