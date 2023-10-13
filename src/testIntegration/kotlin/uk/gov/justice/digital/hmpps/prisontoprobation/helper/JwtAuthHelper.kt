@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.prisontoprobation.helper
 
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpHeaders
 import org.springframework.security.oauth2.jwt.JwtDecoder
@@ -11,8 +10,7 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPublicKey
 import java.time.Duration
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 @Component
 class JwtAuthHelper() {
@@ -51,11 +49,11 @@ class JwtAuthHelper() {
       .also { scope?.let { scope -> it["scope"] = scope } }
       .let {
         Jwts.builder()
-          .setId(jwtId)
-          .setSubject(subject)
-          .addClaims(it.toMap())
-          .setExpiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
-          .signWith(keyPair.private, SignatureAlgorithm.RS256)
+          .id(jwtId)
+          .subject(subject)
+          .claims(it.toMap())
+          .expiration(Date(System.currentTimeMillis() + expiryTime.toMillis()))
+          .signWith(keyPair.private, Jwts.SIG.RS256)
           .compact()
       }
 }
