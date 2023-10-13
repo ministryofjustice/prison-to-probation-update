@@ -40,7 +40,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("com.amazonaws:aws-java-sdk-sts:1.12.556")
   implementation("io.github.boostchicken:spring-data-dynamodb:5.2.5")
@@ -56,7 +56,7 @@ dependencies {
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.2")
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.12.2")
-  testImplementation("org.mockito:mockito-inline")
+  testImplementation("org.mockito:mockito-inline:5.2.0")
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
 }
 
