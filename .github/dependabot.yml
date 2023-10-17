@@ -7,3 +7,5 @@ updates:
     ignore:
       - dependency-name: "software.amazon.awssdk:*" # reduce the noise of frequent AWS SDK updates
         update-types: ["version-update:semver-patch"]
+      - dependency-name: "com.amazonaws:*" # reduce the noise of frequent AWS SDK updates
+        update-types: ["version-update:semver-patch"]
