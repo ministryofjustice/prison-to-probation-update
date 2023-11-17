@@ -1,6 +1,6 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.7.0"
-  kotlin("plugin.spring") version "1.9.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.9.0"
+  kotlin("plugin.spring") version "1.9.20"
   id("org.unbroken-dome.test-sets") version "4.1.0"
   id("com.google.cloud.tools.jib") version "3.4.0"
   idea
@@ -30,7 +30,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.9.1")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.10.0")
   implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.46.0")
 
   implementation("jakarta.transaction:jakarta.transaction-api")
