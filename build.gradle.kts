@@ -57,7 +57,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.3")
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.12.3")
   testImplementation("org.mockito:mockito-inline:5.2.0")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 }
 
 java {
