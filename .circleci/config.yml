@@ -132,12 +132,6 @@ workflows:
                 - main
           requires:
             - jib-build
-      - hmpps/smoke_test:
-          context: hmpps-smoketest-common-vars
-          name: smoke_test
-          jdk_tag: "17.0"
-          requires:
-            - deploy_dev
       - hmpps/deploy_env:
           name: deploy_preprod
           env: "preprod"
@@ -147,7 +141,7 @@ workflows:
             - prison-to-probation-update-preprod
             - hmpps-common-vars
           requires:
-            - smoke_test
+            - deploy_dev
       - request-prod-approval:
           type: approval
           requires:
