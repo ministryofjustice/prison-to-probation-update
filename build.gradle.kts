@@ -40,7 +40,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.0.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("com.amazonaws:aws-java-sdk-sts:1.12.580")
   implementation("com.amazonaws:aws-java-sdk-s3:1.12.580") // Temporarily overriding version until hmpps-sqs-spring-boot-starter:2.2.0 is published
