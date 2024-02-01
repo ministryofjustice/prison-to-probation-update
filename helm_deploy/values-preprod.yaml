@@ -6,7 +6,7 @@ generic-service:
     contextColour: green
   env:
     OAUTH_ENDPOINT_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
-    PRISON_ENDPOINT_URL: "https://api-preprod.prison.service.justice.gov.uk"
+    PRISON_ENDPOINT_URL: "https://prison-api-preprod.prison.service.justice.gov.uk"
     COMMUNITY_ENDPOINT_URL: "https://community-api-secure.pre-prod.delius.probation.hmpps.dsd.io"
     OFFENDER_SEARCH_ENDPOINT_URL: "https://probation-offender-search-preprod.hmpps.service.justice.gov.uk"
     PRISONTOPROBATION_ONLY_PRISONS: ""
