@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.12.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.1"
   kotlin("plugin.spring") version "1.9.22"
   id("org.unbroken-dome.test-sets") version "4.1.0"
   id("com.google.cloud.tools.jib") version "3.4.0"
@@ -40,7 +40,7 @@ dependencies {
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.0")
   implementation("com.amazonaws:aws-java-sdk-dynamodb")
   implementation("com.amazonaws:aws-java-sdk-sts:1.12.580")
   implementation("com.amazonaws:aws-java-sdk-s3:1.12.580") // Temporarily overriding version until hmpps-sqs-spring-boot-starter:2.2.0 is published
@@ -62,7 +62,7 @@ dependencies {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 tasks {
@@ -89,7 +89,7 @@ tasks {
 
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "17"
+      jvmTarget = "21"
     }
   }
 }
@@ -102,7 +102,7 @@ jib {
     user = "2000:2000"
   }
   from {
-    image = "eclipse-temurin:17-jre-alpine"
+    image = "eclipse-temurin:21-jre-alpine"
   }
   extraDirectories {
     paths {

@@ -111,7 +111,7 @@ class OffenderProbationMatchService(
     ) to SynchroniseStatus(
       matchingCrns = result.CRNs(),
       state = if (result.CRNList()
-        .isEmpty()
+          .isEmpty()
       ) {
         SynchroniseState.NO_MATCH
       } else {

@@ -9,7 +9,7 @@ jobs:
   validate:
     executor:
       name: hmpps/java
-      tag: "17.0"
+      tag: "21.0"
     steps:
       - checkout
       - restore_cache:
@@ -34,9 +34,9 @@ jobs:
   test-integration:
     executor:
       name: hmpps/localstack
-      jdk_tag: "17.0"
+      jdk_tag: "21.0"
       services: "sqs,sns,dynamodb"
-      localstack_tag: "1.4"
+      localstack_tag: "3"
     steps:
       - checkout
       - hmpps/install_aws_cli
@@ -60,7 +60,7 @@ jobs:
   jib-build:
     executor:
       name: hmpps/java
-      tag: "17.0"
+      tag: "21.0"
     environment:
       _JAVA_OPTIONS: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false
     parameters:
