@@ -77,7 +77,7 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=localstack,dev
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3
     networks:
       - hmpps
     container_name: localstack
