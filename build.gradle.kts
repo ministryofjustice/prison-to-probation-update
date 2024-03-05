@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.2"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.3"
   kotlin("plugin.spring") version "1.9.22"
   id("org.unbroken-dome.test-sets") version "4.1.0"
-  id("com.google.cloud.tools.jib") version "3.4.0"
+  id("com.google.cloud.tools.jib") version "3.4.1"
   idea
 }
 
@@ -30,8 +30,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-  implementation("net.javacrumbs.shedlock:shedlock-spring:5.11.0")
-  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.46.0")
+  implementation("net.javacrumbs.shedlock:shedlock-spring:5.12.0")
+  implementation("net.javacrumbs.shedlock:shedlock-provider-dynamodb:4.47.0")
 
   implementation("jakarta.transaction:jakarta.transaction-api")
   implementation("com.google.code.gson:gson")
@@ -52,7 +52,7 @@ dependencies {
 
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.4")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
   testImplementation("org.awaitility:awaitility-kotlin")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
   testImplementation("io.jsonwebtoken:jjwt-impl:0.12.5")
